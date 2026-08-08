@@ -1,17 +1,13 @@
-import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { colors } from "@/theme/colors";
 import { spacing } from "@/theme/spacing";
 import { typography } from "@/theme/typography";
 
-export default function HomeScreen() {
-  // Test comment for git hook validation
+export default function ExploreScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Monevo</Text>
-      <Text style={styles.subtitle}>Your money, under control.</Text>
-      <TouchableOpacity onPress={() => console.log("Pressed!")}>
-        <Text>Press me</Text>
-      </TouchableOpacity>
+      <Text style={styles.title}>Explore</Text>
+      <Text style={styles.subtitle}>Discover Monevo features.</Text>
     </View>
   );
 }
