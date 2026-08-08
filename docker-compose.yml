@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: monevo-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: monevo
+      POSTGRES_USER: monevo
+      POSTGRES_PASSWORD: monevo_dev
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

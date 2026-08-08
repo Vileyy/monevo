@@ -1,5 +1,10 @@
 {
   "name": "monevo",
   "private": true,
-  "packageManager": "pnpm@11.17.0"
+  "packageManager": "pnpm@11.17.0",
+  "dependencies": {
+    "@prisma/client": "^7.9.1",
+    "pg": "^8.22.0",
+    "prisma": "^7.9.1"
+  }
 }
