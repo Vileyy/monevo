@@ -1,0 +1,5 @@
+{
+  "eslint.workingDirectories": ["frontend", "backend"],
+  "typescript.tsdk": "frontend/node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true
+}

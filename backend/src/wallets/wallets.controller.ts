@@ -13,7 +13,10 @@ import { GetUser } from '../auth/decorators/get-user.decorator';
 import { WalletsService } from './wallets.service';
 import { CreateWalletDto } from './dto/create-wallet.dto';
 import { UpdateWalletDto } from './dto/update-wallet.dto';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('wallets')
+@ApiBearerAuth()
 @Controller('wallets')
 @UseGuards(JwtAuthGuard)
 export class WalletsController {
