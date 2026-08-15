@@ -3,5 +3,6 @@ packages:
   - "backend"
 allowBuilds:
   '@prisma/engines': true
+  bcrypt: true
   prisma: true
   unrs-resolver: false

@@ -14,4 +14,47 @@ model User {
   password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  wallets   Wallet[]
+  categories Category[]
+  transactions Transaction[]
+}
+
+model Wallet {
+  id        String   @id @default(uuid())
+  name      String
+  balance   Float    @default(0)
+  type      String   // e.g. "CASH", "BANK", "CREDIT_CARD"
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  transactions Transaction[]
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String
+  type      String   // "INCOME" or "EXPENSE"
+  icon      String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  transactions Transaction[]
+}
+
+model Transaction {
+  id          String   @id @default(uuid())
+  amount      Float
+  type        String   // "INCOME" or "EXPENSE"
+  note        String?
+  date        DateTime @default(now())
+  walletId    String
+  wallet      Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
