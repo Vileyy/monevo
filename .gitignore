@@ -1,4 +1,7 @@
 node_modules
+.pnpm-store
 
 /generated/prisma
 .env
+coverage
+dist
