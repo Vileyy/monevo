@@ -15,7 +15,7 @@
     "prisma": "^7.9.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.29.7",
+    "@babel/core": "^8.0.1",
     "@babel/traverse": "^7.29.7",
     "eslint": "^9.39.5",
     "husky": "^9.1.7",
