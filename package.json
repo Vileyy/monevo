@@ -3,7 +3,11 @@
   "private": true,
   "packageManager": "pnpm@11.17.0",
   "scripts": {
-    "prepare": "husky"
+    "prepare": "husky",
+    "lint": "pnpm --filter backend lint:check && pnpm --filter frontend lint",
+    "test": "pnpm --filter backend test",
+    "typecheck": "pnpm --filter backend exec tsc --noEmit -p tsconfig.build.json && pnpm --filter frontend typecheck",
+    "build": "pnpm --filter backend build"
   },
   "dependencies": {
     "@prisma/client": "^7.9.1",
