@@ -1,0 +1,17 @@
+.git
+.github
+.husky
+.vscode
+.claude
+**/.codegraph
+**/node_modules
+**/dist
+**/coverage
+**/.expo
+frontend/*
+!frontend/package.json
+*.md
+.env
+.env.*
+!**/.env.example
+agent-transcripts
