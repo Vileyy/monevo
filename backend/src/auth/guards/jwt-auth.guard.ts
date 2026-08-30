@@ -4,6 +4,13 @@ import { ConfigService } from '@nestjs/config';
 import { verifyToken } from '@clerk/backend';
 import { UsersService } from '../../users/users.service';
 
+interface ClerkTokenPayload {
+  sub?: string;
+  email?: string;
+  email_address?: string;
+  [key: string]: unknown;
+}
+
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
   constructor(
@@ -28,14 +35,17 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
       if (secretKey) {
         try {
-          const verified = await verifyToken(token, {
+          const verifyClerkToken = verifyToken as (
+            token: string,
+            options: { secretKey: string },
+          ) => Promise<ClerkTokenPayload>;
+
+          const verified: ClerkTokenPayload = await verifyClerkToken(token, {
             secretKey,
           });
 
           if (verified && verified.sub && this.usersService) {
-            const email =
-              (verified as { email?: string; email_address?: string }).email ||
-              (verified as { email_address?: string }).email_address;
+            const email = verified.email || verified.email_address;
 
             const user = await this.usersService.findOrCreateByClerk(
               verified.sub,
