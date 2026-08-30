@@ -1,30 +1,65 @@
 import currency from "currency.js";
+import {
+  CurrencyCode,
+  DEFAULT_CURRENCY,
+  getCurrencyConfig,
+} from "./currencies";
+import { useSettingsStore } from "@/store/settings.store";
 
-const vnd = (value: currency.Any) =>
-  currency(value, {
-    symbol: "₫",
-    pattern: "# !",
-    negativePattern: "-# !",
-    separator: ".",
-    decimal: ",",
-    precision: 0,
-  });
+export function formatCurrency(val: number, customCode?: CurrencyCode) {
+  const code =
+    customCode || useSettingsStore.getState?.()?.currency || DEFAULT_CURRENCY;
+  const config = getCurrencyConfig(code);
 
-export function formatCurrency(val: number) {
-  return vnd(val).format();
+  return currency(val, {
+    symbol: config.symbol,
+    pattern: config.pattern,
+    negativePattern: config.negativePattern,
+    separator: config.separator,
+    decimal: config.decimal,
+    precision: config.precision,
+  }).format();
 }
 
-export function parseVndInput(text: string) {
-  const digits = text.replace(/[^\d]/g, "");
-  if (!digits) return 0;
-  return vnd(digits).value;
+export function parseCurrencyInput(text: string, customCode?: CurrencyCode) {
+  const code =
+    customCode || useSettingsStore.getState?.()?.currency || DEFAULT_CURRENCY;
+  const config = getCurrencyConfig(code);
+
+  if (config.precision === 0) {
+    const digits = text.replace(/[^\d]/g, "");
+    if (!digits) return 0;
+    return parseInt(digits, 10);
+  }
+
+  const clean = text.replace(/[^\d.]/g, "");
+  const num = parseFloat(clean);
+  return isNaN(num) ? 0 : num;
 }
 
-export function formatVndInput(text: string) {
-  const digits = text.replace(/[^\d]/g, "");
-  if (!digits) return "";
-  return vnd(digits).format({ symbol: "" }).trim();
+export function formatCurrencyInput(text: string, customCode?: CurrencyCode) {
+  const code =
+    customCode || useSettingsStore.getState?.()?.currency || DEFAULT_CURRENCY;
+  const config = getCurrencyConfig(code);
+
+  if (config.precision === 0) {
+    const digits = text.replace(/[^\d]/g, "");
+    if (!digits) return "";
+    return currency(digits, {
+      symbol: "",
+      separator: config.separator,
+      decimal: config.decimal,
+      precision: 0,
+    })
+      .format()
+      .trim();
+  }
+
+  return text.replace(/[^\d.]/g, "");
 }
+
+export const parseVndInput = parseCurrencyInput;
+export const formatVndInput = formatCurrencyInput;
 
 export function walletTypeLabel(type: string) {
   switch (type) {

@@ -7,8 +7,8 @@ jest.mock(
   }),
   { virtual: true },
 );
-import { TransactionsController } from './transactions.controller';
-import { TransactionsService } from './transactions.service';
+import { TransactionsController } from '../../src/transactions/transactions.controller';
+import { TransactionsService } from '../../src/transactions/transactions.service';
 
 describe('TransactionsController', () => {
   let controller: TransactionsController;

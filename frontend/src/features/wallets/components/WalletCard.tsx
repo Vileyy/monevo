@@ -11,6 +11,7 @@ export interface WalletCardProps {
   onPress?: () => void;
   style?: ViewStyle;
   compact?: boolean;
+  isSelected?: boolean;
 }
 
 export function WalletCard({
@@ -18,6 +19,7 @@ export function WalletCard({
   onPress,
   style,
   compact = false,
+  isSelected = false,
 }: WalletCardProps) {
   const meta = getWalletMeta(wallet.type);
 
@@ -27,6 +29,7 @@ export function WalletCard({
       style={({ pressed }) => [
         styles.card,
         compact ? styles.compactCard : styles.standardCard,
+        isSelected && styles.cardSelected,
         pressed && styles.pressed,
         style,
       ]}
@@ -95,6 +98,11 @@ const styles = StyleSheet.create({
   compactCard: {
     width: 170,
     height: 130,
+  },
+  cardSelected: {
+    borderColor: colors.primary,
+    borderWidth: 2,
+    backgroundColor: colors.primaryMuted,
   },
   pressed: {
     opacity: 0.9,

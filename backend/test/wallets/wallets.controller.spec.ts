@@ -7,8 +7,8 @@ jest.mock(
   }),
   { virtual: true },
 );
-import { WalletsController } from './wallets.controller';
-import { WalletsService } from './wallets.service';
+import { WalletsController } from '../../src/wallets/wallets.controller';
+import { WalletsService } from '../../src/wallets/wallets.service';
 
 describe('WalletsController', () => {
   let controller: WalletsController;

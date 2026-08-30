@@ -10,7 +10,9 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, radius, spacing, typography } from "@/theme";
-import { formatVndInput, parseVndInput } from "@/lib/format";
+import { formatCurrencyInput, parseCurrencyInput } from "@/lib/format";
+import { getCurrencyConfig } from "@/lib/currencies";
+import { useSettingsStore } from "@/store/settings.store";
 
 export interface CurrencyInputProps {
   value: string;
@@ -21,27 +23,46 @@ export interface CurrencyInputProps {
   autoFocus?: boolean;
 }
 
-const DEFAULT_QUICK_AMOUNTS = [50000, 100000, 200000, 500000, 1000000, 2000000];
+const DEFAULT_VND_QUICK = [50000, 100000, 200000, 500000, 1000000, 2000000];
+const DEFAULT_DECIMAL_QUICK = [5, 10, 20, 50, 100, 200];
 
 export function CurrencyInput({
   value,
   onChangeText,
   type = "EXPENSE",
-  quickAmounts = DEFAULT_QUICK_AMOUNTS,
+  quickAmounts,
   error,
   autoFocus = false,
 }: CurrencyInputProps) {
+  const currencyCode = useSettingsStore((state) => state.currency);
+  const currencyConfig = getCurrencyConfig(currencyCode);
+
+  const activeQuickAmounts =
+    quickAmounts ||
+    (currencyConfig.precision === 0
+      ? DEFAULT_VND_QUICK
+      : DEFAULT_DECIMAL_QUICK);
+
   const isIncome = type === "INCOME";
   const mainColor = isIncome ? colors.income : colors.expense;
-  const currentNumericValue = parseVndInput(value);
+  const currentNumericValue = parseCurrencyInput(value, currencyCode);
 
   const handleQuickAdd = (amountToAdd: number) => {
     const nextVal = currentNumericValue + amountToAdd;
-    onChangeText(formatVndInput(nextVal.toString()));
+    onChangeText(formatCurrencyInput(nextVal.toString(), currencyCode));
   };
 
   const handleClear = () => {
     onChangeText("");
+  };
+
+  const formatQuickChipLabel = (amt: number) => {
+    if (currencyConfig.precision === 0) {
+      if (amt >= 1000000) return `+${amt / 1000000}M`;
+      if (amt >= 1000) return `+${amt / 1000}k`;
+      return `+${amt}`;
+    }
+    return `+${currencyConfig.symbol}${amt}`;
   };
 
   return (
@@ -59,15 +80,19 @@ export function CurrencyInput({
         <View style={styles.row}>
           <TextInput
             value={value}
-            onChangeText={(text) => onChangeText(formatVndInput(text))}
+            onChangeText={(text) =>
+              onChangeText(formatCurrencyInput(text, currencyCode))
+            }
             placeholder="0"
             placeholderTextColor={colors.textMuted}
-            keyboardType="number-pad"
+            keyboardType="decimal-pad"
             autoFocus={autoFocus}
             style={[styles.numericInput, { color: mainColor }]}
           />
 
-          <Text style={[styles.currencySuffix, { color: mainColor }]}>₫</Text>
+          <Text style={[styles.currencySuffix, { color: mainColor }]}>
+            {currencyConfig.symbol}
+          </Text>
 
           {!!value && (
             <Pressable
@@ -95,9 +120,8 @@ export function CurrencyInput({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.quickAmountsList}
       >
-        {quickAmounts.map((amt) => {
-          const label =
-            amt >= 1000000 ? `+${amt / 1000000}M` : `+${amt / 1000}k`;
+        {activeQuickAmounts.map((amt) => {
+          const label = formatQuickChipLabel(amt);
           return (
             <Pressable
               key={amt}

@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useWalletStore, Wallet } from "@/store/wallet.store";
+import { useSettingsStore } from "@/store/settings.store";
 import { colors, radius, shadows, spacing, typography } from "@/theme";
 import { formatCurrency } from "@/lib/format";
 import { getWalletMeta } from "@/lib/categories";
@@ -24,6 +25,7 @@ import { WalletModal } from "@/features/wallets/components/WalletModal";
 
 export default function WalletsScreen() {
   const { wallets, isLoading, fetchWallets } = useWalletStore();
+  const hideBalance = useSettingsStore((state) => state.hideBalance);
   const [refreshing, setRefreshing] = useState(false);
   const [typeFilter, setTypeFilter] = useState<
     "ALL" | "CASH" | "BANK" | "CREDIT_CARD"
@@ -97,7 +99,7 @@ export default function WalletsScreen() {
         <View style={styles.netWorthCard}>
           <Text style={styles.netWorthLabel}>Total Net Worth</Text>
           <Text style={styles.netWorthValue}>
-            {formatCurrency(totalNetWorth)}
+            {hideBalance ? "••••••••" : formatCurrency(totalNetWorth)}
           </Text>
 
           <View style={styles.assetBreakdownRow}>
@@ -105,7 +107,7 @@ export default function WalletsScreen() {
               <View style={[styles.assetDot, { backgroundColor: "#10B981" }]} />
               <Text style={styles.assetType}>Cash</Text>
               <Text style={styles.assetAmount}>
-                {formatCurrency(stats.cash)}
+                {hideBalance ? "••••" : formatCurrency(stats.cash)}
               </Text>
             </View>
 
@@ -115,7 +117,7 @@ export default function WalletsScreen() {
               <View style={[styles.assetDot, { backgroundColor: "#3B82F6" }]} />
               <Text style={styles.assetType}>Bank</Text>
               <Text style={styles.assetAmount}>
-                {formatCurrency(stats.bank)}
+                {hideBalance ? "••••" : formatCurrency(stats.bank)}
               </Text>
             </View>
 
@@ -125,7 +127,7 @@ export default function WalletsScreen() {
               <View style={[styles.assetDot, { backgroundColor: "#8B5CF6" }]} />
               <Text style={styles.assetType}>Cards</Text>
               <Text style={styles.assetAmount}>
-                {formatCurrency(stats.card)}
+                {hideBalance ? "••••" : formatCurrency(stats.card)}
               </Text>
             </View>
           </View>

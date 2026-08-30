@@ -1,6 +1,5 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  Alert,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -26,12 +25,12 @@ import {
 } from "@/features/wallets/components/WalletCard";
 import { WalletSummaryCard } from "@/features/wallets/components/WalletSummaryCard";
 import { WalletModal } from "@/features/wallets/components/WalletModal";
+import { WalletSelectorModal } from "@/features/wallets/components/WalletSelectorModal";
 import { TransactionItem } from "@/features/transactions/components/TransactionItem";
 import { TransactionDetailModal } from "@/features/transactions/components/TransactionDetailModal";
 
 export default function HomeScreen() {
   const router = useRouter();
-  const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
 
   const {
@@ -48,6 +47,8 @@ export default function HomeScreen() {
 
   const [refreshing, setRefreshing] = useState(false);
   const [showWalletModal, setShowWalletModal] = useState(false);
+  const [showWalletSelector, setShowWalletSelector] = useState(false);
+  const [activeWalletId, setActiveWalletId] = useState<string | null>(null);
   const [selectedWallet, setSelectedWallet] = useState<Wallet | null>(null);
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
 
@@ -65,20 +66,15 @@ export default function HomeScreen() {
     setRefreshing(false);
   };
 
-  const handleLogout = () => {
-    Alert.alert("Sign Out", "Are you sure you want to sign out of Monevo?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Sign Out",
-        style: "destructive",
-        onPress: () => logout(),
-      },
-    ]);
-  };
+  const activeWallet = useMemo(() => {
+    if (!activeWalletId) return null;
+    return wallets.find((w) => w.id === activeWalletId) || null;
+  }, [wallets, activeWalletId]);
 
   const totalBalance = wallets.reduce((sum, w) => sum + w.balance, 0);
+  const displayedBalance = activeWallet ? activeWallet.balance : totalBalance;
 
-  // Compute this month's in & out
+  // Compute this month's in & out (filtered if activeWalletId is set)
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
 
@@ -86,6 +82,9 @@ export default function HomeScreen() {
   let monthlyExpense = 0;
 
   for (const tx of transactions) {
+    if (activeWalletId && tx.walletId !== activeWalletId) {
+      continue;
+    }
     const d = new Date(tx.date);
     if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
       if (tx.type === "INCOME") {
@@ -96,13 +95,27 @@ export default function HomeScreen() {
     }
   }
 
-  const recentTransactions = transactions.slice(0, 5);
+  const displayedTransactions = useMemo(() => {
+    if (!activeWalletId) return transactions;
+    return transactions.filter((tx) => tx.walletId === activeWalletId);
+  }, [transactions, activeWalletId]);
+
+  const recentTransactions = displayedTransactions.slice(0, 5);
 
   return (
     <SafeAreaView style={styles.container}>
       {/* Top App Header */}
       <View style={styles.topHeader}>
-        <View style={styles.userInfo}>
+        <Pressable
+          style={({ pressed }) => [
+            styles.userInfo,
+            pressed && styles.userInfoPressed,
+          ]}
+          onPress={() => router.push("/(tabs)/profile")}
+          hitSlop={6}
+          accessibilityRole="button"
+          accessibilityLabel="Go to Profile"
+        >
           <View style={styles.avatarCircle}>
             <Text style={styles.avatarText}>
               {(user?.name || user?.email || "U").charAt(0).toUpperCase()}
@@ -114,17 +127,20 @@ export default function HomeScreen() {
               {user?.name || "Member"}
             </Text>
           </View>
-        </View>
+        </Pressable>
 
         <Pressable
-          onPress={handleLogout}
-          style={styles.logoutBtn}
+          onPress={() => router.push("/(tabs)/profile")}
+          style={({ pressed }) => [
+            styles.logoutBtn,
+            pressed && styles.logoutBtnPressed,
+          ]}
           hitSlop={8}
           accessibilityRole="button"
-          accessibilityLabel="Sign out"
+          accessibilityLabel="Settings"
         >
           <Ionicons
-            name="log-out-outline"
+            name="settings-outline"
             size={20}
             color={colors.textSecondary}
           />
@@ -143,12 +159,14 @@ export default function HomeScreen() {
           />
         }
       >
-        {/* Total Balance Hero Card */}
+        {/* Total / Account Balance Hero Card */}
         <WalletSummaryCard
-          totalBalance={totalBalance}
+          totalBalance={displayedBalance}
           monthlyIncome={monthlyIncome}
           monthlyExpense={monthlyExpense}
           walletCount={wallets.length}
+          selectedWalletName={activeWallet ? activeWallet.name : null}
+          onOpenAccountSelector={() => setShowWalletSelector(true)}
           onAddTransaction={() => router.push("/add-transaction")}
           onAddWallet={() => {
             setSelectedWallet(null);
@@ -183,9 +201,11 @@ export default function HomeScreen() {
                   key={wallet.id}
                   wallet={wallet}
                   compact
+                  isSelected={activeWalletId === wallet.id}
                   onPress={() => {
-                    setSelectedWallet(wallet);
-                    setShowWalletModal(true);
+                    setActiveWalletId((prev) =>
+                      prev === wallet.id ? null : wallet.id,
+                    );
                   }}
                 />
               ))}
@@ -203,8 +223,21 @@ export default function HomeScreen() {
         {/* Recent Activity */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Recent Activity</Text>
-            {transactions.length > 0 && (
+            <View style={styles.sectionTitleRow}>
+              <Text style={styles.sectionTitle}>Recent Activity</Text>
+              {activeWallet && (
+                <Pressable
+                  onPress={() => setActiveWalletId(null)}
+                  style={styles.activeFilterChip}
+                  hitSlop={6}
+                >
+                  <Text style={styles.activeFilterText}>
+                    {activeWallet.name} ✕
+                  </Text>
+                </Pressable>
+              )}
+            </View>
+            {displayedTransactions.length > 0 && (
               <Pressable
                 onPress={() => router.push("/(tabs)/transactions")}
                 hitSlop={8}
@@ -221,7 +254,11 @@ export default function HomeScreen() {
               <EmptyState
                 icon="receipt-outline"
                 title="No Transactions Yet"
-                description="Start recording your daily income and spending to see your activity."
+                description={
+                  activeWallet
+                    ? `No activity found for ${activeWallet.name}.`
+                    : "Start recording your daily income and spending to see your activity."
+                }
                 actionTitle="Add Transaction"
                 onAction={() => router.push("/add-transaction")}
               />
@@ -237,6 +274,15 @@ export default function HomeScreen() {
           </View>
         </View>
       </ScrollView>
+
+      {/* Account Selector Modal */}
+      <WalletSelectorModal
+        visible={showWalletSelector}
+        onClose={() => setShowWalletSelector(false)}
+        wallets={wallets}
+        selectedWalletId={activeWalletId}
+        onSelectWallet={setActiveWalletId}
+      />
 
       {/* Wallet Modal */}
       <WalletModal
@@ -271,6 +317,10 @@ const styles = StyleSheet.create({
   userInfo: {
     flexDirection: "row",
     alignItems: "center",
+  },
+  userInfoPressed: {
+    opacity: 0.8,
+    transform: [{ scale: 0.95 }],
   },
   avatarCircle: {
     width: 42,
@@ -308,6 +358,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     ...shadows.sm,
   },
+  logoutBtnPressed: {
+    opacity: 0.8,
+    transform: [{ scale: 0.9 }],
+  },
   scrollContent: {
     paddingBottom: spacing.huge,
   },
@@ -321,9 +375,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.base,
     marginBottom: spacing.md,
   },
+  sectionTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+  },
   sectionTitle: {
     ...typography.title3,
     color: colors.text,
+  },
+  activeFilterChip: {
+    backgroundColor: colors.primaryLight,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 3,
+    borderRadius: radius.full,
+    borderWidth: 1,
+    borderColor: colors.primary,
+  },
+  activeFilterText: {
+    ...typography.caption,
+    fontWeight: "700",
+    color: colors.primaryDark,
   },
   sectionLink: {
     ...typography.subhead,

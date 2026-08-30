@@ -109,10 +109,11 @@ No `GET /` or `GET /health` on the running image (`AppController` is not registe
 
 1. API changes live in `backend/src/<feature>/` (controller → service → prisma).
 2. App changes live in `frontend/src/` (screen → store → `apiClient`).
-3. Verify: typecheck/lint; hit Swagger or the app for API behavior.
-4. **Ship to AWS only when you need a real device / shared backend.** Do not rebuild on `t3.micro` for local-only work.
+3. **Unit Tests (Mandatory):** Whenever a feature is implemented or modified in frontend or backend, write/update corresponding unit tests (`*.spec.ts` / `*.test.ts`).
+4. **Pre-commit & Verification:** Pre-commit hook must run unit tests (`pnpm test` / lint-staged) and verification checks (typecheck/lint) to ensure no regressions before committing code.
+5. **Ship to AWS only when you need a real device / shared backend.** Do not rebuild on `t3.micro` for local-only work.
 
-New features: one vertical slice (DTO + service + one screen). No budgets/offline until the core loop is solid.
+New features: one vertical slice (DTO + service + one screen + unit tests). No budgets/offline until the core loop is solid.
 
 Prisma 7 client output: `backend/generated/prisma`. Queries go through `PrismaService` (`pg` adapter).
 

@@ -7,8 +7,8 @@ jest.mock(
   }),
   { virtual: true },
 );
-import { CategoriesService } from './categories.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { CategoriesService } from '../../src/categories/categories.service';
+import { PrismaService } from '../../src/prisma/prisma.service';
 import { NotFoundException } from '@nestjs/common';
 
 describe('CategoriesService', () => {

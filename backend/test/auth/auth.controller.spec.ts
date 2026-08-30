@@ -7,8 +7,8 @@ jest.mock(
   }),
   { virtual: true },
 );
-import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
+import { AuthController } from '../../src/auth/auth.controller';
+import { AuthService } from '../../src/auth/auth.service';
 
 describe('AuthController', () => {
   let controller: AuthController;
