@@ -159,7 +159,7 @@ export default function TransactionsScreen() {
   }, [filteredTransactions]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <Header
         title="Transaction History"
         subtitle={`${filteredTransactions.length} records found`}
@@ -451,7 +451,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   scrollContent: {
-    paddingBottom: spacing.huge,
+    paddingBottom: spacing.xl,
   },
   searchContainer: {
     paddingHorizontal: spacing.base,

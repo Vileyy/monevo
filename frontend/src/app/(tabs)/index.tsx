@@ -103,7 +103,7 @@ export default function HomeScreen() {
   const recentTransactions = displayedTransactions.slice(0, 5);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       {/* Top App Header */}
       <View style={styles.topHeader}>
         <Pressable
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.9 }],
   },
   scrollContent: {
-    paddingBottom: spacing.huge,
+    paddingBottom: spacing.xl,
   },
   section: {
     marginTop: spacing.md,

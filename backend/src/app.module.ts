@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { WalletsModule } from './wallets/wallets.module';
 import { CategoriesModule } from './categories/categories.module';
 import { TransactionsModule } from './transactions/transactions.module';
+import { BudgetsModule } from './budgets/budgets.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { TransactionsModule } from './transactions/transactions.module';
     WalletsModule,
     CategoriesModule,
     TransactionsModule,
+    BudgetsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

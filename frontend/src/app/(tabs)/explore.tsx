@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -8,10 +9,12 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { useTransactionStore } from "@/store/transaction.store";
+import { BudgetItem, useBudgetStore } from "@/store/budget.store";
+import { useSettingsStore } from "@/store/settings.store";
 import { colors, radius, shadows, spacing, typography } from "@/theme";
 import { categoryDisplayName, formatCurrency } from "@/lib/format";
-import { getCategoryMeta } from "@/lib/categories";
 import {
   CategoryIcon,
   EmptyState,
@@ -19,40 +22,100 @@ import {
   SegmentedControl,
   StatCard,
 } from "@/components/ui";
+import { BudgetSummaryHero } from "@/features/budgets/components/BudgetSummaryHero";
+import { BudgetCard } from "@/features/budgets/components/BudgetCard";
+import { BudgetModal } from "@/features/budgets/components/BudgetModal";
+import { CategoryPieChart } from "@/features/insights/components/CategoryPieChart";
+import { CashflowBarChart } from "@/features/insights/components/CashflowBarChart";
+import {
+  DateRange,
+  DateRangePickerModal,
+} from "@/features/insights/components/DateRangePickerModal";
 
 export default function ExploreScreen() {
   const router = useRouter();
+  const hideBalance = useSettingsStore((state) => state.hideBalance);
   const { transactions, fetchTransactions } = useTransactionStore();
+  const {
+    budgets,
+    summary: budgetSummary,
+    selectedMonth: budgetMonth,
+    selectedYear: budgetYear,
+    fetchBudgets,
+    deleteBudget,
+    setSelectedDate,
+  } = useBudgetStore();
+
+  const [activeTab, setActiveTab] = useState<"ANALYTICS" | "BUDGETS">(
+    "ANALYTICS",
+  );
   const [refreshing, setRefreshing] = useState(false);
-  const [timeRange, setTimeRange] = useState<"MONTH" | "YEAR" | "ALL">("MONTH");
+  const [customRange, setCustomRange] = useState<DateRange>(() => {
+    const now = new Date();
+    return {
+      startDate: new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0),
+      endDate: new Date(
+        now.getFullYear(),
+        now.getMonth() + 1,
+        0,
+        23,
+        59,
+        59,
+        999,
+      ),
+    };
+  });
+
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showBudgetModal, setShowBudgetModal] = useState(false);
+  const [budgetToEdit, setBudgetToEdit] = useState<BudgetItem | null>(null);
+
+  const loadData = useCallback(async () => {
+    await Promise.all([
+      fetchTransactions(),
+      fetchBudgets(budgetMonth, budgetYear),
+    ]);
+  }, [fetchTransactions, fetchBudgets, budgetMonth, budgetYear]);
 
   useEffect(() => {
-    fetchTransactions();
-  }, [fetchTransactions]);
+    void loadData();
+  }, [loadData]);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchTransactions();
+    await loadData();
     setRefreshing(false);
   };
 
-  // Filter transactions by timeRange
-  const filteredTransactions = useMemo(() => {
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
+  const handlePrevMonth = () => {
+    let nextMonth = budgetMonth - 1;
+    let nextYear = budgetYear;
+    if (nextMonth < 1) {
+      nextMonth = 12;
+      nextYear -= 1;
+    }
+    setSelectedDate(nextMonth, nextYear);
+  };
 
+  const handleNextMonth = () => {
+    let nextMonth = budgetMonth + 1;
+    let nextYear = budgetYear;
+    if (nextMonth > 12) {
+      nextMonth = 1;
+      nextYear += 1;
+    }
+    setSelectedDate(nextMonth, nextYear);
+  };
+
+  // Filter transactions
+  const filteredTransactions = useMemo(() => {
+    const startMs = customRange.startDate.getTime();
+    const endMs = customRange.endDate.getTime();
     return transactions.filter((tx) => {
-      const d = new Date(tx.date);
-      if (timeRange === "MONTH") {
-        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-      }
-      if (timeRange === "YEAR") {
-        return d.getFullYear() === currentYear;
-      }
-      return true;
+      const d = new Date(tx.date).getTime();
+      return d >= startMs && d <= endMs;
     });
-  }, [transactions, timeRange]);
+  }, [transactions, customRange]);
 
   // Compute analytics
   const analytics = useMemo(() => {
@@ -117,14 +180,15 @@ export default function ExploreScreen() {
     };
   }, [filteredTransactions]);
 
-  const maxExpenseAmount = analytics.expenseBreakdown[0]?.amount || 1;
-  const maxIncomeAmount = analytics.incomeBreakdown[0]?.amount || 1;
+  const formatDateShort = (d: Date) => {
+    return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+  };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <Header
-        title="Financial Insights"
-        subtitle="Cashflow analytics and spending trends"
+        title="Insights & Budgets"
+        subtitle="Cashflow analytics and spending limits"
       />
 
       <ScrollView
@@ -139,57 +203,147 @@ export default function ExploreScreen() {
           />
         }
       >
-        {/* Time Range Filter */}
+        {/* Top Feature Switcher: Analytics vs Budgets */}
         <View style={styles.segmentContainer}>
           <SegmentedControl
             options={[
-              { value: "MONTH", label: "This Month" },
-              { value: "YEAR", label: "This Year" },
-              { value: "ALL", label: "All Time" },
+              { value: "ANALYTICS", label: "Analytics" },
+              { value: "BUDGETS", label: "Budgets" },
             ]}
-            value={timeRange}
-            onChange={setTimeRange}
+            value={activeTab}
+            onChange={setActiveTab}
           />
         </View>
 
-        {/* Stats Row */}
-        <View style={styles.statsRow}>
-          <StatCard
-            label="Income"
-            amount={analytics.totalIncome}
-            type="income"
-          />
-          <StatCard
-            label="Expenses"
-            amount={analytics.totalExpense}
-            type="expense"
-          />
-        </View>
+        {activeTab === "BUDGETS" ? (
+          /* ================= BUDGETS TAB ================= */
+          <View>
+            <BudgetSummaryHero
+              summary={budgetSummary}
+              month={budgetMonth}
+              year={budgetYear}
+              onPrevMonth={handlePrevMonth}
+              onNextMonth={handleNextMonth}
+              onAddBudget={() => {
+                setBudgetToEdit(null);
+                setShowBudgetModal(true);
+              }}
+            />
 
-        {/* Net Cashflow Card */}
-        <View style={styles.cashflowCard}>
-          <View style={styles.cashflowHeader}>
-            <View>
-              <Text style={styles.cashflowTitle}>Net Cash Flow</Text>
-              <Text style={styles.cashflowSubtitle}>
-                {analytics.netSavings >= 0 ? "Surplus Saved" : "Deficit"}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Category Budgets</Text>
+
+              {budgets.length === 0 ? (
+                <EmptyState
+                  icon="pie-chart-outline"
+                  title="No Budgets Set"
+                  description="Set monthly spending limits for your categories to keep your expenses on track."
+                  actionTitle="Set Category Budget"
+                  onAction={() => {
+                    setBudgetToEdit(null);
+                    setShowBudgetModal(true);
+                  }}
+                />
+              ) : (
+                budgets.map((item) => (
+                  <BudgetCard
+                    key={item.id}
+                    budget={item}
+                    onEdit={() => {
+                      setBudgetToEdit(item);
+                      setShowBudgetModal(true);
+                    }}
+                    onDelete={() => void deleteBudget(item.id)}
+                  />
+                ))
+              )}
+            </View>
+          </View>
+        ) : (
+          /* ================= ANALYTICS TAB ================= */
+          <View>
+            {/* Date Range Selector Button */}
+            <Pressable
+              onPress={() => setShowDatePicker(true)}
+              style={({ pressed }) => [
+                styles.dateRangeBadge,
+                pressed && styles.dateRangeBadgePressed,
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel="Change date range"
+            >
+              <Ionicons
+                name="calendar-outline"
+                size={16}
+                color={colors.primary}
+                style={{ marginRight: 8 }}
+              />
+              <Text style={styles.dateRangeText}>
+                {formatDateShort(customRange.startDate)} –{" "}
+                {formatDateShort(customRange.endDate)}
               </Text>
+              <Ionicons
+                name="chevron-down"
+                size={14}
+                color={colors.textSecondary}
+                style={{ marginLeft: 6 }}
+              />
+            </Pressable>
+
+            {/* Income & Expense Stat Cards */}
+            <View style={styles.statsRow}>
+              <StatCard
+                label="Income"
+                amount={analytics.totalIncome}
+                type="income"
+              />
+              <StatCard
+                label="Expenses"
+                amount={analytics.totalExpense}
+                type="expense"
+              />
             </View>
 
-            <View
-              style={[
-                styles.savingsBadge,
-                {
-                  backgroundColor:
-                    analytics.netSavings >= 0
-                      ? colors.incomeBg
-                      : colors.expenseBg,
-                },
-              ]}
-            >
+            {/* Net Cashflow Summary Card */}
+            <View style={styles.cashflowCard}>
+              <View style={styles.cashflowHeader}>
+                <View>
+                  <Text style={styles.cashflowTitle}>Net Cash Flow</Text>
+                  <Text style={styles.cashflowSubtitle}>
+                    {analytics.netSavings >= 0 ? "Surplus Saved" : "Deficit"}
+                  </Text>
+                </View>
+
+                <View
+                  style={[
+                    styles.savingsBadge,
+                    {
+                      backgroundColor:
+                        analytics.netSavings >= 0
+                          ? colors.incomeBg
+                          : colors.expenseBg,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.savingsBadgeText,
+                      {
+                        color:
+                          analytics.netSavings >= 0
+                            ? colors.income
+                            : colors.expense,
+                      },
+                    ]}
+                  >
+                    {analytics.savingsRate}% Saved
+                  </Text>
+                </View>
+              </View>
+
               <Text
                 style={[
-                  styles.savingsBadgeText,
+                  styles.netAmount,
                   {
                     color:
                       analytics.netSavings >= 0
@@ -198,166 +352,102 @@ export default function ExploreScreen() {
                   },
                 ]}
               >
-                {analytics.savingsRate}% Saved
+                {analytics.netSavings >= 0 ? "+" : "−"}
+                {formatCurrency(Math.abs(analytics.netSavings))}
               </Text>
             </View>
-          </View>
 
-          <Text
-            style={[
-              styles.netAmount,
-              {
-                color:
-                  analytics.netSavings >= 0 ? colors.income : colors.expense,
-              },
-            ]}
-          >
-            {analytics.netSavings >= 0 ? "+" : "−"}
-            {formatCurrency(Math.abs(analytics.netSavings))}
-          </Text>
-
-          {/* Ratio bar */}
-          <View style={styles.ratioBarContainer}>
-            <View
-              style={[
-                styles.ratioIncome,
-                {
-                  flex: analytics.totalIncome > 0 ? analytics.totalIncome : 1,
-                },
-              ]}
+            {/* Animated Daily Cashflow Bar Chart */}
+            <CashflowBarChart
+              transactions={filteredTransactions}
+              startDate={customRange.startDate}
+              endDate={customRange.endDate}
+              hideBalance={hideBalance}
             />
-            <View
-              style={[
-                styles.ratioExpense,
-                {
-                  flex:
-                    analytics.totalExpense > 0 ? analytics.totalExpense : 0.001,
-                },
-              ]}
-            />
-          </View>
-        </View>
 
-        {/* Spending by Category Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Spending by Category</Text>
+            {/* Animated Donut Chart for Category Spending */}
+            {analytics.expenseBreakdown.length > 0 ? (
+              <CategoryPieChart
+                items={analytics.expenseBreakdown}
+                totalAmount={analytics.totalExpense}
+                hideBalance={hideBalance}
+              />
+            ) : (
+              <EmptyState
+                icon="pie-chart-outline"
+                title="No Expense Records"
+                description="Add your daily expenses to see a categorized breakdown of where your money goes."
+                actionTitle="Add Expense"
+                onAction={() => router.push("/add-transaction")}
+              />
+            )}
 
-          {analytics.expenseBreakdown.length === 0 ? (
-            <EmptyState
-              icon="pie-chart-outline"
-              title="No Expense Records"
-              description="Add your daily expenses to see a categorized breakdown of where your money goes."
-              actionTitle="Add Expense"
-              onAction={() => router.push("/add-transaction")}
-            />
-          ) : (
-            analytics.expenseBreakdown.map((item) => {
-              const meta = getCategoryMeta(item.name, "EXPENSE");
-              const percent =
-                analytics.totalExpense > 0
-                  ? Math.round((item.amount / analytics.totalExpense) * 100)
-                  : 0;
-              const barWidthPercent =
-                maxExpenseAmount > 0
-                  ? Math.round((item.amount / maxExpenseAmount) * 100)
-                  : 0;
+            {/* Income Sources List */}
+            {analytics.incomeBreakdown.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Income Sources</Text>
+                {analytics.incomeBreakdown.map((item) => {
+                  const percent =
+                    analytics.totalIncome > 0
+                      ? Math.round((item.amount / analytics.totalIncome) * 100)
+                      : 0;
 
-              return (
-                <View key={item.name} style={styles.breakdownCard}>
-                  <View style={styles.breakdownHeader}>
-                    <View style={styles.catInfoRow}>
-                      <CategoryIcon name={item.name} type="EXPENSE" size="sm" />
-                      <View style={{ marginLeft: spacing.sm }}>
-                        <Text style={styles.catName}>{item.name}</Text>
-                        <Text style={styles.catTxCount}>
-                          {item.count}{" "}
-                          {item.count === 1 ? "transaction" : "transactions"}
-                        </Text>
+                  return (
+                    <View key={item.name} style={styles.breakdownCard}>
+                      <View style={styles.breakdownHeader}>
+                        <View style={styles.catInfoRow}>
+                          <CategoryIcon
+                            name={item.name}
+                            type="INCOME"
+                            size="sm"
+                          />
+                          <View style={{ marginLeft: spacing.sm }}>
+                            <Text style={styles.catName}>{item.name}</Text>
+                            <Text style={styles.catTxCount}>
+                              {item.count}{" "}
+                              {item.count === 1 ? "record" : "records"}
+                            </Text>
+                          </View>
+                        </View>
+
+                        <View style={{ alignItems: "flex-end" }}>
+                          <Text
+                            style={[styles.catAmount, { color: colors.income }]}
+                          >
+                            +{formatCurrency(item.amount)}
+                          </Text>
+                          <Text style={styles.catPercent}>
+                            {percent}% of income
+                          </Text>
+                        </View>
                       </View>
                     </View>
-
-                    <View style={{ alignItems: "flex-end" }}>
-                      <Text style={styles.catAmount}>
-                        {formatCurrency(item.amount)}
-                      </Text>
-                      <Text style={styles.catPercent}>{percent}% of total</Text>
-                    </View>
-                  </View>
-
-                  {/* Visual Bar */}
-                  <View style={styles.barBackground}>
-                    <View
-                      style={[
-                        styles.barFill,
-                        {
-                          width: `${barWidthPercent}%`,
-                          backgroundColor: meta.color,
-                        },
-                      ]}
-                    />
-                  </View>
-                </View>
-              );
-            })
-          )}
-        </View>
-
-        {/* Income Sources Section */}
-        {analytics.incomeBreakdown.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Income Sources</Text>
-            {analytics.incomeBreakdown.map((item) => {
-              const percent =
-                analytics.totalIncome > 0
-                  ? Math.round((item.amount / analytics.totalIncome) * 100)
-                  : 0;
-              const barWidthPercent =
-                maxIncomeAmount > 0
-                  ? Math.round((item.amount / maxIncomeAmount) * 100)
-                  : 0;
-
-              return (
-                <View key={item.name} style={styles.breakdownCard}>
-                  <View style={styles.breakdownHeader}>
-                    <View style={styles.catInfoRow}>
-                      <CategoryIcon name={item.name} type="INCOME" size="sm" />
-                      <View style={{ marginLeft: spacing.sm }}>
-                        <Text style={styles.catName}>{item.name}</Text>
-                        <Text style={styles.catTxCount}>
-                          {item.count} {item.count === 1 ? "record" : "records"}
-                        </Text>
-                      </View>
-                    </View>
-
-                    <View style={{ alignItems: "flex-end" }}>
-                      <Text
-                        style={[styles.catAmount, { color: colors.income }]}
-                      >
-                        +{formatCurrency(item.amount)}
-                      </Text>
-                      <Text style={styles.catPercent}>
-                        {percent}% of income
-                      </Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.barBackground}>
-                    <View
-                      style={[
-                        styles.barFill,
-                        {
-                          width: `${barWidthPercent}%`,
-                          backgroundColor: colors.income,
-                        },
-                      ]}
-                    />
-                  </View>
-                </View>
-              );
-            })}
+                  );
+                })}
+              </View>
+            )}
           </View>
         )}
       </ScrollView>
+
+      {/* Date Range Picker Modal */}
+      <DateRangePickerModal
+        visible={showDatePicker}
+        onClose={() => setShowDatePicker(false)}
+        initialRange={customRange}
+        onApplyRange={(range) => {
+          setCustomRange(range);
+        }}
+      />
+
+      {/* Budget Modal */}
+      <BudgetModal
+        visible={showBudgetModal}
+        onClose={() => setShowBudgetModal(false)}
+        budgetToEdit={budgetToEdit}
+        month={budgetMonth}
+        year={budgetYear}
+      />
     </SafeAreaView>
   );
 }
@@ -369,10 +459,34 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: spacing.base,
-    paddingBottom: spacing.huge,
+    paddingBottom: spacing.xl,
   },
   segmentContainer: {
-    marginBottom: spacing.base,
+    marginBottom: spacing.sm,
+  },
+  dateRangeBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.surface,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.base,
+    borderRadius: radius.xl,
+    alignSelf: "center",
+    width: "100%",
+    marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...shadows.sm,
+  },
+  dateRangeBadgePressed: {
+    backgroundColor: colors.surfaceSecondary,
+    transform: [{ scale: 0.99 }],
+  },
+  dateRangeText: {
+    ...typography.subhead,
+    fontWeight: "700",
+    color: colors.text,
   },
   statsRow: {
     flexDirection: "row",
@@ -414,24 +528,8 @@ const styles = StyleSheet.create({
   netAmount: {
     fontSize: 28,
     fontWeight: "800",
-    marginVertical: spacing.sm,
+    marginTop: spacing.sm,
     ...typography.tabular,
-  },
-  ratioBarContainer: {
-    height: 8,
-    flexDirection: "row",
-    borderRadius: radius.full,
-    overflow: "hidden",
-    marginTop: spacing.xs,
-    backgroundColor: colors.surfaceSecondary,
-  },
-  ratioIncome: {
-    backgroundColor: colors.income,
-    height: "100%",
-  },
-  ratioExpense: {
-    backgroundColor: colors.expense,
-    height: "100%",
   },
   section: {
     marginTop: spacing.md,
@@ -454,7 +552,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: spacing.md,
   },
   catInfoRow: {
     flexDirection: "row",
@@ -479,15 +576,5 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.textSecondary,
     marginTop: 2,
-  },
-  barBackground: {
-    height: 6,
-    backgroundColor: colors.surfaceSecondary,
-    borderRadius: radius.full,
-    overflow: "hidden",
-  },
-  barFill: {
-    height: "100%",
-    borderRadius: radius.full,
   },
 });

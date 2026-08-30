@@ -10,7 +10,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import Animated, { FadeInDown, ZoomIn } from "react-native-reanimated";
 import { useAuthStore } from "@/store/auth.store";
 import { useWalletStore } from "@/store/wallet.store";
 import { useTransactionStore } from "@/store/transaction.store";
@@ -121,145 +120,126 @@ export default function ProfileScreen() {
         }
       >
         {/* User Card */}
-        <Animated.View
-          entering={FadeInDown.duration(380).springify().damping(16)}
-        >
-          <Card style={styles.profileCard}>
-            <View style={styles.profileHeader}>
-              <Animated.View
-                entering={ZoomIn.duration(320).springify().damping(14)}
-                style={styles.avatar}
-              >
-                <Text style={styles.avatarText}>{userInitials}</Text>
-              </Animated.View>
-              <View style={styles.profileInfo}>
-                <View style={styles.nameRow}>
-                  <Text style={styles.userName} numberOfLines={1}>
-                    {user?.name || "Monevo User"}
-                  </Text>
-                  <Pressable
-                    onPress={() => setShowEditProfileModal(true)}
-                    hitSlop={8}
-                    style={styles.editButton}
-                    accessibilityLabel="Edit profile name"
-                  >
-                    <Ionicons name="pencil" size={14} color={colors.primary} />
-                  </Pressable>
-                </View>
-                <Text style={styles.userEmail} numberOfLines={1}>
-                  {user?.email || "No email"}
-                </Text>
-              </View>
+        <Card style={styles.profileCard}>
+          <View style={styles.profileHeader}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>{userInitials}</Text>
             </View>
+            <View style={styles.profileInfo}>
+              <View style={styles.nameRow}>
+                <Text style={styles.userName} numberOfLines={1}>
+                  {user?.name || "Monevo User"}
+                </Text>
+                <Pressable
+                  onPress={() => setShowEditProfileModal(true)}
+                  hitSlop={8}
+                  style={styles.editButton}
+                  accessibilityLabel="Edit profile name"
+                >
+                  <Ionicons name="pencil" size={14} color={colors.primary} />
+                </Pressable>
+              </View>
+              <Text style={styles.userEmail} numberOfLines={1}>
+                {user?.email || "No email"}
+              </Text>
+            </View>
+          </View>
 
-            {/* Mini Stats Bar */}
-            <View style={styles.statsDivider} />
-            <View style={styles.statsRow}>
-              <View style={styles.statCol}>
-                <Text style={styles.statLabel}>Net Worth</Text>
-                <Text style={styles.statValue} numberOfLines={1}>
-                  {hideBalance ? "••••••••" : formatCurrency(totalNetWorth)}
-                </Text>
-              </View>
-              <View style={styles.statSeparator} />
-              <View style={styles.statCol}>
-                <Text style={styles.statLabel}>Wallets</Text>
-                <Text style={styles.statValue}>{wallets.length}</Text>
-              </View>
-              <View style={styles.statSeparator} />
-              <View style={styles.statCol}>
-                <Text style={styles.statLabel}>Records</Text>
-                <Text style={styles.statValue}>{transactions.length}</Text>
-              </View>
+          {/* Mini Stats Bar */}
+          <View style={styles.statsDivider} />
+          <View style={styles.statsRow}>
+            <View style={styles.statCol}>
+              <Text style={styles.statLabel}>Net Worth</Text>
+              <Text style={styles.statValue} numberOfLines={1}>
+                {hideBalance ? "••••••••" : formatCurrency(totalNetWorth)}
+              </Text>
             </View>
-          </Card>
-        </Animated.View>
+            <View style={styles.statSeparator} />
+            <View style={styles.statCol}>
+              <Text style={styles.statLabel}>Wallets</Text>
+              <Text style={styles.statValue}>{wallets.length}</Text>
+            </View>
+            <View style={styles.statSeparator} />
+            <View style={styles.statCol}>
+              <Text style={styles.statLabel}>Records</Text>
+              <Text style={styles.statValue}>{transactions.length}</Text>
+            </View>
+          </View>
+        </Card>
 
         {/* Preferences Section */}
-        <Animated.View
-          entering={FadeInDown.delay(80).duration(380).springify().damping(16)}
-        >
-          <Text style={styles.sectionHeader}>Preferences</Text>
-          <Card style={styles.sectionCard}>
-            <SettingsRow
-              icon="cash-outline"
-              title="Currency"
-              subtitle="Display currency across the app"
-              value={`${currencyConfig.flag} ${currencyConfig.code} (${currencyConfig.symbol})`}
-              onPress={() => setShowCurrencyModal(true)}
-            />
-            <View style={styles.rowDivider} />
-            <SettingsRow
-              icon={hideBalance ? "eye-off-outline" : "eye-outline"}
-              title="Hide Balance"
-              subtitle="Mask financial balances by default"
-              isSwitch
-              switchValue={hideBalance}
-              onSwitchChange={toggleHideBalance}
-            />
-            <View style={styles.rowDivider} />
-            <SettingsRow
-              icon="grid-outline"
-              title="Manage Categories"
-              subtitle="Add custom income and expense categories"
-              onPress={() => setShowCategoryModal(true)}
-            />
-          </Card>
-        </Animated.View>
+        <Text style={styles.sectionHeader}>Preferences</Text>
+        <Card style={styles.sectionCard}>
+          <SettingsRow
+            icon="cash-outline"
+            title="Currency"
+            subtitle="Display currency across the app"
+            value={`${currencyConfig.flag} ${currencyConfig.code} (${currencyConfig.symbol})`}
+            onPress={() => setShowCurrencyModal(true)}
+          />
+          <View style={styles.rowDivider} />
+          <SettingsRow
+            icon={hideBalance ? "eye-off-outline" : "eye-outline"}
+            title="Hide Balance"
+            subtitle="Mask financial balances by default"
+            isSwitch
+            switchValue={hideBalance}
+            onSwitchChange={toggleHideBalance}
+          />
+          <View style={styles.rowDivider} />
+          <SettingsRow
+            icon="grid-outline"
+            title="Manage Categories"
+            subtitle="Add custom income and expense categories"
+            onPress={() => setShowCategoryModal(true)}
+          />
+        </Card>
 
         {/* System & Support Section */}
-        <Animated.View
-          entering={FadeInDown.delay(160).duration(380).springify().damping(16)}
-        >
-          <Text style={styles.sectionHeader}>System & App</Text>
-          <Card style={styles.sectionCard}>
-            <SettingsRow
-              icon="server-outline"
-              title="API Server Status"
-              subtitle={
-                serverStatus === "online"
-                  ? "Backend connected & operational"
-                  : serverStatus === "checking"
-                    ? "Checking connection..."
-                    : "Unable to reach server"
-              }
-              value={
-                serverStatus === "online"
-                  ? "● Online"
-                  : serverStatus === "checking"
-                    ? "Checking"
-                    : "Offline"
-              }
-              showChevron={false}
-              onPress={checkHealth}
-            />
-            <View style={styles.rowDivider} />
-            <SettingsRow
-              icon="information-circle-outline"
-              title="App Version"
-              subtitle="Monevo Personal Finance"
-              value="v1.0.0"
-              showChevron={false}
-            />
-          </Card>
-        </Animated.View>
+        <Text style={styles.sectionHeader}>System & App</Text>
+        <Card style={styles.sectionCard}>
+          <SettingsRow
+            icon="server-outline"
+            title="API Server Status"
+            subtitle={
+              serverStatus === "online"
+                ? "Backend connected & operational"
+                : serverStatus === "checking"
+                  ? "Checking connection..."
+                  : "Unable to reach server"
+            }
+            value={
+              serverStatus === "online"
+                ? "● Online"
+                : serverStatus === "checking"
+                  ? "Checking"
+                  : "Offline"
+            }
+            showChevron={false}
+            onPress={checkHealth}
+          />
+          <View style={styles.rowDivider} />
+          <SettingsRow
+            icon="information-circle-outline"
+            title="App Version"
+            subtitle="Monevo Personal Finance"
+            value="v1.0.0"
+            showChevron={false}
+          />
+        </Card>
 
         {/* Session Section */}
-        <Animated.View
-          entering={FadeInDown.delay(240).duration(380).springify().damping(16)}
-        >
-          <Text style={styles.sectionHeader}>Account</Text>
-          <Card style={styles.sectionCard}>
-            <SettingsRow
-              icon="log-out-outline"
-              title="Sign Out"
-              subtitle="Sign out of your current session"
-              destructive
-              showChevron={false}
-              onPress={handleLogout}
-            />
-          </Card>
-        </Animated.View>
+        <Text style={styles.sectionHeader}>Account</Text>
+        <Card style={styles.sectionCard}>
+          <SettingsRow
+            icon="log-out-outline"
+            title="Sign Out"
+            subtitle="Sign out of your current session"
+            destructive
+            showChevron={false}
+            onPress={handleLogout}
+          />
+        </Card>
 
         <View style={styles.footerSpacing} />
       </ScrollView>

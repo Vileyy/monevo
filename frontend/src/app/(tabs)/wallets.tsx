@@ -62,8 +62,25 @@ export default function WalletsScreen() {
     return { cash, bank, card };
   }, [wallets]);
 
+  const { currentLabel, currentBalance } = useMemo(() => {
+    switch (typeFilter) {
+      case "CASH":
+        return { currentLabel: "Cash Balance", currentBalance: stats.cash };
+      case "BANK":
+        return { currentLabel: "Bank Balance", currentBalance: stats.bank };
+      case "CREDIT_CARD":
+        return { currentLabel: "Cards Balance", currentBalance: stats.card };
+      case "ALL":
+      default:
+        return {
+          currentLabel: "Total Net Worth",
+          currentBalance: totalNetWorth,
+        };
+    }
+  }, [typeFilter, stats, totalNetWorth]);
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <Header
         title="Accounts & Wallets"
         subtitle={`${wallets.length} total accounts configured`}
@@ -97,39 +114,65 @@ export default function WalletsScreen() {
       >
         {/* Net Worth Summary Card */}
         <View style={styles.netWorthCard}>
-          <Text style={styles.netWorthLabel}>Total Net Worth</Text>
+          <Text style={styles.netWorthLabel}>{currentLabel}</Text>
           <Text style={styles.netWorthValue}>
-            {hideBalance ? "••••••••" : formatCurrency(totalNetWorth)}
+            {hideBalance ? "••••••••" : formatCurrency(currentBalance)}
           </Text>
 
           <View style={styles.assetBreakdownRow}>
-            <View style={styles.assetCol}>
+            <Pressable
+              style={styles.assetCol}
+              onPress={() =>
+                setTypeFilter((prev) => (prev === "CASH" ? "ALL" : "CASH"))
+              }
+              hitSlop={6}
+              accessibilityRole="button"
+              accessibilityLabel={`Filter by cash, balance ${formatCurrency(stats.cash)}`}
+            >
               <View style={[styles.assetDot, { backgroundColor: "#10B981" }]} />
               <Text style={styles.assetType}>Cash</Text>
               <Text style={styles.assetAmount}>
                 {hideBalance ? "••••" : formatCurrency(stats.cash)}
               </Text>
-            </View>
+            </Pressable>
 
             <View style={styles.assetDivider} />
 
-            <View style={styles.assetCol}>
+            <Pressable
+              style={styles.assetCol}
+              onPress={() =>
+                setTypeFilter((prev) => (prev === "BANK" ? "ALL" : "BANK"))
+              }
+              hitSlop={6}
+              accessibilityRole="button"
+              accessibilityLabel={`Filter by bank, balance ${formatCurrency(stats.bank)}`}
+            >
               <View style={[styles.assetDot, { backgroundColor: "#3B82F6" }]} />
               <Text style={styles.assetType}>Bank</Text>
               <Text style={styles.assetAmount}>
                 {hideBalance ? "••••" : formatCurrency(stats.bank)}
               </Text>
-            </View>
+            </Pressable>
 
             <View style={styles.assetDivider} />
 
-            <View style={styles.assetCol}>
+            <Pressable
+              style={styles.assetCol}
+              onPress={() =>
+                setTypeFilter((prev) =>
+                  prev === "CREDIT_CARD" ? "ALL" : "CREDIT_CARD",
+                )
+              }
+              hitSlop={6}
+              accessibilityRole="button"
+              accessibilityLabel={`Filter by cards, balance ${formatCurrency(stats.card)}`}
+            >
               <View style={[styles.assetDot, { backgroundColor: "#8B5CF6" }]} />
               <Text style={styles.assetType}>Cards</Text>
               <Text style={styles.assetAmount}>
                 {hideBalance ? "••••" : formatCurrency(stats.card)}
               </Text>
-            </View>
+            </Pressable>
           </View>
         </View>
 
@@ -259,7 +302,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: spacing.base,
-    paddingBottom: spacing.huge,
+    paddingBottom: spacing.xl,
   },
   netWorthCard: {
     backgroundColor: colors.surfaceDark,
