@@ -16,12 +16,16 @@ export default function RootLayout() {
       <AnimatedSplashOverlay />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Protected guard={!isAuthenticated}>
+          <Stack.Screen name="onboarding" />
           <Stack.Screen name="login" />
           <Stack.Screen name="register" />
         </Stack.Protected>
         <Stack.Protected guard={isAuthenticated}>
           <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="add-transaction" />
+          <Stack.Screen
+            name="add-transaction"
+            options={{ presentation: "modal" }}
+          />
         </Stack.Protected>
       </Stack>
     </ThemeProvider>

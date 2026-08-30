@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { apiClient } from "@/services/api/client";
 import { useAuthStore } from "@/store/auth.store";
+import { CreateWalletBody, UpdateWalletBody } from "@/types/api";
 
 export type Wallet = {
   id: string;
@@ -19,8 +20,10 @@ type WalletState = {
   createWallet: (
     name: string,
     type: string,
-    balance: number,
+    balance?: number,
   ) => Promise<Wallet>;
+  updateWallet: (id: string, data: UpdateWalletBody) => Promise<Wallet>;
+  deleteWallet: (id: string) => Promise<void>;
 };
 
 export const useWalletStore = create<WalletState>((set, get) => ({
@@ -43,13 +46,25 @@ export const useWalletStore = create<WalletState>((set, get) => ({
     }
   },
 
-  createWallet: async (name, type, balance) => {
-    const response = await apiClient.post<Wallet>("/wallets", {
-      name,
-      type,
-      balance,
-    });
-    set({ wallets: [...get().wallets, response.data] });
+  createWallet: async (name, type, balance = 0) => {
+    const payload: CreateWalletBody = { name, type, balance };
+    const response = await apiClient.post<Wallet>("/wallets", payload);
+    set({ wallets: [response.data, ...get().wallets] });
     return response.data;
+  },
+
+  updateWallet: async (id, data) => {
+    const response = await apiClient.patch<Wallet>(`/wallets/${id}`, data);
+    set({
+      wallets: get().wallets.map((w) => (w.id === id ? response.data : w)),
+    });
+    return response.data;
+  },
+
+  deleteWallet: async (id) => {
+    await apiClient.delete(`/wallets/${id}`);
+    set({
+      wallets: get().wallets.filter((w) => w.id !== id),
+    });
   },
 }));

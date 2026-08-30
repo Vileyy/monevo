@@ -1,36 +1,36 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
-  SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
   ScrollView,
+  StyleSheet,
   Text,
-  TextInput,
-  TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { useWalletStore } from "@/store/wallet.store";
 import { useCategoryStore } from "@/store/category.store";
 import { useTransactionStore } from "@/store/transaction.store";
-import { styles } from "@/features/transactions/styles/add.styles";
-import { colors } from "@/theme/colors";
+import { colors, radius, shadows, spacing, typography } from "@/theme";
 import {
-  walletTypeLabel,
   categoryDisplayName,
+  formatCurrency,
   parseVndInput,
-  formatVndInput,
 } from "@/lib/format";
 import { apiErrorMessage } from "@/lib/api-error";
-
-const DEFAULT_CATEGORIES = [
-  { name: "Food", type: "EXPENSE" },
-  { name: "Transport", type: "EXPENSE" },
-  { name: "Shopping", type: "EXPENSE" },
-  { name: "Bills", type: "EXPENSE" },
-  { name: "Salary", type: "INCOME" },
-  { name: "Other income", type: "INCOME" },
-];
+import { DEFAULT_CATEGORY_METAS, getWalletMeta } from "@/lib/categories";
+import {
+  Button,
+  CategoryIcon,
+  CurrencyInput,
+  Header,
+  Input,
+  SegmentedControl,
+} from "@/components/ui";
 
 export default function AddTransactionScreen() {
   const router = useRouter();
@@ -40,8 +40,12 @@ export default function AddTransactionScreen() {
     fetchWallets,
     createWallet,
   } = useWalletStore();
-  const { categories, hasFetched, fetchCategories, createCategory } =
-    useCategoryStore();
+  const {
+    categories,
+    hasFetched: categoriesFetched,
+    fetchCategories,
+    createCategory,
+  } = useCategoryStore();
   const { createTransaction, fetchTransactions } = useTransactionStore();
 
   const [type, setType] = useState<"EXPENSE" | "INCOME">("EXPENSE");
@@ -57,8 +61,9 @@ export default function AddTransactionScreen() {
     fetchCategories();
   }, [fetchWallets, fetchCategories]);
 
+  // Seed defaults if fresh account
   useEffect(() => {
-    if (didSeed.current || !hasFetched || !walletsFetched) return;
+    if (didSeed.current || !categoriesFetched || !walletsFetched) return;
     if (wallets.length > 0 && categories.length > 0) return;
 
     didSeed.current = true;
@@ -68,8 +73,8 @@ export default function AddTransactionScreen() {
           await createWallet("Cash", "CASH", 0);
         }
         if (categories.length === 0) {
-          for (const item of DEFAULT_CATEGORIES) {
-            await createCategory(item.name, item.type);
+          for (const item of DEFAULT_CATEGORY_METAS) {
+            await createCategory(item.name, item.type, item.icon);
           }
         }
       } catch {
@@ -78,9 +83,9 @@ export default function AddTransactionScreen() {
     })();
   }, [
     categories.length,
+    categoriesFetched,
     createCategory,
     createWallet,
-    hasFetched,
     wallets.length,
     walletsFetched,
   ]);
@@ -91,33 +96,34 @@ export default function AddTransactionScreen() {
   );
 
   const selectedWalletId =
-    walletId && wallets.some((wallet) => wallet.id === walletId)
+    walletId && wallets.some((w) => w.id === walletId)
       ? walletId
       : (wallets[0]?.id ?? null);
 
   const selectedCategoryId =
-    categoryId &&
-    visibleCategories.some((category) => category.id === categoryId)
+    categoryId && visibleCategories.some((c) => c.id === categoryId)
       ? categoryId
       : (visibleCategories[0]?.id ?? null);
 
-  const handleSubmit = async () => {
-    const parsed = parseVndInput(amount);
-    if (!parsed || parsed <= 0) {
-      Alert.alert("Invalid amount", "Enter a number greater than 0.");
+  const handleSave = async () => {
+    const parsedAmount = parseVndInput(amount);
+    if (!parsedAmount || parsedAmount <= 0) {
+      Alert.alert("Invalid Amount", "Please enter an amount greater than 0.");
       return;
     }
+
     if (!selectedWalletId) {
       Alert.alert(
-        "No wallet",
-        "A Cash account is being created. Try Save again in a moment.",
+        "No Account Selected",
+        "Please select an account or wait a moment for the default account to initialize.",
       );
       return;
     }
+
     if (!selectedCategoryId) {
       Alert.alert(
-        "No category",
-        "Select a category or wait for defaults to load.",
+        "No Category Selected",
+        "Please select a category for this transaction.",
       );
       return;
     }
@@ -125,19 +131,19 @@ export default function AddTransactionScreen() {
     setIsSubmitting(true);
     try {
       await createTransaction({
-        amount: parsed,
+        amount: parsedAmount,
         type,
         note: note.trim() || undefined,
         walletId: selectedWalletId,
         categoryId: selectedCategoryId,
       });
-      await fetchWallets();
-      await fetchTransactions();
+
+      await Promise.all([fetchWallets(), fetchTransactions()]);
       router.back();
-    } catch (err: unknown) {
+    } catch (error) {
       Alert.alert(
         "Error",
-        apiErrorMessage(err, "Could not save the transaction."),
+        apiErrorMessage(error, "Could not save transaction."),
       );
     } finally {
       setIsSubmitting(false);
@@ -146,132 +152,288 @@ export default function AddTransactionScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.closeButton}
-          accessibilityRole="button"
-          accessibilityLabel="Close"
-          hitSlop={8}
+      <Header title="Add Transaction" showBack onBack={() => router.back()} />
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
-          <Text style={styles.closeIcon}>✕</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>Add transaction</Text>
-        <View style={styles.headerSpacer} />
-      </View>
-
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Type</Text>
-          <View style={styles.chips}>
-            {(["EXPENSE", "INCOME"] as const).map((item) => (
-              <TouchableOpacity
-                key={item}
-                style={[styles.chip, type === item && styles.chipActive]}
-                onPress={() => setType(item)}
-              >
-                <Text
-                  style={[
-                    styles.chipText,
-                    type === item && styles.chipTextActive,
-                  ]}
-                >
-                  {item === "EXPENSE" ? "Expense" : "Income"}
-                </Text>
-              </TouchableOpacity>
-            ))}
+          {/* Segmented Type Switch */}
+          <View style={styles.segmentContainer}>
+            <SegmentedControl
+              options={[
+                {
+                  value: "EXPENSE",
+                  label: "Expense",
+                  icon: (
+                    <Ionicons
+                      name="arrow-up-circle-outline"
+                      size={18}
+                      color={
+                        type === "EXPENSE"
+                          ? colors.expense
+                          : colors.textSecondary
+                      }
+                    />
+                  ),
+                  activeColor: colors.expense,
+                  activeBgColor: colors.surface,
+                },
+                {
+                  value: "INCOME",
+                  label: "Income",
+                  icon: (
+                    <Ionicons
+                      name="arrow-down-circle-outline"
+                      size={18}
+                      color={
+                        type === "INCOME" ? colors.income : colors.textSecondary
+                      }
+                    />
+                  ),
+                  activeColor: colors.income,
+                  activeBgColor: colors.surface,
+                },
+              ]}
+              value={type}
+              onChange={(newType) => {
+                setType(newType);
+                setCategoryId(null);
+              }}
+            />
           </View>
-        </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Amount</Text>
-          <TextInput
-            style={styles.input}
-            keyboardType="number-pad"
-            placeholder="0"
-            value={amount}
-            onChangeText={(text) => setAmount(formatVndInput(text))}
-            placeholderTextColor={colors.textSecondary}
-          />
-        </View>
+          {/* Amount Keypad Input */}
+          <View style={styles.section}>
+            <CurrencyInput
+              value={amount}
+              onChangeText={setAmount}
+              type={type}
+              autoFocus
+            />
+          </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Account</Text>
-          <View style={styles.chips}>
-            {wallets.length === 0 ? (
-              <Text style={styles.chipText}>Creating a Cash account…</Text>
-            ) : (
-              wallets.map((wallet) => (
-                <TouchableOpacity
-                  key={wallet.id}
-                  style={[
-                    styles.chip,
-                    selectedWalletId === wallet.id && styles.chipActive,
-                  ]}
-                  onPress={() => setWalletId(wallet.id)}
-                >
-                  <Text
+          {/* Categories Grid */}
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>Category</Text>
+            <View style={styles.categoryGrid}>
+              {visibleCategories.map((cat) => {
+                const isSelected = selectedCategoryId === cat.id;
+                const catName = categoryDisplayName(cat.name);
+
+                return (
+                  <Pressable
+                    key={cat.id}
+                    onPress={() => setCategoryId(cat.id)}
                     style={[
-                      styles.chipText,
-                      selectedWalletId === wallet.id && styles.chipTextActive,
+                      styles.categoryCard,
+                      isSelected && styles.categoryCardSelected,
                     ]}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: isSelected }}
                   >
-                    {wallet.name} · {walletTypeLabel(wallet.type)}
-                  </Text>
-                </TouchableOpacity>
-              ))
-            )}
+                    <CategoryIcon name={catName} type={type} size="md" />
+                    <Text
+                      style={[
+                        styles.categoryName,
+                        isSelected && styles.categoryNameSelected,
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {catName}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
           </View>
-        </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Category</Text>
-          <View style={styles.chips}>
-            {visibleCategories.map((category) => (
-              <TouchableOpacity
-                key={category.id}
-                style={[
-                  styles.chip,
-                  selectedCategoryId === category.id && styles.chipActive,
-                ]}
-                onPress={() => setCategoryId(category.id)}
-              >
-                <Text
-                  style={[
-                    styles.chipText,
-                    selectedCategoryId === category.id && styles.chipTextActive,
-                  ]}
-                >
-                  {categoryDisplayName(category.name)}
-                </Text>
-              </TouchableOpacity>
-            ))}
+          {/* Wallet Selector */}
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>
+              {type === "INCOME" ? "Deposit To Account" : "Pay From Account"}
+            </Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.walletChips}
+            >
+              {wallets.map((w) => {
+                const isSelected = selectedWalletId === w.id;
+                const meta = getWalletMeta(w.type);
+
+                return (
+                  <Pressable
+                    key={w.id}
+                    onPress={() => setWalletId(w.id)}
+                    style={[
+                      styles.walletChip,
+                      isSelected && styles.walletChipSelected,
+                    ]}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: isSelected }}
+                  >
+                    <View
+                      style={[
+                        styles.walletIconCircle,
+                        { backgroundColor: meta.bgColor },
+                      ]}
+                    >
+                      <Ionicons name={meta.icon} size={16} color={meta.color} />
+                    </View>
+                    <View>
+                      <Text
+                        style={[
+                          styles.walletChipTitle,
+                          isSelected && styles.walletChipTitleSelected,
+                        ]}
+                      >
+                        {w.name}
+                      </Text>
+                      <Text style={styles.walletChipBalance}>
+                        {formatCurrency(w.balance)}
+                      </Text>
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
           </View>
-        </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Note</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Optional"
-            value={note}
-            onChangeText={setNote}
-            placeholderTextColor={colors.textSecondary}
+          {/* Note Input */}
+          <View style={styles.section}>
+            <Input
+              label="Note (Optional)"
+              placeholder="e.g. Lunch with team, Groceries"
+              value={note}
+              onChangeText={setNote}
+              leftIcon={
+                <Ionicons
+                  name="chatbubble-ellipses-outline"
+                  size={18}
+                  color={colors.textSecondary}
+                />
+              }
+            />
+          </View>
+
+          {/* Save Button */}
+          <Button
+            title="Save Transaction"
+            onPress={handleSave}
+            isLoading={isSubmitting}
+            size="lg"
+            style={styles.saveBtn}
           />
-        </View>
-
-        <TouchableOpacity
-          style={styles.submit}
-          onPress={handleSubmit}
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? (
-            <ActivityIndicator color="#FFFFFF" />
-          ) : (
-            <Text style={styles.submitText}>Save</Text>
-          )}
-        </TouchableOpacity>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  scrollContent: {
+    paddingHorizontal: spacing.base,
+    paddingBottom: spacing.huge,
+  },
+  segmentContainer: {
+    marginTop: spacing.xs,
+    marginBottom: spacing.base,
+  },
+  section: {
+    marginBottom: spacing.base,
+  },
+  sectionLabel: {
+    ...typography.subhead,
+    color: colors.textSecondary,
+    fontWeight: "600",
+    marginBottom: spacing.sm,
+  },
+  categoryGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm,
+  },
+  categoryCard: {
+    width: "31%",
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xs,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    ...shadows.sm,
+  },
+  categoryCardSelected: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryMuted,
+  },
+  categoryName: {
+    ...typography.footnote,
+    fontWeight: "600",
+    color: colors.text,
+    marginTop: spacing.xs,
+    textAlign: "center",
+  },
+  categoryNameSelected: {
+    color: colors.primary,
+    fontWeight: "700",
+  },
+  walletChips: {
+    flexDirection: "row",
+    gap: spacing.md,
+  },
+  walletChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.surface,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.lg,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    minWidth: 140,
+    ...shadows.sm,
+  },
+  walletChipSelected: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryMuted,
+  },
+  walletIconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: radius.full,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: spacing.sm,
+  },
+  walletChipTitle: {
+    ...typography.subhead,
+    fontWeight: "600",
+    color: colors.text,
+  },
+  walletChipTitleSelected: {
+    color: colors.primary,
+    fontWeight: "700",
+  },
+  walletChipBalance: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginTop: 1,
+    ...typography.tabular,
+  },
+  saveBtn: {
+    marginTop: spacing.md,
+  },
+});
