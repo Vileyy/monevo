@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -56,23 +57,24 @@ export function CurrencyInput({
         ]}
       >
         <View style={styles.row}>
-          <Text style={[styles.currencyPrefix, { color: mainColor }]}>
-            {isIncome ? "+" : "−"}₫
-          </Text>
           <TextInput
             value={value}
             onChangeText={(text) => onChangeText(formatVndInput(text))}
             placeholder="0"
             placeholderTextColor={colors.textMuted}
-            keyboardType="numeric"
+            keyboardType="number-pad"
             autoFocus={autoFocus}
             style={[styles.numericInput, { color: mainColor }]}
           />
+
+          <Text style={[styles.currencySuffix, { color: mainColor }]}>₫</Text>
+
           {!!value && (
             <Pressable
               onPress={handleClear}
               style={styles.clearBtn}
               hitSlop={8}
+              accessibilityRole="button"
               accessibilityLabel="Clear amount"
             >
               <Ionicons
@@ -132,28 +134,46 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     borderWidth: 1.5,
     paddingHorizontal: spacing.base,
-    paddingVertical: spacing.md,
+    paddingVertical: spacing.sm + 2,
+    minHeight: 64,
+    justifyContent: "center",
   },
   row: {
     flexDirection: "row",
     alignItems: "center",
-  },
-  currencyPrefix: {
-    fontSize: 28,
-    fontWeight: "700",
-    marginRight: spacing.xs,
-    ...typography.tabular,
+    height: 44,
   },
   numericInput: {
     flex: 1,
-    fontSize: 32,
-    fontWeight: "700",
-    padding: 0,
+    fontSize: 28,
+    lineHeight: 34,
+    fontWeight: "800",
+    paddingVertical: 0,
+    paddingHorizontal: 0,
     margin: 0,
+    height: 44,
     ...typography.tabular,
+    includeFontPadding: false,
+    textAlignVertical: "center",
+    ...Platform.select({
+      ios: {
+        marginTop: 2,
+      },
+    }),
+  },
+  currencySuffix: {
+    fontSize: 26,
+    lineHeight: 32,
+    fontWeight: "800",
+    marginLeft: spacing.xs,
+    marginRight: spacing.sm,
+    ...typography.tabular,
+    includeFontPadding: false,
   },
   clearBtn: {
     padding: spacing.xs,
+    justifyContent: "center",
+    alignItems: "center",
   },
   errorText: {
     ...typography.footnote,
@@ -164,6 +184,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: spacing.sm,
     paddingTop: spacing.sm,
+    paddingRight: spacing.xl,
   },
   quickChip: {
     backgroundColor: colors.surfaceSecondary,

@@ -24,6 +24,8 @@ import {
 import { TransactionItem } from "@/features/transactions/components/TransactionItem";
 import { TransactionDetailModal } from "@/features/transactions/components/TransactionDetailModal";
 
+type SortOption = "DATE_DESC" | "AMOUNT_DESC" | "AMOUNT_ASC";
+
 export default function TransactionsScreen() {
   const router = useRouter();
   const { transactions, isLoading, fetchTransactions } = useTransactionStore();
@@ -35,6 +37,7 @@ export default function TransactionsScreen() {
     "ALL",
   );
   const [selectedWalletId, setSelectedWalletId] = useState<string>("ALL");
+  const [sortBy, setSortBy] = useState<SortOption>("DATE_DESC");
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
 
   const loadData = useCallback(async () => {
@@ -51,7 +54,7 @@ export default function TransactionsScreen() {
     setRefreshing(false);
   };
 
-  // Filter logic
+  // 1. Filter logic
   const filteredTransactions = useMemo(() => {
     return transactions.filter((tx) => {
       // Type filter
@@ -85,8 +88,30 @@ export default function TransactionsScreen() {
     });
   }, [transactions, typeFilter, selectedWalletId, searchQuery]);
 
-  // Group by date
+  // 2. Sort logic
+  const sortedTransactions = useMemo(() => {
+    const list = [...filteredTransactions];
+    if (sortBy === "AMOUNT_DESC") {
+      return list.sort((a, b) => b.amount - a.amount);
+    }
+    if (sortBy === "AMOUNT_ASC") {
+      return list.sort((a, b) => a.amount - b.amount);
+    }
+    return list.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    );
+  }, [filteredTransactions, sortBy]);
+
+  // 3. Group by date or display order
   const groupedTransactions = useMemo(() => {
+    if (sortBy !== "DATE_DESC") {
+      const label =
+        sortBy === "AMOUNT_DESC"
+          ? "Sorted: Highest → Lowest"
+          : "Sorted: Lowest → Highest";
+      return [{ dateLabel: label, items: sortedTransactions }];
+    }
+
     const groups: { dateLabel: string; items: Transaction[] }[] = [];
     const map = new Map<string, Transaction[]>();
 
@@ -95,7 +120,7 @@ export default function TransactionsScreen() {
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayStr = yesterday.toDateString();
 
-    for (const tx of filteredTransactions) {
+    for (const tx of sortedTransactions) {
       const txDate = new Date(tx.date);
       const txDateStr = txDate.toDateString();
 
@@ -120,7 +145,7 @@ export default function TransactionsScreen() {
     }
 
     return groups;
-  }, [filteredTransactions]);
+  }, [sortedTransactions, sortBy]);
 
   // Summary stats for filtered
   const { totalIn, totalOut } = useMemo(() => {
@@ -204,24 +229,25 @@ export default function TransactionsScreen() {
           />
         </View>
 
-        {/* Wallet Filter Pills */}
-        {wallets.length > 0 && (
+        {/* Compact Filters & Sort Row */}
+        <View style={styles.filterRowSection}>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.walletFilterPills}
+            contentContainerStyle={styles.pillsScroll}
           >
+            {/* Account Pills */}
             <Pressable
               onPress={() => setSelectedWalletId("ALL")}
               style={[
-                styles.walletPill,
-                selectedWalletId === "ALL" && styles.walletPillActive,
+                styles.pill,
+                selectedWalletId === "ALL" && styles.pillActive,
               ]}
             >
               <Text
                 style={[
-                  styles.walletPillText,
-                  selectedWalletId === "ALL" && styles.walletPillTextActive,
+                  styles.pillText,
+                  selectedWalletId === "ALL" && styles.pillTextActive,
                 ]}
               >
                 All Accounts
@@ -233,22 +259,104 @@ export default function TransactionsScreen() {
                 key={w.id}
                 onPress={() => setSelectedWalletId(w.id)}
                 style={[
-                  styles.walletPill,
-                  selectedWalletId === w.id && styles.walletPillActive,
+                  styles.pill,
+                  selectedWalletId === w.id && styles.pillActive,
                 ]}
               >
                 <Text
                   style={[
-                    styles.walletPillText,
-                    selectedWalletId === w.id && styles.walletPillTextActive,
+                    styles.pillText,
+                    selectedWalletId === w.id && styles.pillTextActive,
                   ]}
                 >
                   {w.name}
                 </Text>
               </Pressable>
             ))}
+
+            <View style={styles.pillDivider} />
+
+            {/* Sort Pills */}
+            <Pressable
+              onPress={() => setSortBy("DATE_DESC")}
+              style={[
+                styles.pill,
+                sortBy === "DATE_DESC" && styles.sortPillActive,
+              ]}
+            >
+              <Ionicons
+                name="time-outline"
+                size={14}
+                color={
+                  sortBy === "DATE_DESC" ? colors.primary : colors.textSecondary
+                }
+                style={{ marginRight: 4 }}
+              />
+              <Text
+                style={[
+                  styles.pillText,
+                  sortBy === "DATE_DESC" && styles.pillTextActive,
+                ]}
+              >
+                Latest
+              </Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => setSortBy("AMOUNT_DESC")}
+              style={[
+                styles.pill,
+                sortBy === "AMOUNT_DESC" && styles.sortPillActive,
+              ]}
+            >
+              <Ionicons
+                name="trending-down-outline"
+                size={14}
+                color={
+                  sortBy === "AMOUNT_DESC"
+                    ? colors.primary
+                    : colors.textSecondary
+                }
+                style={{ marginRight: 4 }}
+              />
+              <Text
+                style={[
+                  styles.pillText,
+                  sortBy === "AMOUNT_DESC" && styles.pillTextActive,
+                ]}
+              >
+                High → Low
+              </Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => setSortBy("AMOUNT_ASC")}
+              style={[
+                styles.pill,
+                sortBy === "AMOUNT_ASC" && styles.sortPillActive,
+              ]}
+            >
+              <Ionicons
+                name="trending-up-outline"
+                size={14}
+                color={
+                  sortBy === "AMOUNT_ASC"
+                    ? colors.primary
+                    : colors.textSecondary
+                }
+                style={{ marginRight: 4 }}
+              />
+              <Text
+                style={[
+                  styles.pillText,
+                  sortBy === "AMOUNT_ASC" && styles.pillTextActive,
+                ]}
+              >
+                Low → High
+              </Text>
+            </Pressable>
           </ScrollView>
-        )}
+        </View>
 
         {/* Summary Card for Selected Filters */}
         <View style={styles.summaryBar}>
@@ -277,9 +385,12 @@ export default function TransactionsScreen() {
             <EmptyState
               icon="search-outline"
               title="No Transactions Found"
-              description="Try adjusting your search query or filters to find what you're looking for."
+              description="Try adjusting your search query, sorting, or filters to find what you're looking for."
               actionTitle={
-                searchQuery || typeFilter !== "ALL"
+                searchQuery ||
+                typeFilter !== "ALL" ||
+                selectedWalletId !== "ALL" ||
+                sortBy !== "DATE_DESC"
                   ? "Reset Filters"
                   : "Add Transaction"
               }
@@ -287,11 +398,13 @@ export default function TransactionsScreen() {
                 if (
                   searchQuery ||
                   typeFilter !== "ALL" ||
-                  selectedWalletId !== "ALL"
+                  selectedWalletId !== "ALL" ||
+                  sortBy !== "DATE_DESC"
                 ) {
                   setSearchQuery("");
                   setTypeFilter("ALL");
                   setSelectedWalletId("ALL");
+                  setSortBy("DATE_DESC");
                 } else {
                   router.push("/add-transaction");
                 }
@@ -348,12 +461,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.base,
     marginTop: spacing.md,
   },
-  walletFilterPills: {
+  filterRowSection: {
+    marginTop: spacing.md,
+  },
+  pillsScroll: {
     paddingHorizontal: spacing.base,
     gap: spacing.sm,
-    paddingVertical: spacing.md,
+    alignItems: "center",
   },
-  walletPill: {
+  pill: {
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs + 2,
     borderRadius: radius.full,
@@ -361,18 +479,28 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  walletPillActive: {
+  pillActive: {
     backgroundColor: colors.primaryMuted,
     borderColor: colors.primary,
   },
-  walletPillText: {
+  sortPillActive: {
+    backgroundColor: colors.primaryMuted,
+    borderColor: colors.primary,
+  },
+  pillText: {
     ...typography.footnote,
     fontWeight: "600",
     color: colors.textSecondary,
   },
-  walletPillTextActive: {
+  pillTextActive: {
     color: colors.primary,
     fontWeight: "700",
+  },
+  pillDivider: {
+    width: 1,
+    height: 20,
+    backgroundColor: colors.border,
+    marginHorizontal: 2,
   },
   summaryBar: {
     flexDirection: "row",
@@ -383,6 +511,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     borderWidth: 1,
     borderColor: colors.border,
+    marginTop: spacing.md,
     marginBottom: spacing.base,
     ...shadows.sm,
   },

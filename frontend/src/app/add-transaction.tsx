@@ -255,7 +255,9 @@ export default function AddTransactionScreen() {
 
           {/* Wallet Selector */}
           <View style={styles.section}>
-            <Text style={styles.sectionLabel}>Paid With Account</Text>
+            <Text style={styles.sectionLabel}>
+              {type === "INCOME" ? "Deposit To Account" : "Pay From Account"}
+            </Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}

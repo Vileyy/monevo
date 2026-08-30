@@ -111,8 +111,14 @@ function WalletForm({
         value={balance}
         onChangeText={(text) => setBalance(formatVndInput(text))}
         keyboardType="numeric"
-        leftIcon={
-          <Text style={{ fontWeight: "700", color: colors.textSecondary }}>
+        rightIcon={
+          <Text
+            style={{
+              fontSize: 16,
+              fontWeight: "700",
+              color: colors.textSecondary,
+            }}
+          >
             ₫
           </Text>
         }

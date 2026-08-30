@@ -11,7 +11,7 @@ import {
   ViewStyle,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { colors, radius, spacing, typography } from "@/theme";
+import { colors, radius, shadows, spacing, typography } from "@/theme";
 
 export interface ModalProps {
   visible: boolean;
@@ -34,16 +34,26 @@ export function Modal({
     <RNModal
       visible={visible}
       transparent
-      animationType="fade"
+      animationType="slide"
       onRequestClose={onClose}
     >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.overlay}
       >
-        <Pressable style={styles.backdrop} onPress={onClose} />
+        <Pressable
+          style={styles.backdrop}
+          onPress={onClose}
+          accessibilityRole="button"
+          accessibilityLabel="Close overlay"
+        />
 
         <View style={[styles.modalCard, contentStyle]}>
+          {/* Top Grab Handle */}
+          <View style={styles.handleWrapper}>
+            <View style={styles.handleBar} />
+          </View>
+
           <View style={styles.header}>
             <View style={styles.titleContainer}>
               {title && <Text style={styles.title}>{title}</Text>}
@@ -52,10 +62,13 @@ export function Modal({
 
             <Pressable
               onPress={onClose}
-              style={styles.closeButton}
+              style={({ pressed }) => [
+                styles.closeButton,
+                pressed && styles.closeButtonPressed,
+              ]}
               hitSlop={8}
               accessibilityRole="button"
-              accessibilityLabel="Close"
+              accessibilityLabel="Close modal"
             >
               <Ionicons name="close" size={20} color={colors.textSecondary} />
             </Pressable>
@@ -91,20 +104,27 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderTopLeftRadius: radius.xxl,
     borderTopRightRadius: radius.xxl,
-    paddingTop: spacing.base,
+    paddingTop: spacing.xs,
     paddingBottom: Platform.OS === "ios" ? spacing.xl : spacing.base,
-    maxHeight: "85%",
-    shadowColor: "#0F172A",
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 20,
+    maxHeight: "88%",
+    ...shadows.lg,
+  },
+  handleWrapper: {
+    alignItems: "center",
+    paddingVertical: spacing.xs + 2,
+  },
+  handleBar: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.border,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: spacing.xl,
+    paddingTop: spacing.xs,
     paddingBottom: spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: colors.borderLight,
@@ -129,6 +149,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginLeft: spacing.md,
+  },
+  closeButtonPressed: {
+    backgroundColor: colors.border,
+    transform: [{ scale: 0.95 }],
   },
   body: {
     paddingHorizontal: spacing.xl,
