@@ -9,6 +9,7 @@ import { WalletsModule } from './wallets/wallets.module';
 import { CategoriesModule } from './categories/categories.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { BudgetsModule } from './budgets/budgets.module';
+import { RemindersModule } from './reminders/reminders.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { BudgetsModule } from './budgets/budgets.module';
     CategoriesModule,
     TransactionsModule,
     BudgetsModule,
+    RemindersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

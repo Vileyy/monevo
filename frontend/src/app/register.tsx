@@ -1,6 +1,6 @@
 import React from "react";
-import { AuthScreen } from "@/features/auth/components/AuthScreen";
+import { ClerkAuthScreen } from "@/features/auth/components/ClerkAuthScreen";
 
 export default function RegisterRoute() {
-  return <AuthScreen initialMode="register" />;
+  return <ClerkAuthScreen />;
 }

@@ -13,6 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "@/store/auth.store";
 import { useWalletStore, Wallet } from "@/store/wallet.store";
 import { Transaction, useTransactionStore } from "@/store/transaction.store";
+import { useReminderStore } from "@/store/reminder.store";
 import { colors, radius, shadows, spacing, typography } from "@/theme";
 import {
   EmptyState,
@@ -26,6 +27,7 @@ import {
 import { WalletSummaryCard } from "@/features/wallets/components/WalletSummaryCard";
 import { WalletModal } from "@/features/wallets/components/WalletModal";
 import { WalletSelectorModal } from "@/features/wallets/components/WalletSelectorModal";
+import { ReminderSection } from "@/features/reminders/components/ReminderSection";
 import { TransactionItem } from "@/features/transactions/components/TransactionItem";
 import { TransactionDetailModal } from "@/features/transactions/components/TransactionDetailModal";
 
@@ -45,6 +47,8 @@ export default function HomeScreen() {
     fetchTransactions,
   } = useTransactionStore();
 
+  const { reminders, fetchReminders } = useReminderStore();
+
   const [refreshing, setRefreshing] = useState(false);
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [showWalletSelector, setShowWalletSelector] = useState(false);
@@ -53,8 +57,8 @@ export default function HomeScreen() {
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
 
   const loadData = useCallback(async () => {
-    await Promise.all([fetchWallets(), fetchTransactions()]);
-  }, [fetchWallets, fetchTransactions]);
+    await Promise.all([fetchWallets(), fetchTransactions(), fetchReminders()]);
+  }, [fetchWallets, fetchTransactions, fetchReminders]);
 
   useEffect(() => {
     loadData();
@@ -219,6 +223,9 @@ export default function HomeScreen() {
             </ScrollView>
           )}
         </View>
+
+        {/* Reminders Section */}
+        <ReminderSection reminders={reminders} />
 
         {/* Recent Activity */}
         <View style={styles.section}>

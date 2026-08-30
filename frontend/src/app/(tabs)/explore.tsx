@@ -304,59 +304,6 @@ export default function ExploreScreen() {
               />
             </View>
 
-            {/* Net Cashflow Summary Card */}
-            <View style={styles.cashflowCard}>
-              <View style={styles.cashflowHeader}>
-                <View>
-                  <Text style={styles.cashflowTitle}>Net Cash Flow</Text>
-                  <Text style={styles.cashflowSubtitle}>
-                    {analytics.netSavings >= 0 ? "Surplus Saved" : "Deficit"}
-                  </Text>
-                </View>
-
-                <View
-                  style={[
-                    styles.savingsBadge,
-                    {
-                      backgroundColor:
-                        analytics.netSavings >= 0
-                          ? colors.incomeBg
-                          : colors.expenseBg,
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.savingsBadgeText,
-                      {
-                        color:
-                          analytics.netSavings >= 0
-                            ? colors.income
-                            : colors.expense,
-                      },
-                    ]}
-                  >
-                    {analytics.savingsRate}% Saved
-                  </Text>
-                </View>
-              </View>
-
-              <Text
-                style={[
-                  styles.netAmount,
-                  {
-                    color:
-                      analytics.netSavings >= 0
-                        ? colors.income
-                        : colors.expense,
-                  },
-                ]}
-              >
-                {analytics.netSavings >= 0 ? "+" : "−"}
-                {formatCurrency(Math.abs(analytics.netSavings))}
-              </Text>
-            </View>
-
             {/* Animated Daily Cashflow Bar Chart */}
             <CashflowBarChart
               transactions={filteredTransactions}
@@ -492,44 +439,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: spacing.md,
     marginBottom: spacing.md,
-  },
-  cashflowCard: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.xl,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: spacing.base,
-    ...shadows.sm,
-  },
-  cashflowHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  cashflowTitle: {
-    ...typography.headline,
-    color: colors.text,
-  },
-  cashflowSubtitle: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-  savingsBadge: {
-    paddingHorizontal: spacing.sm + 2,
-    paddingVertical: spacing.xs,
-    borderRadius: radius.full,
-  },
-  savingsBadgeText: {
-    ...typography.caption,
-    fontWeight: "700",
-  },
-  netAmount: {
-    fontSize: 28,
-    fontWeight: "800",
-    marginTop: spacing.sm,
-    ...typography.tabular,
   },
   section: {
     marginTop: spacing.md,
