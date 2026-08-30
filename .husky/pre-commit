@@ -1,3 +1,23 @@
 export PATH="$PATH:$HOME/.nvm/versions/node/$(ls $HOME/.nvm/versions/node 2>/dev/null | tail -n 1)/bin:$HOME/.local/share/pnpm:$HOME/.proto/bin:/opt/homebrew/bin:/usr/local/bin"
-pnpm test
-pnpm lint-staged
+
+echo "⏳ [1/2] Running Unit Tests..."
+TEST_OUTPUT=$(pnpm test 2>&1)
+TEST_STATUS=$?
+if [ $TEST_STATUS -ne 0 ]; then
+  echo "$TEST_OUTPUT"
+  echo "❌ Unit tests failed!"
+  exit 1
+fi
+echo "✔ Unit tests passed"
+
+echo "⏳ [2/2] Checking Code Quality & Format..."
+LINT_OUTPUT=$(pnpm lint-staged --quiet 2>&1)
+LINT_STATUS=$?
+if [ $LINT_STATUS -ne 0 ]; then
+  echo "$LINT_OUTPUT"
+  echo "❌ Code quality checks failed!"
+  exit 1
+fi
+echo "✔ Code quality & format checks passed"
+
+echo "✨ Pre-commit completed successfully!"
