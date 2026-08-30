@@ -20,7 +20,8 @@ ENV NODE_ENV=production
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY backend/package.json backend/package.json
 COPY frontend/package.json frontend/package.json
-RUN pnpm install --frozen-lockfile --filter backend... --prod=false
+COPY --from=build /app/node_modules /app/node_modules
+COPY --from=build /app/backend/node_modules /app/backend/node_modules
 COPY --from=build /app/backend/dist backend/dist
 COPY --from=build /app/backend/generated backend/generated
 COPY backend/prisma backend/prisma

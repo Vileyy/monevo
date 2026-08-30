@@ -1,3 +1,4 @@
+import React, { useEffect } from "react";
 import { StatusBar } from "react-native";
 import { DefaultTheme, ThemeProvider, Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -9,6 +10,11 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const restoreSession = useAuthStore((state) => state.restoreSession);
+
+  useEffect(() => {
+    void restoreSession();
+  }, [restoreSession]);
 
   return (
     <ThemeProvider value={DefaultTheme}>
