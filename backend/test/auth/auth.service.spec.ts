@@ -65,6 +65,7 @@ describe('AuthService', () => {
         email: 'test@example.com',
         name: 'Test',
         password: 'hashed_password',
+        clerkId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -98,6 +99,7 @@ describe('AuthService', () => {
         email: 'test@example.com',
         name: 'Test',
         password: hashedPassword,
+        clerkId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -116,6 +118,7 @@ describe('AuthService', () => {
         email: 'test@example.com',
         name: 'Test',
         password: hashedPassword,
+        clerkId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       });

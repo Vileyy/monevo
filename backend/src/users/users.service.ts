@@ -43,6 +43,44 @@ export class UsersService {
     });
   }
 
+  async findByClerkId(clerkId: string) {
+    return this.prisma.user.findUnique({
+      where: { clerkId },
+    });
+  }
+
+  async findOrCreateByClerk(clerkId: string, email?: string, name?: string) {
+    let user = await this.prisma.user.findUnique({
+      where: { clerkId },
+    });
+
+    if (!user && email) {
+      user = await this.prisma.user.findUnique({
+        where: { email },
+      });
+      if (user) {
+        user = await this.prisma.user.update({
+          where: { id: user.id },
+          data: { clerkId },
+        });
+      }
+    }
+
+    if (!user) {
+      user = await this.prisma.user.create({
+        data: {
+          clerkId,
+          email: email || `${clerkId}@clerk.user`,
+          name: name || 'Monevo Member',
+        },
+      });
+    }
+
+    const { password, ...result } = user;
+    void password;
+    return result;
+  }
+
   async getProfile(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },

@@ -55,7 +55,8 @@ export const ModelName = {
   Wallet: 'Wallet',
   Category: 'Category',
   Transaction: 'Transaction',
-  Budget: 'Budget'
+  Budget: 'Budget',
+  Reminder: 'Reminder'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -79,6 +80,7 @@ export const UserScalarFieldEnum = {
   email: 'email',
   name: 'name',
   password: 'password',
+  clerkId: 'clerkId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -140,6 +142,23 @@ export const BudgetScalarFieldEnum = {
 } as const
 
 export type BudgetScalarFieldEnum = (typeof BudgetScalarFieldEnum)[keyof typeof BudgetScalarFieldEnum]
+
+
+export const ReminderScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  amount: 'amount',
+  dueDate: 'dueDate',
+  frequency: 'frequency',
+  category: 'category',
+  lastPaidAt: 'lastPaidAt',
+  walletId: 'walletId',
+  userId: 'userId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ReminderScalarFieldEnum = (typeof ReminderScalarFieldEnum)[keyof typeof ReminderScalarFieldEnum]
 
 
 export const SortOrder = {

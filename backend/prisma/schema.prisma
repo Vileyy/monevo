@@ -11,13 +11,15 @@ model User {
   id        String   @id @default(uuid())
   email     String   @unique
   name      String?
-  password  String
+  password  String?
+  clerkId   String?  @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   wallets   Wallet[]
   categories Category[]
   transactions Transaction[]
   budgets   Budget[]
+  reminders Reminder[]
 }
 
 model Wallet {
@@ -30,6 +32,7 @@ model Wallet {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   transactions Transaction[]
+  reminders Reminder[]
 }
 
 model Category {
@@ -74,4 +77,20 @@ model Budget {
   updatedAt  DateTime @updatedAt
 
   @@unique([userId, categoryId, month, year])
+}
+
+model Reminder {
+  id          String    @id @default(uuid())
+  title       String
+  amount      Float
+  dueDate     Int       // Day of month (1 - 31)
+  frequency   String    @default("MONTHLY")
+  category    String?   // e.g. "MEDICINE", "ELECTRICITY", "WATER", "RENT", "INTERNET", "OTHER"
+  lastPaidAt  DateTime?
+  walletId    String?
+  wallet      Wallet?   @relation(fields: [walletId], references: [id], onDelete: SetNull)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
