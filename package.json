@@ -9,6 +9,11 @@
     "typecheck": "pnpm --filter backend exec tsc --noEmit -p tsconfig.build.json && pnpm --filter frontend typecheck",
     "build": "pnpm --filter backend build"
   },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "prettier --write"
+    ]
+  },
   "dependencies": {
     "@prisma/client": "^7.9.1",
     "pg": "^8.22.0",

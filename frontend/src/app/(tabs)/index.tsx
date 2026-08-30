@@ -1,253 +1,340 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
+  Alert,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
   Text,
   View,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  ActivityIndicator,
-  Alert,
-  SafeAreaView,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "@/store/auth.store";
-import { useWalletStore } from "@/store/wallet.store";
-import { useTransactionStore } from "@/store/transaction.store";
-import { styles } from "@/features/wallets/styles/home.styles";
-import { colors } from "@/theme/colors";
+import { useWalletStore, Wallet } from "@/store/wallet.store";
+import { Transaction, useTransactionStore } from "@/store/transaction.store";
+import { colors, radius, shadows, spacing, typography } from "@/theme";
 import {
-  formatCurrency,
-  walletTypeLabel,
-  categoryDisplayName,
-  parseVndInput,
-  formatVndInput,
-} from "@/lib/format";
-import { apiErrorMessage } from "@/lib/api-error";
+  EmptyState,
+  TransactionSkeletonList,
+  WalletSkeletonCard,
+} from "@/components/ui";
+import {
+  AddWalletCardButton,
+  WalletCard,
+} from "@/features/wallets/components/WalletCard";
+import { WalletSummaryCard } from "@/features/wallets/components/WalletSummaryCard";
+import { WalletModal } from "@/features/wallets/components/WalletModal";
+import { TransactionItem } from "@/features/transactions/components/TransactionItem";
+import { TransactionDetailModal } from "@/features/transactions/components/TransactionDetailModal";
 
 export default function HomeScreen() {
   const router = useRouter();
   const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
-  const { wallets, isLoading, fetchWallets, createWallet } = useWalletStore();
-  const { transactions, fetchTransactions } = useTransactionStore();
 
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [walletName, setWalletName] = useState("");
-  const [walletType, setWalletType] = useState("CASH");
-  const [walletBalance, setWalletBalance] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const {
+    wallets,
+    isLoading: isWalletsLoading,
+    fetchWallets,
+  } = useWalletStore();
 
-  useEffect(() => {
-    fetchWallets();
-    fetchTransactions();
+  const {
+    transactions,
+    isLoading: isTransactionsLoading,
+    fetchTransactions,
+  } = useTransactionStore();
+
+  const [refreshing, setRefreshing] = useState(false);
+  const [showWalletModal, setShowWalletModal] = useState(false);
+  const [selectedWallet, setSelectedWallet] = useState<Wallet | null>(null);
+  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+
+  const loadData = useCallback(async () => {
+    await Promise.all([fetchWallets(), fetchTransactions()]);
   }, [fetchWallets, fetchTransactions]);
 
-  const totalBalance = wallets.reduce((sum, w) => sum + w.balance, 0);
-  const recent = transactions.slice(0, 5);
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
-  const handleCreateWallet = async () => {
-    if (!walletName.trim()) {
-      Alert.alert("Name required", "Enter an account name before creating it.");
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      await createWallet(walletName, walletType, parseVndInput(walletBalance));
-      setWalletName("");
-      setWalletBalance("");
-      setShowAddForm(false);
-    } catch (err: unknown) {
-      Alert.alert(
-        "Error",
-        apiErrorMessage(err, "Could not create the wallet."),
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadData();
+    setRefreshing(false);
   };
+
+  const handleLogout = () => {
+    Alert.alert("Sign Out", "Are you sure you want to sign out of Monevo?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Sign Out",
+        style: "destructive",
+        onPress: () => logout(),
+      },
+    ]);
+  };
+
+  const totalBalance = wallets.reduce((sum, w) => sum + w.balance, 0);
+
+  // Compute this month's in & out
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+
+  let monthlyIncome = 0;
+  let monthlyExpense = 0;
+
+  for (const tx of transactions) {
+    const d = new Date(tx.date);
+    if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
+      if (tx.type === "INCOME") {
+        monthlyIncome += tx.amount;
+      } else {
+        monthlyExpense += tx.amount;
+      }
+    }
+  }
+
+  const recentTransactions = transactions.slice(0, 5);
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.welcomeText}>Welcome back</Text>
-          <Text style={styles.userName}>{user?.name || "there"}</Text>
+      {/* Top App Header */}
+      <View style={styles.topHeader}>
+        <View style={styles.userInfo}>
+          <View style={styles.avatarCircle}>
+            <Text style={styles.avatarText}>
+              {(user?.name || user?.email || "U").charAt(0).toUpperCase()}
+            </Text>
+          </View>
+          <View>
+            <Text style={styles.welcomeText}>Hello,</Text>
+            <Text style={styles.userName} numberOfLines={1}>
+              {user?.name || "Member"}
+            </Text>
+          </View>
         </View>
-        <TouchableOpacity
-          onPress={logout}
-          style={styles.logoutButton}
-          accessibilityLabel="Log out"
+
+        <Pressable
+          onPress={handleLogout}
+          style={styles.logoutBtn}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel="Sign out"
         >
-          <Text style={styles.logoutText}>Log out</Text>
-        </TouchableOpacity>
+          <Ionicons
+            name="log-out-outline"
+            size={20}
+            color={colors.textSecondary}
+          />
+        </Pressable>
       </View>
 
       <ScrollView
-        contentContainerStyle={styles.scrollContainer}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
+          />
+        }
       >
-        <View style={styles.balanceCard}>
-          <Text style={styles.balanceLabel}>Total balance</Text>
-          <Text style={styles.balanceValue}>
-            {formatCurrency(totalBalance)}
-          </Text>
-          <View style={styles.balanceCardFooter}>
-            <Text style={styles.footerLabel}>Accounts</Text>
-            <Text style={styles.footerValue}>{wallets.length}</Text>
+        {/* Total Balance Hero Card */}
+        <WalletSummaryCard
+          totalBalance={totalBalance}
+          monthlyIncome={monthlyIncome}
+          monthlyExpense={monthlyExpense}
+          walletCount={wallets.length}
+          onAddTransaction={() => router.push("/add-transaction")}
+          onAddWallet={() => {
+            setSelectedWallet(null);
+            setShowWalletModal(true);
+          }}
+        />
+
+        {/* My Accounts Carousel */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Accounts</Text>
+            <Pressable
+              onPress={() => router.push("/(tabs)/wallets")}
+              hitSlop={8}
+            >
+              <Text style={styles.sectionLink}>Manage</Text>
+            </Pressable>
           </View>
-        </View>
 
-        <TouchableOpacity
-          style={styles.primaryAction}
-          onPress={() => router.push("/add-transaction")}
-        >
-          <Text style={styles.primaryActionText}>Add transaction</Text>
-        </TouchableOpacity>
+          {isWalletsLoading && wallets.length === 0 ? (
+            <View style={{ paddingHorizontal: spacing.base }}>
+              <WalletSkeletonCard />
+            </View>
+          ) : (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.walletsCarousel}
+            >
+              {wallets.map((wallet) => (
+                <WalletCard
+                  key={wallet.id}
+                  wallet={wallet}
+                  compact
+                  onPress={() => {
+                    setSelectedWallet(wallet);
+                    setShowWalletModal(true);
+                  }}
+                />
+              ))}
 
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Accounts</Text>
-          {!showAddForm && (
-            <TouchableOpacity onPress={() => setShowAddForm(true)}>
-              <Text style={styles.sectionAction}>Add</Text>
-            </TouchableOpacity>
+              <AddWalletCardButton
+                onPress={() => {
+                  setSelectedWallet(null);
+                  setShowWalletModal(true);
+                }}
+              />
+            </ScrollView>
           )}
         </View>
 
-        {isLoading ? (
-          <ActivityIndicator
-            size="large"
-            color={colors.primary}
-            style={{ marginVertical: 24 }}
-          />
-        ) : wallets.length === 0 && !showAddForm ? (
-          <View style={styles.emptyHint}>
-            <Text style={styles.emptyHintText}>
-              No wallets yet. Add a cash or bank account to start tracking
-              spending.
-            </Text>
-          </View>
-        ) : (
-          <View style={styles.walletList}>
-            {wallets.map((wallet) => (
-              <View key={wallet.id} style={styles.walletRow}>
-                <View>
-                  <Text style={styles.walletName}>{wallet.name}</Text>
-                  <Text style={styles.walletMeta}>
-                    {walletTypeLabel(wallet.type)}
-                  </Text>
-                </View>
-                <Text style={styles.walletBalance}>
-                  {formatCurrency(wallet.balance)}
-                </Text>
-              </View>
-            ))}
-          </View>
-        )}
-
-        {showAddForm && (
-          <View style={styles.formContainer}>
-            <Text style={styles.formTitle}>New account</Text>
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Name</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="e.g. Cash, Checking"
-                value={walletName}
-                onChangeText={setWalletName}
-                placeholderTextColor={colors.textSecondary}
-              />
-            </View>
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Starting balance</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="0"
-                keyboardType="number-pad"
-                value={walletBalance}
-                onChangeText={(text) => setWalletBalance(formatVndInput(text))}
-                placeholderTextColor={colors.textSecondary}
-              />
-            </View>
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Type</Text>
-              <View style={styles.typeButtonsContainer}>
-                {["CASH", "BANK", "CREDIT_CARD"].map((t) => (
-                  <TouchableOpacity
-                    key={t}
-                    style={[
-                      styles.typeButton,
-                      walletType === t && styles.typeButtonActive,
-                    ]}
-                    onPress={() => setWalletType(t)}
-                  >
-                    <Text
-                      style={[
-                        styles.typeButtonText,
-                        walletType === t && styles.typeButtonTextActive,
-                      ]}
-                    >
-                      {walletTypeLabel(t)}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-            <TouchableOpacity
-              style={styles.submitButton}
-              onPress={handleCreateWallet}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <ActivityIndicator color="#FFFFFF" />
-              ) : (
-                <Text style={styles.submitButtonText}>Create wallet</Text>
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={() => setShowAddForm(false)}
-            >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Recent</Text>
-        </View>
-        {recent.length === 0 ? (
-          <View style={styles.emptyHint}>
-            <Text style={styles.emptyHintText}>
-              No transactions yet. Tap Add transaction to record income or
-              expenses.
-            </Text>
-          </View>
-        ) : (
-          recent.map((tx) => (
-            <View key={tx.id} style={styles.txRow}>
-              <View>
-                <Text style={styles.txTitle}>
-                  {categoryDisplayName(
-                    tx.category?.name || tx.note || "Transaction",
-                  )}
-                </Text>
-                <Text style={styles.txMeta}>{tx.wallet?.name || ""}</Text>
-              </View>
-              <Text
-                style={
-                  tx.type === "INCOME"
-                    ? styles.txAmountIncome
-                    : styles.txAmountExpense
-                }
+        {/* Recent Activity */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Recent Activity</Text>
+            {transactions.length > 0 && (
+              <Pressable
+                onPress={() => router.push("/(tabs)/transactions")}
+                hitSlop={8}
               >
-                {tx.type === "INCOME" ? "+" : "−"}
-                {formatCurrency(tx.amount)}
-              </Text>
-            </View>
-          ))
-        )}
+                <Text style={styles.sectionLink}>See All</Text>
+              </Pressable>
+            )}
+          </View>
+
+          <View style={styles.transactionsContainer}>
+            {isTransactionsLoading && transactions.length === 0 ? (
+              <TransactionSkeletonList count={3} />
+            ) : recentTransactions.length === 0 ? (
+              <EmptyState
+                icon="receipt-outline"
+                title="No Transactions Yet"
+                description="Start recording your daily income and spending to see your activity."
+                actionTitle="Add Transaction"
+                onAction={() => router.push("/add-transaction")}
+              />
+            ) : (
+              recentTransactions.map((tx) => (
+                <TransactionItem
+                  key={tx.id}
+                  transaction={tx}
+                  onPress={() => setSelectedTx(tx)}
+                />
+              ))
+            )}
+          </View>
+        </View>
       </ScrollView>
+
+      {/* Wallet Modal */}
+      <WalletModal
+        visible={showWalletModal}
+        onClose={() => setShowWalletModal(false)}
+        walletToEdit={selectedWallet}
+      />
+
+      {/* Transaction Detail Modal */}
+      <TransactionDetailModal
+        visible={!!selectedTx}
+        onClose={() => setSelectedTx(null)}
+        transaction={selectedTx}
+      />
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  topHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: spacing.base,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.md,
+  },
+  userInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  avatarCircle: {
+    width: 42,
+    height: 42,
+    borderRadius: radius.full,
+    backgroundColor: colors.primaryLight,
+    borderWidth: 1.5,
+    borderColor: colors.primary,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: spacing.md,
+  },
+  avatarText: {
+    ...typography.headline,
+    color: colors.primaryDark,
+    fontWeight: "700",
+  },
+  welcomeText: {
+    ...typography.caption,
+    color: colors.textSecondary,
+  },
+  userName: {
+    ...typography.headline,
+    color: colors.text,
+    fontWeight: "700",
+  },
+  logoutBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.full,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: "center",
+    justifyContent: "center",
+    ...shadows.sm,
+  },
+  scrollContent: {
+    paddingBottom: spacing.huge,
+  },
+  section: {
+    marginTop: spacing.md,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: spacing.base,
+    marginBottom: spacing.md,
+  },
+  sectionTitle: {
+    ...typography.title3,
+    color: colors.text,
+  },
+  sectionLink: {
+    ...typography.subhead,
+    fontWeight: "700",
+    color: colors.primary,
+  },
+  walletsCarousel: {
+    paddingHorizontal: spacing.base,
+    gap: spacing.md,
+  },
+  transactionsContainer: {
+    paddingHorizontal: spacing.base,
+  },
+});

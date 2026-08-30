@@ -1,1 +1,2 @@
+export PATH="$PATH:$HOME/.nvm/versions/node/$(ls $HOME/.nvm/versions/node 2>/dev/null | tail -n 1)/bin:$HOME/.local/share/pnpm:$HOME/.proto/bin:/opt/homebrew/bin:/usr/local/bin"
 pnpm lint-staged
