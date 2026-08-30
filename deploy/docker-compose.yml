@@ -35,6 +35,8 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-monevo}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-monevo}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_IOS_CLIENT_ID: ${GOOGLE_IOS_CLIENT_ID}
 
 volumes:
   postgres_data:

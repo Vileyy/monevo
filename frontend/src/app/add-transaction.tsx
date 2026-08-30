@@ -31,6 +31,7 @@ import {
   Input,
   SegmentedControl,
 } from "@/components/ui";
+import { CategoryModal } from "@/features/categories/components/CategoryModal";
 
 export default function AddTransactionScreen() {
   const router = useRouter();
@@ -53,6 +54,7 @@ export default function AddTransactionScreen() {
   const [note, setNote] = useState("");
   const [walletId, setWalletId] = useState<string | null>(null);
   const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const didSeed = useRef(false);
 
@@ -220,7 +222,18 @@ export default function AddTransactionScreen() {
 
           {/* Categories Grid */}
           <View style={styles.section}>
-            <Text style={styles.sectionLabel}>Category</Text>
+            <View style={styles.sectionHeaderRow}>
+              <Text style={styles.sectionLabel}>Category</Text>
+              <Pressable
+                onPress={() => setShowCategoryModal(true)}
+                hitSlop={8}
+                style={styles.addCatLink}
+              >
+                <Ionicons name="add" size={16} color={colors.primary} />
+                <Text style={styles.addCatLinkText}>New</Text>
+              </Pressable>
+            </View>
+
             <View style={styles.categoryGrid}>
               {visibleCategories.map((cat) => {
                 const isSelected = selectedCategoryId === cat.id;
@@ -250,6 +263,19 @@ export default function AddTransactionScreen() {
                   </Pressable>
                 );
               })}
+
+              {/* Add Custom Category Card */}
+              <Pressable
+                onPress={() => setShowCategoryModal(true)}
+                style={[styles.categoryCard, styles.addCategoryCard]}
+                accessibilityRole="button"
+                accessibilityLabel="Add custom category"
+              >
+                <View style={styles.addCatCircle}>
+                  <Ionicons name="add" size={20} color={colors.primary} />
+                </View>
+                <Text style={styles.addCatText}>Add New</Text>
+              </Pressable>
             </View>
           </View>
 
@@ -332,6 +358,13 @@ export default function AddTransactionScreen() {
           />
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Category Modal */}
+      <CategoryModal
+        visible={showCategoryModal}
+        onClose={() => setShowCategoryModal(false)}
+        initialType={type}
+      />
     </SafeAreaView>
   );
 }
@@ -352,11 +385,26 @@ const styles = StyleSheet.create({
   section: {
     marginBottom: spacing.base,
   },
+  sectionHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: spacing.sm,
+  },
   sectionLabel: {
     ...typography.subhead,
     color: colors.textSecondary,
     fontWeight: "600",
-    marginBottom: spacing.sm,
+  },
+  addCatLink: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 2,
+  },
+  addCatLinkText: {
+    ...typography.footnote,
+    fontWeight: "700",
+    color: colors.primary,
   },
   categoryGrid: {
     flexDirection: "row",
@@ -390,9 +438,29 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontWeight: "700",
   },
+  addCategoryCard: {
+    borderStyle: "dashed",
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryMuted,
+  },
+  addCatCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: radius.full,
+    backgroundColor: colors.surface,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  addCatText: {
+    ...typography.footnote,
+    fontWeight: "700",
+    color: colors.primary,
+    marginTop: spacing.xs,
+  },
   walletChips: {
     flexDirection: "row",
     gap: spacing.md,
+    marginTop: spacing.sm,
   },
   walletChip: {
     flexDirection: "row",
