@@ -7,8 +7,8 @@ jest.mock(
   }),
   { virtual: true },
 );
-import { CategoriesController } from './categories.controller';
-import { CategoriesService } from './categories.service';
+import { CategoriesController } from '../../src/categories/categories.controller';
+import { CategoriesService } from '../../src/categories/categories.service';
 
 describe('CategoriesController', () => {
   let controller: CategoriesController;

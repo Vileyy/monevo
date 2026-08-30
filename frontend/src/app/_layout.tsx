@@ -5,16 +5,18 @@ import * as SplashScreen from "expo-splash-screen";
 
 import { AnimatedSplashOverlay } from "@/components/animated-icon";
 import { useAuthStore } from "@/store/auth.store";
+import { useSettingsStore } from "@/store/settings.store";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const restoreSession = useAuthStore((state) => state.restoreSession);
+  const restoreSettings = useSettingsStore((state) => state.restoreSettings);
 
   useEffect(() => {
-    void restoreSession();
-  }, [restoreSession]);
+    void Promise.all([restoreSession(), restoreSettings()]);
+  }, [restoreSession, restoreSettings]);
 
   return (
     <ThemeProvider value={DefaultTheme}>

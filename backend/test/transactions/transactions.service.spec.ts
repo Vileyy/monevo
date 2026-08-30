@@ -7,8 +7,8 @@ jest.mock(
   }),
   { virtual: true },
 );
-import { TransactionsService } from './transactions.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { TransactionsService } from '../../src/transactions/transactions.service';
+import { PrismaService } from '../../src/prisma/prisma.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 describe('TransactionsService', () => {

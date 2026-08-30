@@ -6,6 +6,8 @@ export type User = {
   id: string;
   email: string;
   name?: string;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 const TOKEN_KEY = "monevo_jwt_token";
@@ -59,9 +61,10 @@ type AuthState = {
   restoreSession: () => Promise<void>;
   login: (user: User, token: string) => void;
   logout: () => void;
+  updateUser: (user: Partial<User>) => void;
 };
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   token: null,
   isAuthenticated: false,
@@ -110,5 +113,13 @@ export const useAuthStore = create<AuthState>((set) => ({
       isAuthenticated: false,
       isHydrated: true,
     });
+  },
+
+  updateUser: (partialUser) => {
+    const current = get().user;
+    if (!current) return;
+    const updated = { ...current, ...partialUser };
+    void saveStorage(USER_KEY, JSON.stringify(updated));
+    set({ user: updated });
   },
 }));

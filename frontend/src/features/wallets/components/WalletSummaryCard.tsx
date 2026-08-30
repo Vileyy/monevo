@@ -1,14 +1,17 @@
-import React, { useState } from "react";
+import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, radius, shadows, spacing, typography } from "@/theme";
 import { formatCurrency } from "@/lib/format";
+import { useSettingsStore } from "@/store/settings.store";
 
 export interface WalletSummaryCardProps {
   totalBalance: number;
   monthlyIncome: number;
   monthlyExpense: number;
   walletCount: number;
+  selectedWalletName?: string | null;
+  onOpenAccountSelector?: () => void;
   onAddTransaction: () => void;
   onAddWallet: () => void;
 }
@@ -18,10 +21,17 @@ export function WalletSummaryCard({
   monthlyIncome,
   monthlyExpense,
   walletCount,
+  selectedWalletName,
+  onOpenAccountSelector,
   onAddTransaction,
   onAddWallet,
 }: WalletSummaryCardProps) {
-  const [isBalanceHidden, setIsBalanceHidden] = useState(false);
+  const { hideBalance, toggleHideBalance } = useSettingsStore();
+
+  const isFiltered = Boolean(selectedWalletName);
+  const cardTitle = isFiltered
+    ? `${selectedWalletName} Balance`
+    : "Total Balance";
 
   return (
     <View style={styles.cardContainer}>
@@ -29,31 +39,57 @@ export function WalletSummaryCard({
         {/* Top Meta Row */}
         <View style={styles.topRow}>
           <View style={styles.labelGroup}>
-            <Text style={styles.balanceLabel}>Total Balance</Text>
+            <Text style={styles.balanceLabel} numberOfLines={1}>
+              {cardTitle}
+            </Text>
             <Pressable
-              onPress={() => setIsBalanceHidden((prev) => !prev)}
+              onPress={toggleHideBalance}
               style={styles.eyeBtn}
               hitSlop={8}
               accessibilityLabel="Toggle balance visibility"
             >
               <Ionicons
-                name={isBalanceHidden ? "eye-off-outline" : "eye-outline"}
+                name={hideBalance ? "eye-off-outline" : "eye-outline"}
                 size={16}
                 color="rgba(255, 255, 255, 0.75)"
               />
             </Pressable>
           </View>
 
-          <View style={styles.accountBadge}>
-            <Text style={styles.accountBadgeText}>
-              {walletCount} {walletCount === 1 ? "Account" : "Accounts"}
+          <Pressable
+            onPress={onOpenAccountSelector}
+            style={({ pressed }) => [
+              styles.accountBadge,
+              isFiltered && styles.accountBadgeFiltered,
+              pressed && styles.accountBadgePressed,
+            ]}
+            hitSlop={6}
+            accessibilityRole="button"
+            accessibilityLabel="Switch account view"
+          >
+            <Text
+              style={[
+                styles.accountBadgeText,
+                isFiltered && styles.accountBadgeTextFiltered,
+              ]}
+              numberOfLines={1}
+            >
+              {isFiltered
+                ? selectedWalletName
+                : `${walletCount} ${walletCount === 1 ? "Account" : "Accounts"}`}
             </Text>
-          </View>
+            <Ionicons
+              name="chevron-down"
+              size={12}
+              color={isFiltered ? colors.primaryDark : "#FFFFFF"}
+              style={styles.chevronIcon}
+            />
+          </Pressable>
         </View>
 
         {/* Amount */}
         <Text style={styles.balanceValue}>
-          {isBalanceHidden ? "••••••••" : formatCurrency(totalBalance)}
+          {hideBalance ? "••••••••" : formatCurrency(totalBalance)}
         </Text>
 
         {/* Cashflow In / Out Pills */}
@@ -62,7 +98,7 @@ export function WalletSummaryCard({
             <View style={[styles.miniDot, { backgroundColor: "#34D399" }]} />
             <Text style={styles.cashflowLabel}>Income</Text>
             <Text style={[styles.cashflowValue, { color: "#6EE7B7" }]}>
-              {isBalanceHidden ? "••••" : `+${formatCurrency(monthlyIncome)}`}
+              {hideBalance ? "••••" : `+${formatCurrency(monthlyIncome)}`}
             </Text>
           </View>
 
@@ -70,7 +106,7 @@ export function WalletSummaryCard({
             <View style={[styles.miniDot, { backgroundColor: "#FB7185" }]} />
             <Text style={styles.cashflowLabel}>Expense</Text>
             <Text style={[styles.cashflowValue, { color: "#FDA4AF" }]}>
-              {isBalanceHidden ? "••••" : `−${formatCurrency(monthlyExpense)}`}
+              {hideBalance ? "••••" : `−${formatCurrency(monthlyExpense)}`}
             </Text>
           </View>
         </View>
@@ -129,6 +165,8 @@ const styles = StyleSheet.create({
   labelGroup: {
     flexDirection: "row",
     alignItems: "center",
+    flex: 1,
+    marginRight: spacing.sm,
   },
   balanceLabel: {
     ...typography.subhead,
@@ -142,15 +180,31 @@ const styles = StyleSheet.create({
     padding: 2,
   },
   accountBadge: {
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: "rgba(255, 255, 255, 0.12)",
     paddingHorizontal: spacing.sm + 2,
-    paddingVertical: 3,
+    paddingVertical: 4,
     borderRadius: radius.full,
+    maxWidth: 160,
+  },
+  accountBadgeFiltered: {
+    backgroundColor: colors.primaryLight,
+  },
+  accountBadgePressed: {
+    opacity: 0.75,
   },
   accountBadgeText: {
     ...typography.caption,
     color: "#FFFFFF",
     fontWeight: "600",
+  },
+  accountBadgeTextFiltered: {
+    color: colors.primaryDark,
+    fontWeight: "700",
+  },
+  chevronIcon: {
+    marginLeft: 4,
   },
   balanceValue: {
     fontSize: 34,

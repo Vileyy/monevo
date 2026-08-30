@@ -5,7 +5,7 @@
   "scripts": {
     "prepare": "husky",
     "lint": "pnpm --filter backend lint:check && pnpm --filter frontend lint",
-    "test": "pnpm --filter backend test",
+    "test": "pnpm --filter backend test && pnpm --filter frontend test",
     "typecheck": "pnpm --filter backend exec tsc --noEmit -p tsconfig.build.json && pnpm --filter frontend typecheck",
     "build": "pnpm --filter backend build"
   },

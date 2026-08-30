@@ -7,8 +7,8 @@ jest.mock(
   }),
   { virtual: true },
 );
-import { WalletsService } from './wallets.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { WalletsService } from '../../src/wallets/wallets.service';
+import { PrismaService } from '../../src/prisma/prisma.service';
 import { NotFoundException } from '@nestjs/common';
 
 describe('WalletsService', () => {
