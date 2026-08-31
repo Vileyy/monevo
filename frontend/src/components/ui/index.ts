@@ -11,3 +11,4 @@ export * from "./Skeleton";
 export * from "./EmptyState";
 export * from "./StatCard";
 export * from "./Header";
+export * from "./OtpInput";

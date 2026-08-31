@@ -63,6 +63,7 @@ export default function RootLayout() {
           <AnimatedSplashOverlay />
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="index" />
+            <Stack.Screen name="oauth-native-callback" />
             <Stack.Screen name="onboarding" />
             <Stack.Screen name="login" />
             <Stack.Screen name="register" />

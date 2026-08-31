@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -15,11 +15,14 @@ import { useOAuth, useSignIn, useSignUp } from "@clerk/clerk-expo";
 import * as WebBrowser from "expo-web-browser";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, radius, shadows, spacing, typography } from "@/theme";
-import { Button, Input } from "@/components/ui";
+import { Button, Input, OtpInput } from "@/components/ui";
 import { useAuthStore } from "@/store/auth.store";
+import { hapticFeedback } from "@/lib/haptics";
 import { GoogleButton } from "./GoogleButton";
 
 WebBrowser.maybeCompleteAuthSession();
+
+type AuthFlow = "SIGN_IN" | "SIGN_UP";
 
 export function ClerkAuthScreen() {
   const router = useRouter();
@@ -40,14 +43,30 @@ export function ClerkAuthScreen() {
   });
 
   const [step, setStep] = useState<"EMAIL" | "OTP">("EMAIL");
+  const [authFlow, setAuthFlow] = useState<AuthFlow>("SIGN_IN");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
+  const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+
+  // 60-second Resend countdown timer
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (countdown > 0) {
+      timer = setTimeout(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [countdown]);
 
   // Send Email OTP Code
-  const handleSendCode = async () => {
-    if (!email.trim()) {
+  const handleSendCode = async (targetEmail?: string) => {
+    const emailToUse = (targetEmail || email).trim().toLowerCase();
+    if (!emailToUse) {
+      hapticFeedback.warning();
       Alert.alert("Vui lòng nhập Email", "Hãy nhập địa chỉ email của bạn.");
       return;
     }
@@ -57,113 +76,188 @@ export function ClerkAuthScreen() {
     }
 
     setIsLoading(true);
+    setHasError(false);
+    setCode("");
+
     try {
-      // 1. Try Signing in with Email Code (for existing users)
+      // 1. Try Signing In flow first (if user exists)
       try {
-        const { supportedFirstFactors } = await signIn.create({
-          identifier: email.trim(),
+        const signInAttempt = await signIn.create({
+          identifier: emailToUse,
         });
 
-        const emailCodeFactor = supportedFirstFactors?.find(
-          (factor) => factor.strategy === "email_code",
+        const emailFactor = signInAttempt.supportedFirstFactors?.find(
+          (f) => f.strategy === "email_code",
         );
 
-        if (emailCodeFactor && "emailAddressId" in emailCodeFactor) {
+        if (emailFactor && "emailAddressId" in emailFactor) {
           await signIn.prepareFirstFactor({
             strategy: "email_code",
-            emailAddressId: emailCodeFactor.emailAddressId,
+            emailAddressId: emailFactor.emailAddressId,
           });
+          setAuthFlow("SIGN_IN");
           setStep("OTP");
+          setCountdown(60);
+          hapticFeedback.success();
           return;
         }
       } catch {
-        // If user does not exist yet, create a sign-up attempt
+        // User not found or needs sign-up, fall through to Sign Up
       }
 
-      // 2. Create Sign Up with Email Code (for new users)
-      await signUp.create({
-        emailAddress: email.trim(),
-      });
+      // 2. Create Sign Up flow (for new user)
+      try {
+        await signUp.create({
+          emailAddress: emailToUse,
+        });
 
-      await signUp.prepareEmailAddressVerification({
-        strategy: "email_code",
-      });
+        await signUp.prepareEmailAddressVerification({
+          strategy: "email_code",
+        });
 
-      setStep("OTP");
+        setAuthFlow("SIGN_UP");
+        setStep("OTP");
+        setCountdown(60);
+        hapticFeedback.success();
+      } catch (signUpErr: unknown) {
+        // If signUp failed because user exists already, retry prepare on signIn
+        if (
+          signUpErr instanceof Error &&
+          signUpErr.message.toLowerCase().includes("already exists")
+        ) {
+          const retrySignIn = await signIn.create({ identifier: emailToUse });
+          const factor = retrySignIn.supportedFirstFactors?.find(
+            (f) => f.strategy === "email_code",
+          );
+          if (factor && "emailAddressId" in factor) {
+            await signIn.prepareFirstFactor({
+              strategy: "email_code",
+              emailAddressId: factor.emailAddressId,
+            });
+            setAuthFlow("SIGN_IN");
+            setStep("OTP");
+            setCountdown(60);
+            hapticFeedback.success();
+            return;
+          }
+        }
+        throw signUpErr;
+      }
     } catch (err: unknown) {
+      hapticFeedback.error();
       const msg =
         err instanceof Error
           ? err.message
-          : "Không thể gửi mã. Vui lòng thử lại.";
-      Alert.alert("Lỗi", msg);
+          : "Không thể gửi mã. Vui lòng kiểm tra lại email.";
+      Alert.alert("Lỗi gửi mã", msg);
     } finally {
       setIsLoading(false);
     }
   };
 
   // Verify 6-digit OTP Code
-  const handleVerifyCode = async () => {
-    if (!code.trim()) {
-      Alert.alert("Thiếu mã", "Vui lòng nhập mã 6 số được gửi về email.");
+  const handleVerifyCode = async (customCode?: string) => {
+    const raw = customCode || code;
+    const cleanCode = raw.replace(/\D/g, "").trim();
+
+    if (cleanCode.length !== 6) {
+      hapticFeedback.warning();
+      Alert.alert(
+        "Mã không hợp lệ",
+        "Vui lòng nhập đủ 6 chữ số được gửi về email.",
+      );
       return;
     }
 
     if (!isSignInLoaded || !isSignUpLoaded) return;
 
     setIsLoading(true);
-    try {
-      // Try verifying sign-in attempt first
-      if (signIn.status === "needs_first_factor") {
-        const result = await signIn.attemptFirstFactor({
-          strategy: "email_code",
-          code: code.trim(),
-        });
+    setHasError(false);
 
-        if (result.status === "complete" && result.createdSessionId) {
-          await setSignInActive({ session: result.createdSessionId });
-          const token = result.createdSessionId || "clerk_token";
-          loginStore(
-            {
-              id: result.createdSessionId || "user",
-              email: email.trim(),
-              name: result.userData?.firstName || "Monevo User",
-            },
-            token,
-          );
-          router.replace("/(tabs)");
-          return;
+    try {
+      // Flow 1: Verify via Sign In
+      if (authFlow === "SIGN_IN" && signIn.status === "needs_first_factor") {
+        try {
+          const result = await signIn.attemptFirstFactor({
+            strategy: "email_code",
+            code: cleanCode,
+          });
+
+          if (result.status === "complete" && result.createdSessionId) {
+            await setSignInActive({ session: result.createdSessionId });
+            hapticFeedback.success();
+            loginStore(
+              {
+                id: result.createdSessionId,
+                email: email.trim().toLowerCase(),
+                name: result.userData?.firstName || "Monevo User",
+              },
+              result.createdSessionId,
+            );
+            router.replace("/(tabs)");
+            return;
+          }
+        } catch {
+          // If signIn attempt fails, try signUp verification as fallback
         }
       }
 
-      // Verify sign-up attempt
-      if (signUp.status === "missing_requirements") {
+      // Flow 2: Verify via Sign Up
+      try {
         const result = await signUp.attemptEmailAddressVerification({
-          code: code.trim(),
+          code: cleanCode,
         });
 
         if (result.status === "complete" && result.createdSessionId) {
           await setSignUpActive({ session: result.createdSessionId });
-          const token = (await result.createdSessionId) || "clerk_token";
+          hapticFeedback.success();
           loginStore(
             {
-              id: result.createdUserId || "user",
-              email: email.trim(),
+              id: result.createdUserId || result.createdSessionId,
+              email: email.trim().toLowerCase(),
               name: result.firstName || "Monevo User",
             },
-            token,
+            result.createdSessionId,
           );
           router.replace("/(tabs)");
           return;
         }
+      } catch {
+        // Fallback retry with signIn if signUp fails
+        if (signIn.status === "needs_first_factor") {
+          const result = await signIn.attemptFirstFactor({
+            strategy: "email_code",
+            code: cleanCode,
+          });
+
+          if (result.status === "complete" && result.createdSessionId) {
+            await setSignInActive({ session: result.createdSessionId });
+            hapticFeedback.success();
+            loginStore(
+              {
+                id: result.createdSessionId,
+                email: email.trim().toLowerCase(),
+                name: result.userData?.firstName || "Monevo User",
+              },
+              result.createdSessionId,
+            );
+            router.replace("/(tabs)");
+            return;
+          }
+        }
       }
 
+      setHasError(true);
+      hapticFeedback.error();
       Alert.alert(
         "Mã không đúng",
-        "Mã xác thực không hợp lệ. Vui lòng kiểm tra lại.",
+        "Mã xác thực bạn vừa nhập không khớp hoặc đã hết hạn. Vui lòng kiểm tra lại email mới nhất.",
       );
     } catch (err: unknown) {
+      setHasError(true);
+      hapticFeedback.error();
       const msg =
-        err instanceof Error ? err.message : "Mã xác thực không đúng.";
+        err instanceof Error ? err.message : "Mã xác thực không chính xác.";
       Alert.alert("Lỗi xác thực", msg);
     } finally {
       setIsLoading(false);
@@ -172,11 +266,13 @@ export function ClerkAuthScreen() {
 
   // 1-Tap Google Sign-In
   const handleGooglePress = async () => {
+    hapticFeedback.light();
     setIsGoogleLoading(true);
     try {
       const { createdSessionId, setActive } = await startGoogleOAuth();
       if (createdSessionId && setActive) {
         await setActive({ session: createdSessionId });
+        hapticFeedback.success();
         loginStore(
           {
             id: createdSessionId,
@@ -188,6 +284,7 @@ export function ClerkAuthScreen() {
         router.replace("/(tabs)");
       }
     } catch (err: unknown) {
+      hapticFeedback.error();
       const msg =
         err instanceof Error ? err.message : "Không thể đăng nhập bằng Google.";
       Alert.alert("Google Login", msg);
@@ -205,39 +302,50 @@ export function ClerkAuthScreen() {
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
           {/* Logo & Header */}
           <View style={styles.header}>
             <View style={styles.logoBox}>
-              <Ionicons name="wallet" size={36} color={colors.surface} />
+              <Ionicons name="wallet" size={38} color={colors.surface} />
             </View>
             <Text style={styles.appTitle}>Monevo</Text>
             <Text style={styles.tagline}>
               {step === "EMAIL"
-                ? "Đăng nhập nhanh không cần nhớ mật khẩu"
-                : "Nhập mã xác thực được gửi về email"}
+                ? "Đăng nhập an toàn, tiện lợi & không cần mật khẩu"
+                : "Nhập mã 6 chữ số được gửi tới hộp thư của bạn"}
             </Text>
           </View>
 
           {/* Card Form */}
           <View style={styles.card}>
             {step === "EMAIL" ? (
-              /* Step 1: Enter Email */
+              /* ================= STEP 1: ENTER EMAIL ================= */
               <View>
                 <Input
-                  label="Địa chỉ Email của bạn"
-                  placeholder="Ví dụ: nguyenvanan@gmail.com"
+                  label="Địa chỉ Email"
+                  placeholder="name@example.com"
                   value={email}
-                  onChangeText={setEmail}
+                  onChangeText={(text) => {
+                    setEmail(text);
+                    setHasError(false);
+                  }}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
                   autoFocus
+                  leftIcon={
+                    <Ionicons
+                      name="mail-outline"
+                      size={18}
+                      color={colors.textSecondary}
+                    />
+                  }
                 />
 
                 <Button
                   title="Gửi mã đăng nhập ➜"
-                  onPress={handleSendCode}
+                  onPress={() => void handleSendCode()}
                   isLoading={isLoading}
                   size="lg"
                   style={styles.mainButton}
@@ -255,48 +363,80 @@ export function ClerkAuthScreen() {
                 />
               </View>
             ) : (
-              /* Step 2: Enter 6-digit OTP */
+              /* ================= STEP 2: ENTER OTP ================= */
               <View>
+                {/* Email Info Badge */}
                 <View style={styles.otpInfoBox}>
                   <Ionicons
-                    name="mail-open-outline"
-                    size={20}
-                    color={colors.primary}
+                    name="mail-open"
+                    size={22}
+                    color={colors.primaryDark}
                   />
-                  <Text style={styles.otpInfoText}>
-                    Mã 6 số đã gửi tới:{" "}
-                    <Text style={styles.otpEmailText}>{email}</Text>
-                  </Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.otpInfoText}>
+                      Mã xác nhận đã gửi đến:
+                    </Text>
+                    <Text style={styles.otpEmailText} numberOfLines={1}>
+                      {email}
+                    </Text>
+                  </View>
+                  <Pressable
+                    onPress={() => {
+                      hapticFeedback.light();
+                      setStep("EMAIL");
+                    }}
+                    hitSlop={8}
+                    style={styles.editEmailBtn}
+                  >
+                    <Ionicons name="pencil" size={13} color={colors.primary} />
+                  </Pressable>
                 </View>
 
-                <Input
-                  label="Mã xác nhận (6 chữ số)"
-                  placeholder="Nhập 6 số..."
-                  value={code}
-                  onChangeText={setCode}
-                  keyboardType="number-pad"
-                  autoFocus
+                {/* 6-Box Animated OtpInput */}
+                <OtpInput
+                  code={code}
+                  onCodeChange={(newCode) => {
+                    setCode(newCode);
+                    setHasError(false);
+                  }}
+                  onFilled={(filledCode) => {
+                    void handleVerifyCode(filledCode);
+                  }}
+                  hasError={hasError}
+                  disabled={isLoading}
                 />
 
+                {/* Confirm Button */}
                 <Button
                   title="Xác nhận & Vào ứng dụng ✔"
-                  onPress={handleVerifyCode}
+                  onPress={() => void handleVerifyCode()}
                   isLoading={isLoading}
                   size="lg"
                   style={styles.mainButton}
                 />
 
-                <Pressable
-                  onPress={() => setStep("EMAIL")}
-                  style={styles.backButton}
-                >
-                  <Ionicons
-                    name="arrow-back"
-                    size={16}
-                    color={colors.textSecondary}
-                  />
-                  <Text style={styles.backButtonText}>Đổi email khác</Text>
-                </Pressable>
+                {/* Resend Code & Back Row */}
+                <View style={styles.resendRow}>
+                  {countdown > 0 ? (
+                    <Text style={styles.countdownText}>
+                      Gửi lại mã sau ({countdown}s)
+                    </Text>
+                  ) : (
+                    <Pressable
+                      onPress={() => void handleSendCode()}
+                      disabled={isLoading}
+                      hitSlop={8}
+                      style={styles.resendBtn}
+                    >
+                      <Ionicons
+                        name="refresh-outline"
+                        size={15}
+                        color={colors.primary}
+                      />
+                      <Text style={styles.resendText}>Gửi lại mã OTP</Text>
+                    </Pressable>
+                  )}
+                </View>
               </View>
             )}
           </View>
@@ -327,9 +467,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
   },
   logoBox: {
-    width: 64,
-    height: 64,
-    borderRadius: 20,
+    width: 68,
+    height: 68,
+    borderRadius: radius.xxl,
     backgroundColor: colors.primary,
     justifyContent: "center",
     alignItems: "center",
@@ -337,9 +477,9 @@ const styles = StyleSheet.create({
     ...shadows.md,
   },
   appTitle: {
-    fontSize: 30,
-    lineHeight: 36,
-    fontWeight: "800",
+    fontSize: 32,
+    lineHeight: 38,
+    fontWeight: "900",
     color: colors.text,
     letterSpacing: -0.5,
   },
@@ -347,8 +487,8 @@ const styles = StyleSheet.create({
     ...typography.subhead,
     color: colors.textSecondary,
     textAlign: "center",
-    marginTop: 4,
-    maxWidth: 280,
+    marginTop: 6,
+    maxWidth: 290,
   },
   card: {
     width: "100%",
@@ -383,30 +523,45 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.primaryLight,
     padding: spacing.md,
-    borderRadius: radius.lg,
-    marginBottom: spacing.lg,
+    borderRadius: radius.xl,
+    marginBottom: spacing.base,
     gap: spacing.sm,
   },
   otpInfoText: {
     ...typography.caption,
-    color: colors.text,
-    flex: 1,
+    color: colors.textSecondary,
   },
   otpEmailText: {
+    ...typography.subhead,
     fontWeight: "700",
     color: colors.primaryDark,
+    marginTop: 1,
   },
-  backButton: {
+  editEmailBtn: {
+    backgroundColor: colors.surface,
+    padding: 6,
+    borderRadius: radius.full,
+    ...shadows.sm,
+  },
+  resendRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     marginTop: spacing.lg,
-    gap: 6,
-    paddingVertical: spacing.xs,
   },
-  backButtonText: {
-    ...typography.subhead,
-    color: colors.textSecondary,
+  countdownText: {
+    ...typography.caption,
+    color: colors.textMuted,
     fontWeight: "600",
+  },
+  resendBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  resendText: {
+    ...typography.subhead,
+    fontWeight: "700",
+    color: colors.primary,
   },
 });
