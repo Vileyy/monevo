@@ -1,8 +1,7 @@
 import * as SplashScreen from "expo-splash-screen";
 import React, { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import Animated, { Easing, Keyframe } from "react-native-reanimated";
-import { scheduleOnRN } from "react-native-worklets";
+import Animated, { Easing, Keyframe, runOnJS } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, radius, shadows } from "@/theme";
 
@@ -13,6 +12,10 @@ export function AnimatedSplashOverlay() {
   const [visible, setVisible] = useState(true);
 
   if (!visible) return null;
+
+  const handleFinish = () => {
+    setVisible(false);
+  };
 
   const splashKeyframe = new Keyframe({
     0: {
@@ -45,7 +48,7 @@ export function AnimatedSplashOverlay() {
       entering={splashKeyframe.duration(DURATION).withCallback((finished) => {
         "worklet";
         if (finished) {
-          scheduleOnRN(setVisible, false);
+          runOnJS(handleFinish)();
         }
       })}
       style={styles.splashOverlay}
@@ -55,9 +58,11 @@ export function AnimatedSplashOverlay() {
   ) : (
     <View
       onLayout={() => {
-        SplashScreen.hideAsync().finally(() => {
-          setAnimate(true);
-        });
+        SplashScreen.hideAsync()
+          .catch(() => {})
+          .finally(() => {
+            setAnimate(true);
+          });
       }}
       style={styles.splashOverlay}
     >
