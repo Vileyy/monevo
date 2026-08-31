@@ -9,6 +9,7 @@ export default function OAuthNativeCallback() {
   const router = useRouter();
   const { isSignedIn, userId, getToken } = useAuth();
   const { user } = useUser();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const loginStore = useAuthStore((state) => state.login);
 
   useEffect(() => {
@@ -33,6 +34,11 @@ export default function OAuthNativeCallback() {
       }
     }
 
+    if (isAuthenticated) {
+      router.replace("/(tabs)");
+      return;
+    }
+
     if (isSignedIn) {
       void handleCallback();
     } else {
@@ -44,14 +50,14 @@ export default function OAuthNativeCallback() {
             router.replace("/login");
           }
         }
-      }, 1500);
+      }, 8000);
       return () => clearTimeout(timer);
     }
 
     return () => {
       isMounted = false;
     };
-  }, [isSignedIn, userId, user, getToken, loginStore, router]);
+  }, [isSignedIn, userId, user, isAuthenticated, getToken, loginStore, router]);
 
   return (
     <View style={styles.container}>

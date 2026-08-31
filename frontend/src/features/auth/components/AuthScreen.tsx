@@ -81,6 +81,16 @@ export function AuthScreen({
     password?: string;
   }>({});
 
+  // Warm up browser on Android
+  useEffect(() => {
+    if (Platform.OS === "android") {
+      void WebBrowser.warmUpAsync();
+      return () => {
+        void WebBrowser.coolDownAsync();
+      };
+    }
+  }, []);
+
   // 60-second countdown for OTP resend
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -209,6 +219,22 @@ export function AuthScreen({
           hapticFeedback.success();
           codeSent = true;
           return;
+        } else {
+          // User exists but has password auth only
+          Alert.alert(
+            "Tài khoản đã có mật khẩu",
+            "Email này đã được đăng ký tài khoản với mật khẩu. Vui lòng chuyển sang tab 'Tài khoản' để đăng nhập.",
+            [
+              {
+                text: "Chuyển sang Đăng nhập",
+                onPress: () => {
+                  setAuthMethod("account");
+                  setAccountMode("login");
+                },
+              },
+            ],
+          );
+          return;
         }
       } catch {
         // User not found in signIn, proceed to signUp
@@ -230,7 +256,6 @@ export function AuthScreen({
           setCountdown(60);
           hapticFeedback.success();
         } catch (signUpErr: unknown) {
-          // If signUp failed because user exists already, retry prepare on signIn
           const isUserExists =
             (signUpErr as { errors?: { code: string }[] })?.errors?.[0]
               ?.code === "form_identifier_exists" ||
@@ -238,21 +263,20 @@ export function AuthScreen({
               signUpErr.message.toLowerCase().includes("already exists"));
 
           if (isUserExists) {
-            const retrySignIn = await signIn.create({ identifier: emailToUse });
-            const factor = retrySignIn.supportedFirstFactors?.find(
-              (f) => f.strategy === "email_code",
+            Alert.alert(
+              "Tài khoản đã tồn tại",
+              "Email này đã có tài khoản trên Monevo. Vui lòng chuyển sang tab 'Tài khoản' để đăng nhập bằng mật khẩu.",
+              [
+                {
+                  text: "Đăng nhập mật khẩu",
+                  onPress: () => {
+                    setAuthMethod("account");
+                    setAccountMode("login");
+                  },
+                },
+              ],
             );
-            if (factor && "emailAddressId" in factor) {
-              await signIn.prepareFirstFactor({
-                strategy: "email_code",
-                emailAddressId: factor.emailAddressId,
-              });
-              setOtpFlow("SIGN_IN");
-              setOtpStep("OTP");
-              setCountdown(60);
-              hapticFeedback.success();
-              return;
-            }
+            return;
           }
           throw signUpErr;
         }
@@ -338,11 +362,7 @@ export function AuthScreen({
           code: cleanCode,
         });
 
-        if (
-          (result.status === "complete" ||
-            result.status === "missing_requirements") &&
-          result.createdSessionId
-        ) {
+        if (result.status === "complete" && result.createdSessionId) {
           await setSignUpActive({ session: result.createdSessionId });
           hapticFeedback.success();
           let token: string | null = null;
@@ -359,10 +379,39 @@ export function AuthScreen({
           );
           router.replace("/(tabs)");
           return;
-        } else if (result.status === "complete") {
-          hapticFeedback.success();
-          router.replace("/(tabs)");
-          return;
+        }
+
+        // If email is verified but missing fields requirement
+        if (result.status === "missing_requirements") {
+          // Fulfill any missing requirements dynamically
+          try {
+            const dynamicPass = `M${Date.now()}${Math.random().toString(36).slice(2, 8)}!`;
+            const updateRes = await signUp.update({
+              password: dynamicPass,
+            });
+            if (
+              (updateRes.status === "complete" ||
+                updateRes.status === "missing_requirements") &&
+              updateRes.createdSessionId
+            ) {
+              await setSignUpActive({ session: updateRes.createdSessionId });
+              hapticFeedback.success();
+              let token: string | null = null;
+              try {
+                token = await getToken();
+              } catch {}
+              loginStore(
+                {
+                  id: updateRes.createdUserId || updateRes.createdSessionId,
+                  email: email.trim().toLowerCase(),
+                  name: "Monevo User",
+                },
+                token || updateRes.createdSessionId,
+              );
+              router.replace("/(tabs)");
+              return;
+            }
+          } catch {}
         }
       } catch (signUpErr: unknown) {
         // Fallback retry with signIn if signUp failed
