@@ -13,6 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "@/store/auth.store";
 import { useWalletStore } from "@/store/wallet.store";
 import { useTransactionStore } from "@/store/transaction.store";
+import { useReminderStore } from "@/store/reminder.store";
 import { useSettingsStore } from "@/store/settings.store";
 import { getCurrencyConfig } from "@/lib/currencies";
 import { formatCurrency } from "@/lib/format";
@@ -23,13 +24,25 @@ import { CurrencyPickerModal } from "@/features/profile/components/CurrencyPicke
 import { EditProfileModal } from "@/features/profile/components/EditProfileModal";
 import { CategoryModal } from "@/features/categories/components/CategoryModal";
 import { apiClient } from "@/services/api/client";
+import {
+  requestNotificationPermission,
+  syncReminderNotifications,
+} from "@/lib/notifications";
+import { hapticFeedback } from "@/lib/haptics";
 
 export default function ProfileScreen() {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const { wallets, fetchWallets } = useWalletStore();
   const { transactions, fetchTransactions } = useTransactionStore();
-  const { currency, hideBalance, toggleHideBalance } = useSettingsStore();
+  const { reminders } = useReminderStore();
+  const {
+    currency,
+    hideBalance,
+    toggleHideBalance,
+    reminderNotifications,
+    setReminderNotifications,
+  } = useSettingsStore();
 
   const [refreshing, setRefreshing] = useState(false);
   const [showCurrencyModal, setShowCurrencyModal] = useState(false);
@@ -38,6 +51,29 @@ export default function ProfileScreen() {
   const [serverStatus, setServerStatus] = useState<
     "online" | "offline" | "checking"
   >("checking");
+
+  const handleToggleNotifications = async () => {
+    hapticFeedback.selection();
+    if (!reminderNotifications) {
+      const granted = await requestNotificationPermission();
+      if (granted) {
+        setReminderNotifications(true);
+        void syncReminderNotifications(reminders);
+        Alert.alert(
+          "Đã bật thông báo",
+          "Ứng dụng sẽ gửi thông báo nhắc nhở trước ngày đến hạn của hóa đơn lúc 9:00 sáng.",
+        );
+      } else {
+        Alert.alert(
+          "Quyền thông báo bị từ chối",
+          "Vui lòng vào Cài đặt của điện thoại để cho phép ứng dụng gửi thông báo.",
+        );
+      }
+    } else {
+      setReminderNotifications(false);
+      void syncReminderNotifications([]);
+    }
+  };
 
   const checkHealth = useCallback(async () => {
     try {
@@ -185,6 +221,15 @@ export default function ProfileScreen() {
             isSwitch
             switchValue={hideBalance}
             onSwitchChange={toggleHideBalance}
+          />
+          <View style={styles.rowDivider} />
+          <SettingsRow
+            icon="notifications-outline"
+            title="Bill Reminders"
+            subtitle="Local push notification at 9:00 AM"
+            isSwitch
+            switchValue={reminderNotifications}
+            onSwitchChange={handleToggleNotifications}
           />
           <View style={styles.rowDivider} />
           <SettingsRow

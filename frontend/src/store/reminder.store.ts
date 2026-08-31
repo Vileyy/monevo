@@ -2,6 +2,10 @@ import { create } from "zustand";
 import { apiClient } from "@/services/api/client";
 import { Wallet, useWalletStore } from "./wallet.store";
 import { useTransactionStore } from "./transaction.store";
+import {
+  cancelReminderNotification,
+  syncReminderNotifications,
+} from "@/lib/notifications";
 
 export type ReminderCategory =
   | "MEDICINE"
@@ -58,6 +62,7 @@ export const useReminderStore = create<ReminderState>((set, get) => ({
     try {
       const response = await apiClient.get<ReminderItem[]>("/reminders");
       set({ reminders: response.data, isLoading: false });
+      void syncReminderNotifications(response.data);
     } catch (err: unknown) {
       set({
         isLoading: false,
@@ -96,6 +101,7 @@ export const useReminderStore = create<ReminderState>((set, get) => ({
 
     try {
       await apiClient.post(`/reminders/${id}/pay`, { walletId });
+      void cancelReminderNotification(id);
       // Refresh reminders, wallets & transactions in background
       await Promise.all([
         get().fetchReminders(),
@@ -118,6 +124,7 @@ export const useReminderStore = create<ReminderState>((set, get) => ({
     });
 
     try {
+      void cancelReminderNotification(id);
       await apiClient.delete(`/reminders/${id}`);
     } catch (err: unknown) {
       // Revert if failed
