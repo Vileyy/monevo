@@ -14,12 +14,6 @@
       "pnpm": "11.17.0",
       "android": {
         "buildType": "apk"
-      },
-      "env": {
-        "EXPO_PUBLIC_API_URL": "http://3.24.68.57:3000",
-        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_ZW5oYW5jZWQtb2NlbG90LTc4NTEuY2xlcmsuYWNjb3VudHMuZGV2JA",
-        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "451912785888-ko2l1q15auq8jj4u8ugbb7vmjnl12dtl.apps.googleusercontent.com",
-        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "451912785888-dbol7b4knn8tk0sfudt52lt78fecq54d.apps.googleusercontent.com"
       }
     },
     "production": {
