@@ -1,10 +1,11 @@
-import React from "react";
+import React, { memo } from "react";
 import { Pressable, StyleSheet, Text, View, ViewStyle } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, radius, shadows, spacing, typography } from "@/theme";
 import { formatCurrency } from "@/lib/format";
 import { getWalletMeta } from "@/lib/categories";
 import { Wallet } from "@/store/wallet.store";
+import { hapticFeedback } from "@/lib/haptics";
 
 export interface WalletCardProps {
   wallet: Wallet;
@@ -14,7 +15,7 @@ export interface WalletCardProps {
   isSelected?: boolean;
 }
 
-export function WalletCard({
+export const WalletCard = memo(function WalletCard({
   wallet,
   onPress,
   style,
@@ -23,9 +24,14 @@ export function WalletCard({
 }: WalletCardProps) {
   const meta = getWalletMeta(wallet.type);
 
+  const handlePress = () => {
+    hapticFeedback.selection();
+    onPress?.();
+  };
+
   return (
     <Pressable
-      onPress={onPress}
+      onPress={handlePress}
       style={({ pressed }) => [
         styles.card,
         compact ? styles.compactCard : styles.standardCard,
@@ -56,12 +62,21 @@ export function WalletCard({
       </View>
     </Pressable>
   );
-}
+});
 
-export function AddWalletCardButton({ onPress }: { onPress: () => void }) {
+export const AddWalletCardButton = memo(function AddWalletCardButton({
+  onPress,
+}: {
+  onPress: () => void;
+}) {
+  const handlePress = () => {
+    hapticFeedback.light();
+    onPress();
+  };
+
   return (
     <Pressable
-      onPress={onPress}
+      onPress={handlePress}
       style={({ pressed }) => [
         styles.card,
         styles.compactCard,
@@ -78,7 +93,7 @@ export function AddWalletCardButton({ onPress }: { onPress: () => void }) {
       <Text style={styles.addSubtitle}>Bank, Cash or Card</Text>
     </Pressable>
   );
-}
+});
 
 const styles = StyleSheet.create({
   card: {

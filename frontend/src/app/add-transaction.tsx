@@ -23,6 +23,7 @@ import {
 } from "@/lib/format";
 import { apiErrorMessage } from "@/lib/api-error";
 import { DEFAULT_CATEGORY_METAS, getWalletMeta } from "@/lib/categories";
+import { hapticFeedback } from "@/lib/haptics";
 import {
   Button,
   CategoryIcon,
@@ -107,14 +108,32 @@ export default function AddTransactionScreen() {
       ? categoryId
       : (visibleCategories[0]?.id ?? null);
 
+  const handleTypeChange = (newType: "EXPENSE" | "INCOME") => {
+    hapticFeedback.selection();
+    setType(newType);
+    setCategoryId(null);
+  };
+
+  const handleSelectCategory = (id: string) => {
+    hapticFeedback.selection();
+    setCategoryId(id);
+  };
+
+  const handleSelectWallet = (id: string) => {
+    hapticFeedback.selection();
+    setWalletId(id);
+  };
+
   const handleSave = async () => {
     const parsedAmount = parseVndInput(amount);
     if (!parsedAmount || parsedAmount <= 0) {
+      hapticFeedback.warning();
       Alert.alert("Invalid Amount", "Please enter an amount greater than 0.");
       return;
     }
 
     if (!selectedWalletId) {
+      hapticFeedback.warning();
       Alert.alert(
         "No Account Selected",
         "Please select an account or wait a moment for the default account to initialize.",
@@ -123,6 +142,7 @@ export default function AddTransactionScreen() {
     }
 
     if (!selectedCategoryId) {
+      hapticFeedback.warning();
       Alert.alert(
         "No Category Selected",
         "Please select a category for this transaction.",
@@ -140,9 +160,11 @@ export default function AddTransactionScreen() {
         categoryId: selectedCategoryId,
       });
 
+      hapticFeedback.success();
       await Promise.all([fetchWallets(), fetchTransactions()]);
       router.back();
     } catch (error) {
+      hapticFeedback.error();
       Alert.alert(
         "Error",
         apiErrorMessage(error, "Could not save transaction."),
@@ -154,7 +176,14 @@ export default function AddTransactionScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header title="Add Transaction" showBack onBack={() => router.back()} />
+      <Header
+        title="Add Transaction"
+        showBack
+        onBack={() => {
+          hapticFeedback.light();
+          router.back();
+        }}
+      />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -203,10 +232,7 @@ export default function AddTransactionScreen() {
                 },
               ]}
               value={type}
-              onChange={(newType) => {
-                setType(newType);
-                setCategoryId(null);
-              }}
+              onChange={handleTypeChange}
             />
           </View>
 
@@ -225,7 +251,10 @@ export default function AddTransactionScreen() {
             <View style={styles.sectionHeaderRow}>
               <Text style={styles.sectionLabel}>Category</Text>
               <Pressable
-                onPress={() => setShowCategoryModal(true)}
+                onPress={() => {
+                  hapticFeedback.light();
+                  setShowCategoryModal(true);
+                }}
                 hitSlop={8}
                 style={styles.addCatLink}
               >
@@ -242,7 +271,7 @@ export default function AddTransactionScreen() {
                 return (
                   <Pressable
                     key={cat.id}
-                    onPress={() => setCategoryId(cat.id)}
+                    onPress={() => handleSelectCategory(cat.id)}
                     style={[
                       styles.categoryCard,
                       isSelected && styles.categoryCardSelected,
@@ -266,7 +295,10 @@ export default function AddTransactionScreen() {
 
               {/* Add Custom Category Card */}
               <Pressable
-                onPress={() => setShowCategoryModal(true)}
+                onPress={() => {
+                  hapticFeedback.light();
+                  setShowCategoryModal(true);
+                }}
                 style={[styles.categoryCard, styles.addCategoryCard]}
                 accessibilityRole="button"
                 accessibilityLabel="Add custom category"
@@ -296,7 +328,7 @@ export default function AddTransactionScreen() {
                 return (
                   <Pressable
                     key={w.id}
-                    onPress={() => setWalletId(w.id)}
+                    onPress={() => handleSelectWallet(w.id)}
                     style={[
                       styles.walletChip,
                       isSelected && styles.walletChipSelected,

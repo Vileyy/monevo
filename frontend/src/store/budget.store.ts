@@ -112,12 +112,18 @@ export const useBudgetStore = create<BudgetState>((set, get) => ({
   },
 
   deleteBudget: async (id) => {
-    set({ isLoading: true, error: null });
+    const prevBudgets = get().budgets;
+    // Optimistic remove
+    set({
+      budgets: prevBudgets.filter((b) => b.id !== id),
+      error: null,
+    });
+
     try {
       await apiClient.delete(`/budgets/${id}`);
       await get().fetchBudgets(get().selectedMonth, get().selectedYear);
     } catch (err: unknown) {
-      set({ isLoading: false });
+      set({ budgets: prevBudgets, isLoading: false });
       throw err;
     }
   },

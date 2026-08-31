@@ -3,8 +3,15 @@ import { Tabs } from "expo-router";
 import { Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, typography } from "@/theme";
+import { hapticFeedback } from "@/lib/haptics";
 
 export default function TabLayout() {
+  const tabPressListener = {
+    tabPress: () => {
+      hapticFeedback.selection();
+    },
+  };
+
   return (
     <Tabs
       screenOptions={{
@@ -33,6 +40,7 @@ export default function TabLayout() {
     >
       <Tabs.Screen
         name="index"
+        listeners={tabPressListener}
         options={{
           title: "Home",
           tabBarIcon: ({ color, focused }) => (
@@ -46,6 +54,7 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="transactions"
+        listeners={tabPressListener}
         options={{
           title: "History",
           tabBarIcon: ({ color, focused }) => (
@@ -59,6 +68,7 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="explore"
+        listeners={tabPressListener}
         options={{
           title: "Insights",
           tabBarIcon: ({ color, focused }) => (
@@ -72,6 +82,7 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="wallets"
+        listeners={tabPressListener}
         options={{
           title: "Wallets",
           tabBarIcon: ({ color, focused }) => (
@@ -85,6 +96,7 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="profile"
+        listeners={tabPressListener}
         options={{
           title: "Profile",
           tabBarIcon: ({ color, focused }) => (
