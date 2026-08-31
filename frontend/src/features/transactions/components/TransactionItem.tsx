@@ -1,9 +1,10 @@
-import React from "react";
+import React, { memo } from "react";
 import { Pressable, StyleSheet, Text, View, ViewStyle } from "react-native";
 import { colors, radius, spacing, typography } from "@/theme";
 import { categoryDisplayName, formatCurrency } from "@/lib/format";
 import { CategoryIcon } from "@/components/ui";
 import { Transaction } from "@/store/transaction.store";
+import { hapticFeedback } from "@/lib/haptics";
 
 export interface TransactionItemProps {
   transaction: Transaction;
@@ -11,7 +12,7 @@ export interface TransactionItemProps {
   style?: ViewStyle;
 }
 
-export function TransactionItem({
+export const TransactionItem = memo(function TransactionItem({
   transaction,
   onPress,
   style,
@@ -34,9 +35,14 @@ export function TransactionItem({
     ? `Today · ${formattedTime}`
     : `${txDate.toLocaleDateString(undefined, { month: "short", day: "numeric" })} · ${formattedTime}`;
 
+  const handlePress = () => {
+    hapticFeedback.light();
+    onPress?.();
+  };
+
   return (
     <Pressable
-      onPress={onPress}
+      onPress={handlePress}
       style={({ pressed }) => [styles.row, pressed && styles.pressed, style]}
       accessibilityRole="button"
       accessibilityLabel={`${categoryName}, ${transaction.note || ""}, ${sign}${formatCurrency(transaction.amount)}`}
@@ -78,7 +84,7 @@ export function TransactionItem({
       </View>
     </Pressable>
   );
-}
+});
 
 const styles = StyleSheet.create({
   row: {

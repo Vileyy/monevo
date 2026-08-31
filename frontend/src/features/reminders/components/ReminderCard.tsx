@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, radius, shadows, spacing, typography } from "@/theme";
@@ -6,17 +6,22 @@ import { ReminderItem, useReminderStore } from "@/store/reminder.store";
 import { formatCurrency } from "@/lib/format";
 import { getReminderCategoryMeta } from "@/lib/reminders";
 import { Button } from "@/components/ui";
+import { hapticFeedback } from "@/lib/haptics";
 
 export interface ReminderCardProps {
   reminder: ReminderItem;
   onPaySuccess?: () => void;
 }
 
-export function ReminderCard({ reminder, onPaySuccess }: ReminderCardProps) {
+export const ReminderCard = memo(function ReminderCard({
+  reminder,
+  onPaySuccess,
+}: ReminderCardProps) {
   const { payReminder, deleteReminder } = useReminderStore();
   const meta = getReminderCategoryMeta(reminder.category);
 
   const handlePayPress = () => {
+    hapticFeedback.light();
     Alert.alert(
       "Xác nhận đã đóng tiền",
       `Ghi nhận đã đóng ${formatCurrency(reminder.amount)} cho khoản "${reminder.title}"?\n\nỨng dụng sẽ tự động trừ ví và lưu vào lịch sử chi tiêu.`,
@@ -26,9 +31,11 @@ export function ReminderCard({ reminder, onPaySuccess }: ReminderCardProps) {
           text: "Đã đóng tiền ✔",
           onPress: async () => {
             try {
+              hapticFeedback.success();
               await payReminder(reminder.id);
               if (onPaySuccess) onPaySuccess();
             } catch {
+              hapticFeedback.error();
               Alert.alert(
                 "Lỗi",
                 "Không thể ghi nhận thanh toán. Vui lòng thử lại.",
@@ -41,6 +48,7 @@ export function ReminderCard({ reminder, onPaySuccess }: ReminderCardProps) {
   };
 
   const handleDeletePress = () => {
+    hapticFeedback.light();
     Alert.alert(
       "Xóa lịch nhắc",
       `Bạn có chắc muốn xóa lịch nhắc "${reminder.title}"?`,
@@ -49,7 +57,10 @@ export function ReminderCard({ reminder, onPaySuccess }: ReminderCardProps) {
         {
           text: "Xóa",
           style: "destructive",
-          onPress: () => void deleteReminder(reminder.id),
+          onPress: () => {
+            hapticFeedback.warning();
+            void deleteReminder(reminder.id);
+          },
         },
       ],
     );
@@ -156,7 +167,7 @@ export function ReminderCard({ reminder, onPaySuccess }: ReminderCardProps) {
       )}
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   card: {

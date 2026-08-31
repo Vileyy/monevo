@@ -78,31 +78,50 @@ export const useReminderStore = create<ReminderState>((set, get) => ({
   },
 
   payReminder: async (id, walletId) => {
-    set({ isLoading: true, error: null });
+    const prevReminders = get().reminders;
+    // Optimistic update: mark as paid immediately
+    set({
+      reminders: prevReminders.map((r) =>
+        r.id === id
+          ? {
+              ...r,
+              isPaidThisMonth: true,
+              status: "PAID" as ReminderStatus,
+              lastPaidAt: new Date().toISOString(),
+            }
+          : r,
+      ),
+      error: null,
+    });
+
     try {
       await apiClient.post(`/reminders/${id}/pay`, { walletId });
-      // Refresh reminders, wallets & transactions
+      // Refresh reminders, wallets & transactions in background
       await Promise.all([
         get().fetchReminders(),
         useWalletStore.getState().fetchWallets(),
         useTransactionStore.getState().fetchTransactions(),
       ]);
     } catch (err: unknown) {
-      set({ isLoading: false });
+      // Revert optimistic update
+      set({ reminders: prevReminders, isLoading: false });
       throw err;
     }
   },
 
   deleteReminder: async (id) => {
-    set({ isLoading: true, error: null });
+    const prevReminders = get().reminders;
+    // Optimistic deletion
+    set({
+      reminders: prevReminders.filter((r) => r.id !== id),
+      error: null,
+    });
+
     try {
       await apiClient.delete(`/reminders/${id}`);
-      set({
-        reminders: get().reminders.filter((r) => r.id !== id),
-        isLoading: false,
-      });
     } catch (err: unknown) {
-      set({ isLoading: false });
+      // Revert if failed
+      set({ reminders: prevReminders, isLoading: false });
       throw err;
     }
   },

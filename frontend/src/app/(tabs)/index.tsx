@@ -15,6 +15,7 @@ import { useWalletStore, Wallet } from "@/store/wallet.store";
 import { Transaction, useTransactionStore } from "@/store/transaction.store";
 import { useReminderStore } from "@/store/reminder.store";
 import { colors, radius, shadows, spacing, typography } from "@/theme";
+import { hapticFeedback } from "@/lib/haptics";
 import {
   EmptyState,
   TransactionSkeletonList,
@@ -115,7 +116,10 @@ export default function HomeScreen() {
             styles.userInfo,
             pressed && styles.userInfoPressed,
           ]}
-          onPress={() => router.push("/(tabs)/profile")}
+          onPress={() => {
+            hapticFeedback.light();
+            router.push("/(tabs)/profile");
+          }}
           hitSlop={6}
           accessibilityRole="button"
           accessibilityLabel="Go to Profile"
@@ -134,7 +138,10 @@ export default function HomeScreen() {
         </Pressable>
 
         <Pressable
-          onPress={() => router.push("/(tabs)/profile")}
+          onPress={() => {
+            hapticFeedback.light();
+            router.push("/(tabs)/profile");
+          }}
           style={({ pressed }) => [
             styles.logoutBtn,
             pressed && styles.logoutBtnPressed,
@@ -183,7 +190,10 @@ export default function HomeScreen() {
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Accounts</Text>
             <Pressable
-              onPress={() => router.push("/(tabs)/wallets")}
+              onPress={() => {
+                hapticFeedback.light();
+                router.push("/(tabs)/wallets");
+              }}
               hitSlop={8}
             >
               <Text style={styles.sectionLink}>Manage</Text>
@@ -234,7 +244,10 @@ export default function HomeScreen() {
               <Text style={styles.sectionTitle}>Recent Activity</Text>
               {activeWallet && (
                 <Pressable
-                  onPress={() => setActiveWalletId(null)}
+                  onPress={() => {
+                    hapticFeedback.selection();
+                    setActiveWalletId(null);
+                  }}
                   style={styles.activeFilterChip}
                   hitSlop={6}
                 >
@@ -246,7 +259,10 @@ export default function HomeScreen() {
             </View>
             {displayedTransactions.length > 0 && (
               <Pressable
-                onPress={() => router.push("/(tabs)/transactions")}
+                onPress={() => {
+                  hapticFeedback.light();
+                  router.push("/(tabs)/transactions");
+                }}
                 hitSlop={8}
               >
                 <Text style={styles.sectionLink}>See All</Text>

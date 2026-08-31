@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, radius, shadows, spacing, typography } from "@/theme";
@@ -6,6 +6,7 @@ import { BudgetItem } from "@/store/budget.store";
 import { categoryDisplayName, formatCurrency } from "@/lib/format";
 import { CategoryIcon } from "@/components/ui";
 import { BudgetProgressBar } from "./BudgetProgressBar";
+import { hapticFeedback } from "@/lib/haptics";
 
 export interface BudgetCardProps {
   budget: BudgetItem;
@@ -13,13 +14,23 @@ export interface BudgetCardProps {
   onDelete: () => void;
 }
 
-export function BudgetCard({ budget, onEdit, onDelete }: BudgetCardProps) {
+export const BudgetCard = memo(function BudgetCard({
+  budget,
+  onEdit,
+  onDelete,
+}: BudgetCardProps) {
   const displayName = categoryDisplayName(budget.category.name);
 
   const isOverBudget = budget.spent > budget.amount;
   const isNearLimit = budget.percentage >= 80 && !isOverBudget;
 
+  const handleEdit = () => {
+    hapticFeedback.light();
+    onEdit();
+  };
+
   const handleDeletePress = () => {
+    hapticFeedback.light();
     Alert.alert(
       "Delete Budget",
       `Are you sure you want to delete the ${displayName} budget?`,
@@ -28,7 +39,10 @@ export function BudgetCard({ budget, onEdit, onDelete }: BudgetCardProps) {
         {
           text: "Delete",
           style: "destructive",
-          onPress: onDelete,
+          onPress: () => {
+            hapticFeedback.warning();
+            onDelete();
+          },
         },
       ],
     );
@@ -52,7 +66,7 @@ export function BudgetCard({ budget, onEdit, onDelete }: BudgetCardProps) {
 
         <View style={styles.actionButtons}>
           <Pressable
-            onPress={onEdit}
+            onPress={handleEdit}
             style={styles.actionBtn}
             hitSlop={8}
             accessibilityRole="button"
@@ -98,7 +112,7 @@ export function BudgetCard({ budget, onEdit, onDelete }: BudgetCardProps) {
       </View>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   card: {

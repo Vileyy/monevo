@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
+  SectionList,
   StyleSheet,
   Text,
   View,
@@ -14,6 +16,7 @@ import { Transaction, useTransactionStore } from "@/store/transaction.store";
 import { useWalletStore } from "@/store/wallet.store";
 import { colors, radius, shadows, spacing, typography } from "@/theme";
 import { categoryDisplayName, formatCurrency } from "@/lib/format";
+import { hapticFeedback } from "@/lib/haptics";
 import {
   EmptyState,
   Header,
@@ -102,17 +105,19 @@ export default function TransactionsScreen() {
     );
   }, [filteredTransactions, sortBy]);
 
-  // 3. Group by date or display order
-  const groupedTransactions = useMemo(() => {
+  // 3. Sections for SectionList
+  const sections = useMemo(() => {
+    if (sortedTransactions.length === 0) return [];
+
     if (sortBy !== "DATE_DESC") {
       const label =
         sortBy === "AMOUNT_DESC"
           ? "Sorted: Highest → Lowest"
           : "Sorted: Lowest → Highest";
-      return [{ dateLabel: label, items: sortedTransactions }];
+      return [{ title: label, data: sortedTransactions }];
     }
 
-    const groups: { dateLabel: string; items: Transaction[] }[] = [];
+    const result: { title: string; data: Transaction[] }[] = [];
     const map = new Map<string, Transaction[]>();
 
     const todayStr = new Date().toDateString();
@@ -139,12 +144,12 @@ export default function TransactionsScreen() {
 
       if (!map.has(label)) {
         map.set(label, []);
-        groups.push({ dateLabel: label, items: map.get(label)! });
+        result.push({ title: label, data: map.get(label)! });
       }
       map.get(label)!.push(tx);
     }
 
-    return groups;
+    return result;
   }, [sortedTransactions, sortBy]);
 
   // Summary stats for filtered
@@ -158,36 +163,24 @@ export default function TransactionsScreen() {
     return { totalIn, totalOut };
   }, [filteredTransactions]);
 
-  return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
-      <Header
-        title="Transaction History"
-        subtitle={`${filteredTransactions.length} records found`}
-        rightAction={
-          <Pressable
-            onPress={() => router.push("/add-transaction")}
-            style={styles.addBtn}
-            hitSlop={8}
-            accessibilityRole="button"
-            accessibilityLabel="Add transaction"
-          >
-            <Ionicons name="add" size={22} color={colors.primary} />
-          </Pressable>
-        }
-      />
+  const handleTypeChange = (val: "ALL" | "EXPENSE" | "INCOME") => {
+    hapticFeedback.selection();
+    setTypeFilter(val);
+  };
 
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={colors.primary}
-            colors={[colors.primary]}
-          />
-        }
-      >
+  const handleWalletSelect = (walletId: string) => {
+    hapticFeedback.selection();
+    setSelectedWalletId(walletId);
+  };
+
+  const handleSortSelect = (sort: SortOption) => {
+    hapticFeedback.selection();
+    setSortBy(sort);
+  };
+
+  const renderHeader = useMemo(
+    () => (
+      <View>
         {/* Search Input */}
         <View style={styles.searchContainer}>
           <Input
@@ -225,7 +218,7 @@ export default function TransactionsScreen() {
               },
             ]}
             value={typeFilter}
-            onChange={setTypeFilter}
+            onChange={handleTypeChange}
           />
         </View>
 
@@ -238,7 +231,7 @@ export default function TransactionsScreen() {
           >
             {/* Account Pills */}
             <Pressable
-              onPress={() => setSelectedWalletId("ALL")}
+              onPress={() => handleWalletSelect("ALL")}
               style={[
                 styles.pill,
                 selectedWalletId === "ALL" && styles.pillActive,
@@ -257,7 +250,7 @@ export default function TransactionsScreen() {
             {wallets.map((w) => (
               <Pressable
                 key={w.id}
-                onPress={() => setSelectedWalletId(w.id)}
+                onPress={() => handleWalletSelect(w.id)}
                 style={[
                   styles.pill,
                   selectedWalletId === w.id && styles.pillActive,
@@ -278,7 +271,7 @@ export default function TransactionsScreen() {
 
             {/* Sort Pills */}
             <Pressable
-              onPress={() => setSortBy("DATE_DESC")}
+              onPress={() => handleSortSelect("DATE_DESC")}
               style={[
                 styles.pill,
                 sortBy === "DATE_DESC" && styles.sortPillActive,
@@ -303,7 +296,7 @@ export default function TransactionsScreen() {
             </Pressable>
 
             <Pressable
-              onPress={() => setSortBy("AMOUNT_DESC")}
+              onPress={() => handleSortSelect("AMOUNT_DESC")}
               style={[
                 styles.pill,
                 sortBy === "AMOUNT_DESC" && styles.sortPillActive,
@@ -330,7 +323,7 @@ export default function TransactionsScreen() {
             </Pressable>
 
             <Pressable
-              onPress={() => setSortBy("AMOUNT_ASC")}
+              onPress={() => handleSortSelect("AMOUNT_ASC")}
               style={[
                 styles.pill,
                 sortBy === "AMOUNT_ASC" && styles.sortPillActive,
@@ -376,12 +369,57 @@ export default function TransactionsScreen() {
             </Text>
           </View>
         </View>
+      </View>
+    ),
+    [
+      searchQuery,
+      typeFilter,
+      selectedWalletId,
+      wallets,
+      sortBy,
+      totalIn,
+      totalOut,
+    ],
+  );
 
-        {/* Grouped Transactions List */}
-        <View style={styles.listContainer}>
-          {isLoading && transactions.length === 0 ? (
+  return (
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <Header
+        title="Transaction History"
+        subtitle={`${filteredTransactions.length} records found`}
+        rightAction={
+          <Pressable
+            onPress={() => {
+              hapticFeedback.light();
+              router.push("/add-transaction");
+            }}
+            style={styles.addBtn}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="Add transaction"
+          >
+            <Ionicons name="add" size={22} color={colors.primary} />
+          </Pressable>
+        }
+      />
+
+      <SectionList
+        sections={sections}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <TransactionItem
+            transaction={item}
+            onPress={() => setSelectedTx(item)}
+          />
+        )}
+        renderSectionHeader={({ section: { title } }) => (
+          <Text style={styles.groupHeader}>{title}</Text>
+        )}
+        ListHeaderComponent={renderHeader}
+        ListEmptyComponent={
+          isLoading && transactions.length === 0 ? (
             <TransactionSkeletonList count={6} />
-          ) : filteredTransactions.length === 0 ? (
+          ) : (
             <EmptyState
               icon="search-outline"
               title="No Transactions Found"
@@ -395,6 +433,7 @@ export default function TransactionsScreen() {
                   : "Add Transaction"
               }
               onAction={() => {
+                hapticFeedback.light();
                 if (
                   searchQuery ||
                   typeFilter !== "ALL" ||
@@ -410,22 +449,24 @@ export default function TransactionsScreen() {
                 }
               }}
             />
-          ) : (
-            groupedTransactions.map((group) => (
-              <View key={group.dateLabel} style={styles.groupSection}>
-                <Text style={styles.groupHeader}>{group.dateLabel}</Text>
-                {group.items.map((tx) => (
-                  <TransactionItem
-                    key={tx.id}
-                    transaction={tx}
-                    onPress={() => setSelectedTx(tx)}
-                  />
-                ))}
-              </View>
-            ))
-          )}
-        </View>
-      </ScrollView>
+          )
+        }
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+        stickySectionHeadersEnabled={false}
+        removeClippedSubviews={Platform.OS === "android"}
+        initialNumToRender={12}
+        maxToRenderPerBatch={10}
+        windowSize={7}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
+          />
+        }
+      />
 
       {/* Transaction Detail Modal */}
       <TransactionDetailModal
@@ -450,22 +491,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  scrollContent: {
-    paddingBottom: spacing.xl,
+  listContent: {
+    paddingHorizontal: spacing.base,
+    paddingBottom: spacing.xxl,
   },
   searchContainer: {
-    paddingHorizontal: spacing.base,
     marginTop: spacing.xs,
   },
   filterSection: {
-    paddingHorizontal: spacing.base,
     marginTop: spacing.md,
   },
   filterRowSection: {
     marginTop: spacing.md,
   },
   pillsScroll: {
-    paddingHorizontal: spacing.base,
     gap: spacing.sm,
     alignItems: "center",
   },
@@ -505,7 +544,6 @@ const styles = StyleSheet.create({
   summaryBar: {
     flexDirection: "row",
     backgroundColor: colors.surface,
-    marginHorizontal: spacing.base,
     borderRadius: radius.lg,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
@@ -536,16 +574,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
     marginVertical: 2,
   },
-  listContainer: {
-    paddingHorizontal: spacing.base,
-  },
-  groupSection: {
-    marginBottom: spacing.md,
-  },
   groupHeader: {
     ...typography.subhead,
     fontWeight: "700",
     color: colors.textSecondary,
+    marginTop: spacing.sm,
     marginBottom: spacing.xs,
     marginLeft: spacing.xs,
   },

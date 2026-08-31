@@ -1,9 +1,10 @@
-import React from "react";
+import React, { memo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, radius, shadows, spacing, typography } from "@/theme";
 import { formatCurrency } from "@/lib/format";
 import { useSettingsStore } from "@/store/settings.store";
+import { hapticFeedback } from "@/lib/haptics";
 
 export interface WalletSummaryCardProps {
   totalBalance: number;
@@ -16,7 +17,7 @@ export interface WalletSummaryCardProps {
   onAddWallet: () => void;
 }
 
-export function WalletSummaryCard({
+export const WalletSummaryCard = memo(function WalletSummaryCard({
   totalBalance,
   monthlyIncome,
   monthlyExpense,
@@ -33,6 +34,30 @@ export function WalletSummaryCard({
     ? `${selectedWalletName} Balance`
     : "Total Balance";
 
+  const totalFlow = monthlyIncome + monthlyExpense;
+  const incomePercent =
+    totalFlow > 0 ? Math.round((monthlyIncome / totalFlow) * 100) : 50;
+
+  const handleToggleHide = () => {
+    hapticFeedback.selection();
+    toggleHideBalance();
+  };
+
+  const handleAccountSelector = () => {
+    hapticFeedback.light();
+    onOpenAccountSelector?.();
+  };
+
+  const handleAddTx = () => {
+    hapticFeedback.light();
+    onAddTransaction();
+  };
+
+  const handleAddWallet = () => {
+    hapticFeedback.light();
+    onAddWallet();
+  };
+
   return (
     <View style={styles.cardContainer}>
       <View style={styles.card}>
@@ -43,7 +68,7 @@ export function WalletSummaryCard({
               {cardTitle}
             </Text>
             <Pressable
-              onPress={toggleHideBalance}
+              onPress={handleToggleHide}
               style={styles.eyeBtn}
               hitSlop={8}
               accessibilityLabel="Toggle balance visibility"
@@ -57,7 +82,7 @@ export function WalletSummaryCard({
           </View>
 
           <Pressable
-            onPress={onOpenAccountSelector}
+            onPress={handleAccountSelector}
             style={({ pressed }) => [
               styles.accountBadge,
               isFiltered && styles.accountBadgeFiltered,
@@ -110,12 +135,27 @@ export function WalletSummaryCard({
             </Text>
           </View>
         </View>
+
+        {/* Subtle Visual Flow Bar */}
+        {totalFlow > 0 && !hideBalance && (
+          <View style={styles.flowBarContainer}>
+            <View
+              style={[
+                styles.flowBarFill,
+                {
+                  width: `${Math.max(4, Math.min(96, incomePercent))}%`,
+                  backgroundColor: "#34D399",
+                },
+              ]}
+            />
+          </View>
+        )}
       </View>
 
       {/* Quick Action Bar */}
       <View style={styles.actionBar}>
         <Pressable
-          onPress={onAddTransaction}
+          onPress={handleAddTx}
           style={({ pressed }) => [
             styles.actionButton,
             styles.primaryAction,
@@ -129,7 +169,7 @@ export function WalletSummaryCard({
         </Pressable>
 
         <Pressable
-          onPress={onAddWallet}
+          onPress={handleAddWallet}
           style={({ pressed }) => [
             styles.actionButton,
             styles.secondaryAction,
@@ -144,7 +184,7 @@ export function WalletSummaryCard({
       </View>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -247,6 +287,17 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     marginLeft: "auto",
     ...typography.tabular,
+  },
+  flowBarContainer: {
+    height: 4,
+    backgroundColor: "#FB7185",
+    borderRadius: 2,
+    marginTop: spacing.sm,
+    overflow: "hidden",
+  },
+  flowBarFill: {
+    height: "100%",
+    borderRadius: 2,
   },
   actionBar: {
     flexDirection: "row",
