@@ -8,6 +8,7 @@ import { AnimatedSplashOverlay } from "@/components/animated-icon";
 import { useAuthStore } from "@/store/auth.store";
 import { useSettingsStore } from "@/store/settings.store";
 import { tokenCache } from "@/lib/token-cache";
+import { initNotifications } from "@/lib/notifications";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -21,6 +22,7 @@ export default function RootLayout() {
   const restoreSettings = useSettingsStore((state) => state.restoreSettings);
 
   useEffect(() => {
+    void initNotifications();
     void Promise.all([restoreSession(), restoreSettings()]);
   }, [restoreSession, restoreSettings]);
 

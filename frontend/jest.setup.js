@@ -5,6 +5,38 @@ jest.mock("expo-secure-store", () => ({
   deleteItemAsync: jest.fn().mockResolvedValue(undefined),
 }));
 
+jest.mock("expo-haptics", () => ({
+  impactAsync: jest.fn().mockResolvedValue(undefined),
+  selectionAsync: jest.fn().mockResolvedValue(undefined),
+  notificationAsync: jest.fn().mockResolvedValue(undefined),
+  ImpactFeedbackStyle: {
+    Light: "light",
+    Medium: "medium",
+    Heavy: "heavy",
+  },
+  NotificationFeedbackType: {
+    Success: "success",
+    Warning: "warning",
+    Error: "error",
+  },
+}));
+
+jest.mock("expo-notifications", () => ({
+  setNotificationHandler: jest.fn(),
+  setNotificationChannelAsync: jest.fn(),
+  getPermissionsAsync: jest.fn().mockResolvedValue({ status: "granted" }),
+  requestPermissionsAsync: jest.fn().mockResolvedValue({ status: "granted" }),
+  scheduleNotificationAsync: jest.fn().mockResolvedValue("mock_notif_id_123"),
+  cancelScheduledNotificationAsync: jest.fn().mockResolvedValue(undefined),
+  getAllScheduledNotificationsAsync: jest.fn().mockResolvedValue([]),
+  SchedulableTriggerInputTypes: {
+    DATE: "date",
+  },
+  AndroidImportance: {
+    HIGH: 4,
+  },
+}));
+
 jest.mock("react-native", () => ({
   Platform: {
     OS: "ios",
