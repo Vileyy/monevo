@@ -1,73 +1,44 @@
 import * as SplashScreen from "expo-splash-screen";
-import React, { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
-import Animated, { Easing, Keyframe, runOnJS } from "react-native-reanimated";
+import React, { useEffect, useState } from "react";
+import { Animated, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, radius, shadows } from "@/theme";
 
-const DURATION = 600;
-
 export function AnimatedSplashOverlay() {
-  const [animate, setAnimate] = useState(false);
   const [visible, setVisible] = useState(true);
+  const [opacityAnim] = useState(() => new Animated.Value(1));
+
+  useEffect(() => {
+    SplashScreen.hideAsync().catch(() => {});
+
+    const timer = setTimeout(() => {
+      Animated.timing(opacityAnim, {
+        toValue: 0,
+        duration: 400,
+        useNativeDriver: true,
+      }).start(() => {
+        setVisible(false);
+      });
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [opacityAnim]);
 
   if (!visible) return null;
 
-  const handleFinish = () => {
-    setVisible(false);
-  };
-
-  const splashKeyframe = new Keyframe({
-    0: {
-      opacity: 1,
-      transform: [{ scale: 1 }],
-    },
-    70: {
-      opacity: 0,
-      easing: Easing.out(Easing.cubic),
-    },
-    100: {
-      opacity: 0,
-      transform: [{ scale: 1.05 }],
-      easing: Easing.out(Easing.cubic),
-    },
-  });
-
-  const splashContent = (
-    <View style={styles.contentWrapper}>
-      <View style={styles.logoBadge}>
-        <Ionicons name="wallet" size={48} color="#FFFFFF" />
-      </View>
-      <Text style={styles.appName}>MONEVO</Text>
-      <Text style={styles.appTagline}>SMART WEALTH TRACKING</Text>
-    </View>
-  );
-
-  return animate ? (
+  return (
     <Animated.View
-      entering={splashKeyframe.duration(DURATION).withCallback((finished) => {
-        "worklet";
-        if (finished) {
-          runOnJS(handleFinish)();
-        }
-      })}
-      style={styles.splashOverlay}
+      style={[styles.splashOverlay, { opacity: opacityAnim }]}
+      pointerEvents="none"
     >
-      {splashContent}
+      <View style={styles.contentWrapper}>
+        <View style={styles.logoBadge}>
+          <Ionicons name="wallet" size={48} color="#FFFFFF" />
+        </View>
+        <Text style={styles.appName}>MONEVO</Text>
+        <Text style={styles.appTagline}>SMART WEALTH TRACKING</Text>
+      </View>
     </Animated.View>
-  ) : (
-    <View
-      onLayout={() => {
-        SplashScreen.hideAsync()
-          .catch(() => {})
-          .finally(() => {
-            setAnimate(true);
-          });
-      }}
-      style={styles.splashOverlay}
-    >
-      {splashContent}
-    </View>
   );
 }
 
