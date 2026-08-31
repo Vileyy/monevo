@@ -103,7 +103,7 @@ docker compose -f deploy/docker-compose.yml logs api --tail 80
 ```
 
 Swagger: `http://<PUBLIC_IP>:3000/api`  
-No `GET /` or `GET /health` on the running image (`AppController` is not registered on `AppModule`). Probe with `POST /auth/login` or Swagger.
+Health check: `GET /health` (`{"status":"ok"}`). Probe with `GET /health`, `POST /auth/login` or Swagger.
 
 ## 8. Code flow
 
@@ -142,7 +142,7 @@ docker compose -f deploy/docker-compose.yml exec postgres \
   psql -U monevo -d monevo -c '\dt'
 ```
 
-Prisma table names: `"User"`, `"Wallet"`, `"Category"`, `"Transaction"` (quoted, PascalCase).
+Prisma table names: `"User"`, `"Wallet"`, `"Category"`, `"Transaction"`, `"Budget"`, `"Reminder"` (quoted, PascalCase).
 
 ## 10. DBeaver
 
@@ -181,12 +181,11 @@ AWS **trial** account: service stops when credits run out. Stop the instance to 
 
 ## 13. Next work (do not skip ahead)
 
-1. Persist JWT (SecureStore).
-2. Transaction history (list/edit/delete/filter).
-3. Categories UI.
-4. Real insights (Explore is mock).
-5. Register `AppController` on `AppModule` if `/health` is needed.
-6. Commit/push Dockerfile + migrations (deploy is still a manual copy).
+1. Local notifications for Bill Reminders (`expo-notifications`).
+2. Budget overspending warning on transaction creation.
+3. Export transaction data / reports (CSV / Excel).
+4. Receipt photo attachments for transactions.
+5. Offline caching & sync.
 
 ## 14. Known mistakes — do not repeat
 
