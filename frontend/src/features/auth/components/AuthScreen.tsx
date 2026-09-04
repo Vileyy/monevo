@@ -383,35 +383,59 @@ export function AuthScreen({
 
         // If email is verified but missing fields requirement
         if (result.status === "missing_requirements") {
-          // Fulfill any missing requirements dynamically
+          const missing = (result.missingFields || []) as string[];
           try {
-            const dynamicPass = `M${Date.now()}${Math.random().toString(36).slice(2, 8)}!`;
-            const updateRes = await signUp.update({
-              password: dynamicPass,
-            });
-            if (
-              (updateRes.status === "complete" ||
-                updateRes.status === "missing_requirements") &&
-              updateRes.createdSessionId
-            ) {
-              await setSignUpActive({ session: updateRes.createdSessionId });
-              hapticFeedback.success();
-              let token: string | null = null;
-              try {
-                token = await getToken();
-              } catch {}
-              loginStore(
-                {
-                  id: updateRes.createdUserId || updateRes.createdSessionId,
-                  email: email.trim().toLowerCase(),
-                  name: "Monevo User",
-                },
-                token || updateRes.createdSessionId,
-              );
-              router.replace("/(tabs)");
-              return;
+            const dynamicPass = `Monevo@${Date.now()}Aa1!`;
+            const dynamicUsername = `user_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+            const updatePayload: Record<string, string> = {};
+            if (missing.includes("password")) {
+              updatePayload.password = dynamicPass;
             }
-          } catch {}
+            if (missing.includes("username")) {
+              updatePayload.username = dynamicUsername;
+            }
+            if (missing.includes("first_name")) {
+              updatePayload.firstName = "Monevo";
+            }
+            if (missing.includes("last_name")) {
+              updatePayload.lastName = "User";
+            }
+
+            if (Object.keys(updatePayload).length > 0) {
+              const updateRes = await signUp.update(updatePayload);
+              if (
+                updateRes.status === "complete" &&
+                updateRes.createdSessionId
+              ) {
+                await setSignUpActive({ session: updateRes.createdSessionId });
+                hapticFeedback.success();
+                let token: string | null = null;
+                try {
+                  token = await getToken();
+                } catch {}
+                loginStore(
+                  {
+                    id: updateRes.createdUserId || updateRes.createdSessionId,
+                    email: email.trim().toLowerCase(),
+                    name: "Monevo User",
+                  },
+                  token || updateRes.createdSessionId,
+                );
+                router.replace("/(tabs)");
+                return;
+              }
+            }
+          } catch (updateErr) {
+            console.warn("Error auto-filling missing Clerk fields:", updateErr);
+          }
+
+          setHasOtpError(true);
+          hapticFeedback.error();
+          Alert.alert(
+            "Cần cấu hình Clerk",
+            `Mã xác thực đã được Clerk chấp nhận, tuy nhiên dự án Clerk của bạn đang bật bắt buộc các trường: [${missing.join(", ")}].\n\nVui lòng vào dashboard.clerk.com -> "Email, Phone, Username" và chuyển các trường này sang Disabled (hoặc tắt bắt buộc), hoặc đăng nhập bằng mật khẩu qua tab "Tài khoản".`,
+          );
+          return;
         }
       } catch (signUpErr: unknown) {
         // Fallback retry with signIn if signUp failed
@@ -481,10 +505,28 @@ export function AuthScreen({
         signUp: oAuthSignUp,
       } = await startGoogleOAuth({ redirectUrl });
 
-      const targetSessionId =
+      let targetSessionId =
         createdSessionId ||
         oAuthSignIn?.createdSessionId ||
         oAuthSignUp?.createdSessionId;
+
+      if (
+        !targetSessionId &&
+        oAuthSignUp &&
+        oAuthSignUp.status === "missing_requirements"
+      ) {
+        try {
+          const dynamicUsername = `user_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+          const updateRes = await oAuthSignUp.update({
+            username: dynamicUsername,
+          });
+          if (updateRes.status === "complete" && updateRes.createdSessionId) {
+            targetSessionId = updateRes.createdSessionId;
+          }
+        } catch (err) {
+          console.warn("Failed to update Google signup requirements:", err);
+        }
+      }
 
       if (targetSessionId && setActive) {
         await setActive({ session: targetSessionId });
