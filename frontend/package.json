@@ -43,7 +43,7 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
-    "@babel/core": "^7.29.7",
+    "@babel/core": "^8.0.1",
     "@babel/traverse": "^7.29.7",
     "@types/jest": "^29.5.14",
     "@types/node": "^24.13.3",
