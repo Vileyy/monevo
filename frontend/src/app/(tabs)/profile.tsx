@@ -9,8 +9,10 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "@/store/auth.store";
+import { useClerk } from "@clerk/clerk-expo";
 import { useWalletStore } from "@/store/wallet.store";
 import { useTransactionStore } from "@/store/transaction.store";
 import { useReminderStore } from "@/store/reminder.store";
@@ -31,6 +33,8 @@ import {
 import { hapticFeedback } from "@/lib/haptics";
 
 export default function ProfileScreen() {
+  const router = useRouter();
+  const { signOut } = useClerk();
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const { wallets, fetchWallets } = useWalletStore();
@@ -115,12 +119,20 @@ export default function ProfileScreen() {
   }, [currency]);
 
   const handleLogout = () => {
-    Alert.alert("Sign Out", "Are you sure you want to sign out of Monevo?", [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert("Đăng xuất", "Bạn có chắc chắn muốn đăng xuất khỏi Monevo?", [
+      { text: "Hủy", style: "cancel" },
       {
-        text: "Sign Out",
+        text: "Đăng xuất",
         style: "destructive",
-        onPress: () => logout(),
+        onPress: async () => {
+          try {
+            await signOut();
+          } catch (e) {
+            console.warn("Clerk signOut error:", e);
+          }
+          logout();
+          router.replace("/login");
+        },
       },
     ]);
   };

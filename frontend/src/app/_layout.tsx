@@ -8,6 +8,7 @@ import {
   useSegments,
 } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
+import * as WebBrowser from "expo-web-browser";
 import {
   ClerkLoaded,
   ClerkProvider,
@@ -20,6 +21,8 @@ import { useAuthStore } from "@/store/auth.store";
 import { useSettingsStore } from "@/store/settings.store";
 import { tokenCache } from "@/lib/token-cache";
 import { initNotifications } from "@/lib/notifications";
+
+WebBrowser.maybeCompleteAuthSession();
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 

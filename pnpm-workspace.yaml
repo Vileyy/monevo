@@ -6,6 +6,8 @@ overrides:
   nanoid@5: ">=5.1.6"
   js-yaml@5: "5.2.2"
   deepmerge-ts: ">=8.0.0"
+  mysql2: ">=3.22.0"
+  fast-uri: ">=3.1.6"
 audit:
   ignore:
     # image-size@2.0.3 is not on npm yet; latest is 2.0.2 (dev-only via Metro)
