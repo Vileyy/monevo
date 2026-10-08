@@ -14,7 +14,7 @@ import {
 
 export class CreateReminderDto {
   @ApiProperty({
-    example: 'Tiền thuốc huyết áp',
+    example: 'Prescription Medicine',
     description: 'Reminder title',
   })
   @IsString()

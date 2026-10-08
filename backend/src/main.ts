@@ -1,10 +1,22 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import type { Request, Response, NextFunction } from 'express';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    const auth = req.headers.authorization;
+    const authSnippet = auth ? `${auth.substring(0, 20)}...` : 'none';
+    res.on('finish', () => {
+      console.log(
+        `[HTTP] ${req.method} ${req.url} -> ${res.statusCode} (auth: ${authSnippet})`,
+      );
+    });
+    next();
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({

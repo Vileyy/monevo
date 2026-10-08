@@ -44,17 +44,24 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
             secretKey,
           });
 
-          if (verified && verified.sub && this.usersService) {
-            const email = verified.email || verified.email_address;
-
-            const user = await this.usersService.findOrCreateByClerk(
-              verified.sub,
-              email,
-            );
-            request.user = user;
-            return true;
+          if (verified && verified.sub) {
+            if (this.usersService) {
+              const email = verified.email || verified.email_address;
+              const user = await this.usersService.findOrCreateByClerk(
+                verified.sub,
+                email,
+              );
+              request.user = user;
+              return true;
+            } else {
+              console.warn(
+                '[JwtAuthGuard] UsersService is undefined in context',
+              );
+            }
           }
-        } catch {
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : String(err);
+          console.warn('[JwtAuthGuard] Clerk verify error:', msg);
           // If not a valid Clerk token, fall back to passport JWT
         }
       }

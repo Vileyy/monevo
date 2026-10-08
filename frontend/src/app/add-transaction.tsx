@@ -13,8 +13,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useWalletStore } from "@/store/wallet.store";
-import { useCategoryStore } from "@/store/category.store";
+import { Category, useCategoryStore } from "@/store/category.store";
 import { useTransactionStore } from "@/store/transaction.store";
+import { useBudgetStore } from "@/store/budget.store";
 import { colors, radius, shadows, spacing, typography } from "@/theme";
 import {
   categoryDisplayName,
@@ -24,15 +25,18 @@ import {
 import { apiErrorMessage } from "@/lib/api-error";
 import { DEFAULT_CATEGORY_METAS, getWalletMeta } from "@/lib/categories";
 import { hapticFeedback } from "@/lib/haptics";
+import { calculateBudgetWarning } from "@/lib/budget-warning";
 import {
   Button,
   CategoryIcon,
   CurrencyInput,
   Header,
   Input,
-  SegmentedControl,
 } from "@/components/ui";
 import { CategoryModal } from "@/features/categories/components/CategoryModal";
+import { CategorySelectorModal } from "@/features/categories/components/CategorySelectorModal";
+import { WalletSelectorModal } from "@/features/wallets/components/WalletSelectorModal";
+import { BudgetWarningBanner } from "@/features/budgets/components/BudgetWarningBanner";
 
 export default function AddTransactionScreen() {
   const router = useRouter();
@@ -49,12 +53,15 @@ export default function AddTransactionScreen() {
     createCategory,
   } = useCategoryStore();
   const { createTransaction, fetchTransactions } = useTransactionStore();
+  const { budgets, fetchBudgets } = useBudgetStore();
 
   const [type, setType] = useState<"EXPENSE" | "INCOME">("EXPENSE");
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [walletId, setWalletId] = useState<string | null>(null);
   const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [showCategorySelector, setShowCategorySelector] = useState(false);
+  const [showWalletSelector, setShowWalletSelector] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const didSeed = useRef(false);
@@ -62,7 +69,8 @@ export default function AddTransactionScreen() {
   useEffect(() => {
     fetchWallets();
     fetchCategories();
-  }, [fetchWallets, fetchCategories]);
+    fetchBudgets();
+  }, [fetchWallets, fetchCategories, fetchBudgets]);
 
   // Seed defaults if fresh account
   useEffect(() => {
@@ -93,40 +101,91 @@ export default function AddTransactionScreen() {
     walletsFetched,
   ]);
 
-  const visibleCategories = useMemo(
-    () => categories.filter((c) => c.type === type),
-    [categories, type],
-  );
-
   const selectedWalletId =
     walletId && wallets.some((w) => w.id === walletId)
       ? walletId
       : (wallets[0]?.id ?? null);
 
+  const selectedWallet = useMemo(() => {
+    return wallets.find((w) => w.id === selectedWalletId) || wallets[0] || null;
+  }, [wallets, selectedWalletId]);
+
+  const selectedWalletMeta = useMemo(() => {
+    return getWalletMeta(selectedWallet?.type);
+  }, [selectedWallet?.type]);
+
+  const visibleCategories = useMemo(
+    () => categories.filter((c) => c.type === type),
+    [categories, type],
+  );
+
   const selectedCategoryId =
-    categoryId && visibleCategories.some((c) => c.id === categoryId)
+    categoryId && categories.some((c) => c.id === categoryId)
       ? categoryId
-      : (visibleCategories[0]?.id ?? null);
+      : (visibleCategories[0]?.id ?? categories[0]?.id ?? null);
 
-  const handleTypeChange = (newType: "EXPENSE" | "INCOME") => {
-    hapticFeedback.selection();
-    setType(newType);
-    setCategoryId(null);
+  const selectedCategory = useMemo(
+    () => categories.find((c) => c.id === selectedCategoryId) || null,
+    [categories, selectedCategoryId],
+  );
+
+  const selectedCategoryName = useMemo(() => {
+    return selectedCategory
+      ? categoryDisplayName(selectedCategory.name)
+      : "Select Category";
+  }, [selectedCategory]);
+
+  const matchingBudget = useMemo(() => {
+    if (type !== "EXPENSE" || !selectedCategoryId) return undefined;
+    return budgets.find((b) => b.categoryId === selectedCategoryId);
+  }, [type, selectedCategoryId, budgets]);
+
+  const parsedAmount = useMemo(() => parseVndInput(amount) || 0, [amount]);
+
+  const budgetWarning = useMemo(() => {
+    if (type !== "EXPENSE" || !matchingBudget) return null;
+    return calculateBudgetWarning(matchingBudget, parsedAmount);
+  }, [type, matchingBudget, parsedAmount]);
+
+  const handleSelectCategoryFromModal = (cat: Category) => {
+    setCategoryId(cat.id);
+    setType(cat.type as "EXPENSE" | "INCOME");
   };
 
-  const handleSelectCategory = (id: string) => {
-    hapticFeedback.selection();
-    setCategoryId(id);
+  const handleSelectWalletFromModal = (id: string | null) => {
+    if (id) {
+      setWalletId(id);
+    }
   };
 
-  const handleSelectWallet = (id: string) => {
-    hapticFeedback.selection();
-    setWalletId(id);
+  const executeSave = async (amountToSave: number) => {
+    setIsSubmitting(true);
+    try {
+      await createTransaction({
+        amount: amountToSave,
+        type,
+        note: note.trim() || undefined,
+        walletId: selectedWalletId!,
+        categoryId: selectedCategoryId!,
+      });
+
+      hapticFeedback.success();
+      await Promise.all([fetchWallets(), fetchTransactions(), fetchBudgets()]);
+      router.back();
+    } catch (error) {
+      hapticFeedback.error();
+      Alert.alert(
+        "Error",
+        apiErrorMessage(error, "Could not save transaction."),
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleSave = async () => {
-    const parsedAmount = parseVndInput(amount);
-    if (!parsedAmount || parsedAmount <= 0) {
+    const validAmount = parseVndInput(amount);
+    if (!validAmount || validAmount <= 0) {
       hapticFeedback.warning();
       Alert.alert("Invalid Amount", "Please enter an amount greater than 0.");
       return;
@@ -150,28 +209,30 @@ export default function AddTransactionScreen() {
       return;
     }
 
-    setIsSubmitting(true);
-    try {
-      await createTransaction({
-        amount: parsedAmount,
-        type,
-        note: note.trim() || undefined,
-        walletId: selectedWalletId,
-        categoryId: selectedCategoryId,
-      });
-
-      hapticFeedback.success();
-      await Promise.all([fetchWallets(), fetchTransactions()]);
-      router.back();
-    } catch (error) {
-      hapticFeedback.error();
+    // Budget overspending warning check
+    if (type === "EXPENSE" && budgetWarning?.status === "EXCEEDED") {
+      hapticFeedback.warning();
+      const catDisplayName = selectedCategory
+        ? categoryDisplayName(selectedCategory.name)
+        : "this category";
       Alert.alert(
-        "Error",
-        apiErrorMessage(error, "Could not save transaction."),
+        "Budget Limit Exceeded",
+        `This expense will exceed your monthly budget for "${catDisplayName}" by ${formatCurrency(budgetWarning.overAmount)}.\n\nDo you still want to proceed?`,
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Proceed",
+            style: "destructive",
+            onPress: () => {
+              void executeSave(validAmount);
+            },
+          },
+        ],
       );
-    } finally {
-      setIsSubmitting(false);
+      return;
     }
+
+    await executeSave(validAmount);
   };
 
   return (
@@ -194,50 +255,8 @@ export default function AddTransactionScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Segmented Type Switch */}
-          <View style={styles.segmentContainer}>
-            <SegmentedControl
-              options={[
-                {
-                  value: "EXPENSE",
-                  label: "Expense",
-                  icon: (
-                    <Ionicons
-                      name="arrow-up-circle-outline"
-                      size={18}
-                      color={
-                        type === "EXPENSE"
-                          ? colors.expense
-                          : colors.textSecondary
-                      }
-                    />
-                  ),
-                  activeColor: colors.expense,
-                  activeBgColor: colors.surface,
-                },
-                {
-                  value: "INCOME",
-                  label: "Income",
-                  icon: (
-                    <Ionicons
-                      name="arrow-down-circle-outline"
-                      size={18}
-                      color={
-                        type === "INCOME" ? colors.income : colors.textSecondary
-                      }
-                    />
-                  ),
-                  activeColor: colors.income,
-                  activeBgColor: colors.surface,
-                },
-              ]}
-              value={type}
-              onChange={handleTypeChange}
-            />
-          </View>
-
-          {/* Amount Keypad Input */}
-          <View style={styles.section}>
+          {/* 1. Hero Amount Keypad Input */}
+          <View style={styles.amountSection}>
             <CurrencyInput
               value={amount}
               onChangeText={setAmount}
@@ -246,141 +265,144 @@ export default function AddTransactionScreen() {
             />
           </View>
 
-          {/* Categories Grid */}
-          <View style={styles.section}>
-            <View style={styles.sectionHeaderRow}>
-              <Text style={styles.sectionLabel}>Category</Text>
-              <Pressable
-                onPress={() => {
-                  hapticFeedback.light();
-                  setShowCategoryModal(true);
-                }}
-                hitSlop={8}
-                style={styles.addCatLink}
-              >
-                <Ionicons name="add" size={16} color={colors.primary} />
-                <Text style={styles.addCatLinkText}>New</Text>
-              </Pressable>
-            </View>
+          {/* 2. Budget Warning Banner */}
+          {type === "EXPENSE" &&
+            budgetWarning &&
+            budgetWarning.status !== "NONE" && (
+              <View style={styles.budgetBannerSection}>
+                <BudgetWarningBanner
+                  warning={budgetWarning}
+                  categoryName={selectedCategory?.name}
+                />
+              </View>
+            )}
 
-            <View style={styles.categoryGrid}>
-              {visibleCategories.map((cat) => {
-                const isSelected = selectedCategoryId === cat.id;
-                const catName = categoryDisplayName(cat.name);
-
-                return (
-                  <Pressable
-                    key={cat.id}
-                    onPress={() => handleSelectCategory(cat.id)}
-                    style={[
-                      styles.categoryCard,
-                      isSelected && styles.categoryCardSelected,
-                    ]}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: isSelected }}
-                  >
-                    <CategoryIcon name={catName} type={type} size="md" />
-                    <Text
-                      style={[
-                        styles.categoryName,
-                        isSelected && styles.categoryNameSelected,
-                      ]}
-                      numberOfLines={1}
-                    >
-                      {catName}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-
-              {/* Add Custom Category Card */}
-              <Pressable
-                onPress={() => {
-                  hapticFeedback.light();
-                  setShowCategoryModal(true);
-                }}
-                style={[styles.categoryCard, styles.addCategoryCard]}
-                accessibilityRole="button"
-                accessibilityLabel="Add custom category"
-              >
-                <View style={styles.addCatCircle}>
-                  <Ionicons name="add" size={20} color={colors.primary} />
-                </View>
-                <Text style={styles.addCatText}>Add New</Text>
-              </Pressable>
-            </View>
-          </View>
-
-          {/* Wallet Selector */}
-          <View style={styles.section}>
-            <Text style={styles.sectionLabel}>
-              {type === "INCOME" ? "Deposit To Account" : "Pay From Account"}
-            </Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.walletChips}
+          {/* 3. Form Selection Card (Category & Account Rows) */}
+          <View style={styles.formCard}>
+            {/* Category Row */}
+            <Pressable
+              onPress={() => {
+                hapticFeedback.light();
+                setShowCategorySelector(true);
+              }}
+              style={({ pressed }) => [
+                styles.formRow,
+                pressed && styles.formRowPressed,
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel={`Category: ${selectedCategoryName}`}
             >
-              {wallets.map((w) => {
-                const isSelected = selectedWalletId === w.id;
-                const meta = getWalletMeta(w.type);
+              <View style={styles.rowLeft}>
+                <CategoryIcon
+                  name={selectedCategoryName}
+                  type={type}
+                  size="md"
+                />
+                <View style={styles.rowTextCol}>
+                  <Text style={styles.rowLabel}>Category</Text>
+                  <Text style={styles.rowValue} numberOfLines={1}>
+                    {selectedCategoryName}
+                  </Text>
+                </View>
+              </View>
 
-                return (
-                  <Pressable
-                    key={w.id}
-                    onPress={() => handleSelectWallet(w.id)}
+              <View style={styles.rowRight}>
+                <View
+                  style={[
+                    styles.typeBadge,
+                    type === "INCOME"
+                      ? styles.typeBadgeIncome
+                      : styles.typeBadgeExpense,
+                  ]}
+                >
+                  <Text
                     style={[
-                      styles.walletChip,
-                      isSelected && styles.walletChipSelected,
+                      styles.typeBadgeText,
+                      type === "INCOME"
+                        ? styles.typeBadgeTextIncome
+                        : styles.typeBadgeTextExpense,
                     ]}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: isSelected }}
                   >
-                    <View
-                      style={[
-                        styles.walletIconCircle,
-                        { backgroundColor: meta.bgColor },
-                      ]}
-                    >
-                      <Ionicons name={meta.icon} size={16} color={meta.color} />
-                    </View>
-                    <View>
-                      <Text
-                        style={[
-                          styles.walletChipTitle,
-                          isSelected && styles.walletChipTitleSelected,
-                        ]}
-                      >
-                        {w.name}
-                      </Text>
-                      <Text style={styles.walletChipBalance}>
-                        {formatCurrency(w.balance)}
-                      </Text>
-                    </View>
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
+                    {type === "INCOME" ? "Income" : "Expense"}
+                  </Text>
+                </View>
+                <Ionicons
+                  name="chevron-forward"
+                  size={18}
+                  color={colors.textMuted}
+                />
+              </View>
+            </Pressable>
+
+            <View style={styles.divider} />
+
+            {/* Account / Wallet Row */}
+            <Pressable
+              onPress={() => {
+                hapticFeedback.light();
+                setShowWalletSelector(true);
+              }}
+              style={({ pressed }) => [
+                styles.formRow,
+                pressed && styles.formRowPressed,
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel={`Account: ${selectedWallet?.name || "Account"}`}
+            >
+              <View style={styles.rowLeft}>
+                <View
+                  style={[
+                    styles.walletIconCircle,
+                    { backgroundColor: selectedWalletMeta.bgColor },
+                  ]}
+                >
+                  <Ionicons
+                    name={selectedWalletMeta.icon}
+                    size={18}
+                    color={selectedWalletMeta.color}
+                  />
+                </View>
+                <View style={styles.rowTextCol}>
+                  <Text style={styles.rowLabel}>
+                    {type === "INCOME" ? "Deposit To" : "Pay From"}
+                  </Text>
+                  <Text style={styles.rowValue} numberOfLines={1}>
+                    {selectedWallet?.name || "Select Account"}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.rowRight}>
+                <Text style={styles.walletBalanceText}>
+                  {formatCurrency(selectedWallet?.balance || 0)}
+                </Text>
+                <Ionicons
+                  name="chevron-forward"
+                  size={18}
+                  color={colors.textMuted}
+                />
+              </View>
+            </Pressable>
           </View>
 
-          {/* Note Input */}
-          <View style={styles.section}>
+          {/* 4. Note Input */}
+          <View style={styles.noteSection}>
             <Input
               label="Note (Optional)"
-              placeholder="e.g. Lunch with team, Groceries"
+              placeholder="e.g. Lunch with team, Groceries..."
               value={note}
               onChangeText={setNote}
               leftIcon={
                 <Ionicons
                   name="chatbubble-ellipses-outline"
-                  size={18}
-                  color={colors.textSecondary}
+                  size={20}
+                  color={colors.primary}
                 />
               }
             />
           </View>
 
-          {/* Save Button */}
+          {/* 5. Save Button */}
           <Button
             title="Save Transaction"
             onPress={handleSave}
@@ -391,7 +413,28 @@ export default function AddTransactionScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* Category Modal */}
+      {/* Category Selector Bottom Sheet Modal */}
+      <CategorySelectorModal
+        visible={showCategorySelector}
+        onClose={() => setShowCategorySelector(false)}
+        categories={categories}
+        selectedCategoryId={selectedCategoryId}
+        onSelectCategory={handleSelectCategoryFromModal}
+        onAddNew={() => setShowCategoryModal(true)}
+        initialType={type}
+      />
+
+      {/* Account / Wallet Selector Bottom Sheet Modal */}
+      <WalletSelectorModal
+        visible={showWalletSelector}
+        onClose={() => setShowWalletSelector(false)}
+        wallets={wallets}
+        selectedWalletId={selectedWalletId}
+        onSelectWallet={handleSelectWalletFromModal}
+        allowAllAccounts={false}
+      />
+
+      {/* Custom Category Modal */}
       <CategoryModal
         visible={showCategoryModal}
         onClose={() => setShowCategoryModal(false)}
@@ -410,130 +453,101 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.base,
     paddingBottom: spacing.huge,
   },
-  segmentContainer: {
-    marginTop: spacing.xs,
+  amountSection: {
     marginBottom: spacing.base,
   },
-  section: {
+  budgetBannerSection: {
     marginBottom: spacing.base,
   },
-  sectionHeaderRow: {
+  formCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: spacing.base,
+    ...shadows.sm,
+    overflow: "hidden",
+  },
+  formRow: {
     flexDirection: "row",
+    alignItems: "center",
     justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: spacing.sm,
-  },
-  sectionLabel: {
-    ...typography.subhead,
-    color: colors.textSecondary,
-    fontWeight: "600",
-  },
-  addCatLink: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 2,
-  },
-  addCatLinkText: {
-    ...typography.footnote,
-    fontWeight: "700",
-    color: colors.primary,
-  },
-  categoryGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm,
-  },
-  categoryCard: {
-    width: "31%",
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
     paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xs,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    ...shadows.sm,
-  },
-  categoryCardSelected: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primaryMuted,
-  },
-  categoryName: {
-    ...typography.footnote,
-    fontWeight: "600",
-    color: colors.text,
-    marginTop: spacing.xs,
-    textAlign: "center",
-  },
-  categoryNameSelected: {
-    color: colors.primary,
-    fontWeight: "700",
-  },
-  addCategoryCard: {
-    borderStyle: "dashed",
-    borderColor: colors.primary,
-    backgroundColor: colors.primaryMuted,
-  },
-  addCatCircle: {
-    width: 38,
-    height: 38,
-    borderRadius: radius.full,
+    paddingHorizontal: spacing.base,
     backgroundColor: colors.surface,
-    alignItems: "center",
-    justifyContent: "center",
   },
-  addCatText: {
-    ...typography.footnote,
-    fontWeight: "700",
-    color: colors.primary,
-    marginTop: spacing.xs,
+  formRowPressed: {
+    backgroundColor: colors.surfaceSecondary,
   },
-  walletChips: {
-    flexDirection: "row",
-    gap: spacing.md,
-    marginTop: spacing.sm,
-  },
-  walletChip: {
+  rowLeft: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.surface,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: radius.lg,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    minWidth: 140,
-    ...shadows.sm,
-  },
-  walletChipSelected: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primaryMuted,
-  },
-  walletIconCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: radius.full,
-    alignItems: "center",
-    justifyContent: "center",
+    flex: 1,
     marginRight: spacing.sm,
   },
-  walletChipTitle: {
-    ...typography.subhead,
-    fontWeight: "600",
-    color: colors.text,
+  rowTextCol: {
+    marginLeft: spacing.md,
+    flex: 1,
   },
-  walletChipTitleSelected: {
-    color: colors.primary,
-    fontWeight: "700",
-  },
-  walletChipBalance: {
+  rowLabel: {
     ...typography.caption,
+    color: colors.textMuted,
+    fontSize: 12,
+  },
+  rowValue: {
+    ...typography.subhead,
+    color: colors.text,
+    fontWeight: "700",
+    marginTop: 2,
+  },
+  rowRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs + 2,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.borderLight,
+    marginLeft: spacing.base + 40,
+  },
+  typeBadge: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 3,
+    borderRadius: radius.full,
+  },
+  typeBadgeExpense: {
+    backgroundColor: colors.expenseBg,
+  },
+  typeBadgeIncome: {
+    backgroundColor: colors.incomeBg,
+  },
+  typeBadgeText: {
+    ...typography.caption,
+    fontWeight: "700",
+    fontSize: 11,
+  },
+  typeBadgeTextExpense: {
+    color: colors.expense,
+  },
+  typeBadgeTextIncome: {
+    color: colors.income,
+  },
+  walletIconCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: radius.md,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  walletBalanceText: {
+    ...typography.subhead,
     color: colors.textSecondary,
-    marginTop: 1,
-    ...typography.tabular,
+    fontWeight: "600",
+  },
+  noteSection: {
+    marginBottom: spacing.base,
   },
   saveBtn: {
-    marginTop: spacing.md,
+    marginTop: spacing.xs,
   },
 });

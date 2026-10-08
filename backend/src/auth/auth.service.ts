@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { OAuth2Client } from 'google-auth-library';
 import bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
+import { verifyToken } from '@clerk/backend';
 import { UsersService } from '../users/users.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -131,6 +132,49 @@ export class AuthService {
         passwordHash,
       });
     }
+
+    const token = await this.generateToken(user.id, user.email);
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      },
+      accessToken: token,
+    };
+  }
+
+  async clerkLogin(clerkToken: string) {
+    const secretKey =
+      this.configService.get<string>('CLERK_SECRET_KEY') ||
+      process.env.CLERK_SECRET_KEY;
+
+    if (!secretKey) {
+      throw new UnauthorizedException('Clerk authentication is not configured');
+    }
+
+    let verified: { sub?: string; email?: string; email_address?: string };
+    try {
+      const verifyClerkToken = verifyToken as (
+        token: string,
+        options: { secretKey: string },
+      ) => Promise<{ sub?: string; email?: string; email_address?: string }>;
+
+      verified = await verifyClerkToken(clerkToken, { secretKey });
+    } catch {
+      throw new UnauthorizedException('Invalid Clerk token');
+    }
+
+    if (!verified || !verified.sub) {
+      throw new UnauthorizedException('Invalid Clerk token payload');
+    }
+
+    const email = verified.email || verified.email_address;
+    const user = await this.usersService.findOrCreateByClerk(
+      verified.sub,
+      email,
+    );
 
     const token = await this.generateToken(user.id, user.email);
 

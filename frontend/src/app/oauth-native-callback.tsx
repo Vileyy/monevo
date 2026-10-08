@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAuth, useSignIn, useSignUp, useUser } from "@clerk/clerk-expo";
 import * as WebBrowser from "expo-web-browser";
 import { useAuthStore } from "@/store/auth.store";
+import { apiClient } from "@/services/api/client";
 import { colors } from "@/theme";
 
 WebBrowser.maybeCompleteAuthSession();
@@ -72,12 +73,25 @@ export default function OAuthNativeCallback() {
       // 2. If already signed in in Clerk, commit session to store
       if (isSignedIn && userId) {
         try {
-          const token = (await getToken()) || userId;
+          const token = await getToken();
           const email =
             user?.primaryEmailAddress?.emailAddress || `${userId}@clerk.user`;
           const name = user?.fullName || user?.firstName || "Google User";
+          if (token) {
+            try {
+              const res = await apiClient.post<{
+                user: { id: string; email: string; name?: string };
+                accessToken: string;
+              }>("/auth/clerk", { clerkToken: token });
+              if (res.data?.accessToken && isMounted) {
+                loginStore(res.data.user, res.data.accessToken);
+                router.replace("/(tabs)");
+                return;
+              }
+            } catch {}
+          }
           if (isMounted) {
-            loginStore({ id: userId, email, name }, token);
+            loginStore({ id: userId, email, name }, token || userId);
             router.replace("/(tabs)");
           }
         } catch {

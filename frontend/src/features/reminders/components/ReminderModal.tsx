@@ -39,12 +39,12 @@ export function ReminderModal({ visible, onClose }: ReminderModalProps) {
     const numericAmount = parseCurrencyInput(amount);
 
     if (!title.trim()) {
-      Alert.alert("Thiếu thông tin", "Vui lòng nhập tên khoản nhắc nhở.");
+      Alert.alert("Missing Information", "Please enter a reminder title.");
       return;
     }
 
     if (numericAmount <= 0) {
-      Alert.alert("Thiếu thông tin", "Vui lòng nhập số tiền hợp lệ.");
+      Alert.alert("Missing Information", "Please enter a valid amount.");
       return;
     }
 
@@ -61,20 +61,20 @@ export function ReminderModal({ visible, onClose }: ReminderModalProps) {
       setDueDay(10);
       onClose();
     } catch {
-      Alert.alert("Lỗi", "Không thể tạo lịch nhắc. Vui lòng thử lại.");
+      Alert.alert("Error", "Could not create reminder. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <Modal visible={visible} onClose={onClose} title="Thêm Lịch Nhắc Tiền">
+    <Modal visible={visible} onClose={onClose} title="Add Bill Reminder">
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.container}
       >
         {/* Quick Pick Templates */}
-        <Text style={styles.sectionLabel}>Chọn loại khoản chi</Text>
+        <Text style={styles.sectionLabel}>Select Category</Text>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -117,8 +117,8 @@ export function ReminderModal({ visible, onClose }: ReminderModalProps) {
 
         {/* Title Input */}
         <Input
-          label="Tên khoản chi / thuốc"
-          placeholder="Ví dụ: Tiền thuốc huyết áp, Tiền điện..."
+          label="Reminder Title"
+          placeholder="e.g. Electricity, Water, Medicine..."
           value={title}
           onChangeText={setTitle}
         />
@@ -134,7 +134,7 @@ export function ReminderModal({ visible, onClose }: ReminderModalProps) {
 
         {/* Due Day Selector (Day of month 1 - 31) */}
         <View style={styles.dueDayContainer}>
-          <Text style={styles.sectionLabel}>Ngày đến hạn trong tháng</Text>
+          <Text style={styles.sectionLabel}>Due Day of Month</Text>
           <View style={styles.stepperRow}>
             <Pressable
               onPress={() => setDueDay((d) => Math.max(1, d - 1))}
@@ -145,8 +145,8 @@ export function ReminderModal({ visible, onClose }: ReminderModalProps) {
             </Pressable>
 
             <View style={styles.dueDayBadge}>
-              <Text style={styles.dueDayText}>Ngày {dueDay}</Text>
-              <Text style={styles.dueDaySub}>hàng tháng</Text>
+              <Text style={styles.dueDayText}>Day {dueDay}</Text>
+              <Text style={styles.dueDaySub}>every month</Text>
             </View>
 
             <Pressable
@@ -162,13 +162,13 @@ export function ReminderModal({ visible, onClose }: ReminderModalProps) {
         {/* Action Buttons */}
         <View style={styles.buttonRow}>
           <Button
-            title="Hủy"
+            title="Cancel"
             variant="secondary"
             onPress={onClose}
             style={styles.button}
           />
           <Button
-            title="Lưu Nhắc Nhở"
+            title="Save Reminder"
             onPress={handleSave}
             isLoading={isSubmitting}
             style={styles.button}

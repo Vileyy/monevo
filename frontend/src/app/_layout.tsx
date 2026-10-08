@@ -9,12 +9,7 @@ import {
 } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import * as WebBrowser from "expo-web-browser";
-import {
-  ClerkLoaded,
-  ClerkProvider,
-  useAuth,
-  useUser,
-} from "@clerk/clerk-expo";
+import { ClerkLoaded, ClerkProvider } from "@clerk/clerk-expo";
 
 import { AnimatedSplashOverlay } from "@/components/animated-icon";
 import { useAuthStore } from "@/store/auth.store";
@@ -26,37 +21,12 @@ WebBrowser.maybeCompleteAuthSession();
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
-const clerkPublishableKey =
-  process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ||
-  "pk_test_ZW5oYW5jZWQtb2NlbG90LTc4NTEuY2xlcmsuYWNjb3VudHMuZGV2JA";
+const clerkPublishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
-function ClerkSessionSync() {
-  const { isSignedIn, userId, getToken } = useAuth();
-  const { user } = useUser();
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const login = useAuthStore((state) => state.login);
-
-  useEffect(() => {
-    let isMounted = true;
-    if (isSignedIn && userId && !isAuthenticated) {
-      void (async () => {
-        try {
-          const token = (await getToken()) || userId;
-          const email =
-            user?.primaryEmailAddress?.emailAddress || `${userId}@clerk.user`;
-          const name = user?.fullName || user?.firstName || "Monevo User";
-          if (isMounted) {
-            login({ id: userId, email, name }, token);
-          }
-        } catch {}
-      })();
-    }
-    return () => {
-      isMounted = false;
-    };
-  }, [isSignedIn, userId, user, isAuthenticated, getToken, login]);
-
-  return null;
+if (!clerkPublishableKey) {
+  throw new Error(
+    "Missing EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY. Please set it in your .env file.",
+  );
 }
 
 export default function RootLayout() {
@@ -95,7 +65,6 @@ export default function RootLayout() {
   return (
     <ClerkProvider publishableKey={clerkPublishableKey} tokenCache={tokenCache}>
       <ClerkLoaded>
-        <ClerkSessionSync />
         <ThemeProvider value={DefaultTheme}>
           <StatusBar barStyle="dark-content" />
           <AnimatedSplashOverlay />

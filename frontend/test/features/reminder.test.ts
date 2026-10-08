@@ -13,7 +13,7 @@ describe("reminders library", () => {
 
   it("should return correct metadata for MEDICINE", () => {
     const meta = getReminderCategoryMeta("MEDICINE");
-    expect(meta.label).toBe("Tiền thuốc");
+    expect(meta.label).toBe("Medicine");
     expect(meta.icon).toBe("medkit");
   });
 

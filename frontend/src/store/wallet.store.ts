@@ -38,8 +38,10 @@ export const useWalletStore = create<WalletState>((set, get) => ({
     try {
       const response = await apiClient.get<Wallet[]>("/wallets");
       set({ wallets: response.data, hasFetched: true });
-    } catch (error) {
-      console.error("Failed to fetch wallets:", error);
+    } catch (error: any) {
+      if (error?.response?.status !== 401) {
+        console.error("Failed to fetch wallets:", error);
+      }
       set({ hasFetched: true });
     } finally {
       set({ isLoading: false });

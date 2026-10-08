@@ -12,7 +12,7 @@ import {
 } from 'class-validator';
 
 export class UpdateReminderDto {
-  @ApiPropertyOptional({ example: 'Tiền thuốc tim' })
+  @ApiPropertyOptional({ example: 'Prescription Medicine' })
   @IsString()
   @IsOptional()
   title?: string;

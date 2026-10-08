@@ -21,3 +21,19 @@ apiClient.interceptors.request.use(
     return Promise.reject(error);
   },
 );
+
+let isHandling401 = false;
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 && !isHandling401) {
+      isHandling401 = true;
+      useAuthStore.getState().logout();
+      setTimeout(() => {
+        isHandling401 = false;
+      }, 3000);
+    }
+    return Promise.reject(error);
+  },
+);

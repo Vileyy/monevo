@@ -95,7 +95,7 @@ describe("notifications library", () => {
           identifier: `${REMINDER_NOTIFICATION_PREFIX}rem-123`,
           content: expect.objectContaining({
             title: expect.stringContaining("Tiền Điện"),
-            body: expect.stringContaining("ngày 15"),
+            body: expect.stringContaining("day 15"),
           }),
         }),
       );
