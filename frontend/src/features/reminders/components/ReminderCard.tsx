@@ -23,12 +23,12 @@ export const ReminderCard = memo(function ReminderCard({
   const handlePayPress = () => {
     hapticFeedback.light();
     Alert.alert(
-      "Xác nhận đã đóng tiền",
-      `Ghi nhận đã đóng ${formatCurrency(reminder.amount)} cho khoản "${reminder.title}"?\n\nỨng dụng sẽ tự động trừ ví và lưu vào lịch sử chi tiêu.`,
+      "Confirm Payment",
+      `Record payment of ${formatCurrency(reminder.amount)} for "${reminder.title}"?\n\nThis will deduct from your account balance and save to transaction history.`,
       [
-        { text: "Hủy", style: "cancel" },
+        { text: "Cancel", style: "cancel" },
         {
-          text: "Đã đóng tiền ✔",
+          text: "Mark as Paid ✔",
           onPress: async () => {
             try {
               hapticFeedback.success();
@@ -37,8 +37,8 @@ export const ReminderCard = memo(function ReminderCard({
             } catch {
               hapticFeedback.error();
               Alert.alert(
-                "Lỗi",
-                "Không thể ghi nhận thanh toán. Vui lòng thử lại.",
+                "Error",
+                "Could not record payment. Please try again.",
               );
             }
           },
@@ -50,12 +50,12 @@ export const ReminderCard = memo(function ReminderCard({
   const handleDeletePress = () => {
     hapticFeedback.light();
     Alert.alert(
-      "Xóa lịch nhắc",
-      `Bạn có chắc muốn xóa lịch nhắc "${reminder.title}"?`,
+      "Delete Reminder",
+      `Are you sure you want to delete "${reminder.title}"?`,
       [
-        { text: "Không", style: "cancel" },
+        { text: "Cancel", style: "cancel" },
         {
-          text: "Xóa",
+          text: "Delete",
           style: "destructive",
           onPress: () => {
             hapticFeedback.warning();
@@ -66,11 +66,11 @@ export const ReminderCard = memo(function ReminderCard({
     );
   };
 
-  // Human readable due date text in Vietnamese
+  // Human readable due date text in English
   const getDueStatusText = () => {
     if (reminder.isPaidThisMonth) {
       return {
-        label: "Đã đóng tháng này",
+        label: "Paid this month",
         color: colors.success,
         bg: colors.incomeBg,
         icon: "checkmark-circle" as const,
@@ -78,7 +78,7 @@ export const ReminderCard = memo(function ReminderCard({
     }
     if (reminder.status === "DUE_TODAY") {
       return {
-        label: "Hôm nay đến hạn!",
+        label: "Due today!",
         color: colors.danger,
         bg: colors.expenseBg,
         icon: "alert-circle" as const,
@@ -86,7 +86,7 @@ export const ReminderCard = memo(function ReminderCard({
     }
     if (reminder.status === "OVERDUE") {
       return {
-        label: `Đã quá hạn ngày ${reminder.dueDate}`,
+        label: `Overdue since day ${reminder.dueDate}`,
         color: colors.danger,
         bg: colors.expenseBg,
         icon: "warning" as const,
@@ -94,14 +94,14 @@ export const ReminderCard = memo(function ReminderCard({
     }
     if (reminder.status === "DUE_SOON") {
       return {
-        label: `Hạn ngày ${reminder.dueDate} (Còn ${reminder.daysUntilDue} ngày)`,
+        label: `Due day ${reminder.dueDate} (${reminder.daysUntilDue} days left)`,
         color: colors.warning,
         bg: colors.warningBg,
         icon: "time" as const,
       };
     }
     return {
-      label: `Hạn ngày ${reminder.dueDate} hàng tháng`,
+      label: `Due day ${reminder.dueDate} monthly`,
       color: colors.textSecondary,
       bg: colors.surfaceSecondary,
       icon: "calendar-outline" as const,
@@ -131,7 +131,7 @@ export const ReminderCard = memo(function ReminderCard({
           style={styles.deleteBtn}
           hitSlop={8}
           accessibilityRole="button"
-          accessibilityLabel={`Xóa nhắc nhở ${reminder.title}`}
+          accessibilityLabel={`Delete reminder ${reminder.title}`}
         >
           <Ionicons name="trash-outline" size={16} color={colors.textMuted} />
         </Pressable>
@@ -158,7 +158,7 @@ export const ReminderCard = memo(function ReminderCard({
       {!reminder.isPaidThisMonth && (
         <View style={styles.actionRow}>
           <Button
-            title="Đã đóng khoản này ✔"
+            title="Mark as Paid ✔"
             onPress={handlePayPress}
             size="md"
             style={styles.payButton}

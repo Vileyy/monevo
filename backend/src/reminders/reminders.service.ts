@@ -136,7 +136,7 @@ export class RemindersService {
     if (!category) {
       category = await this.prisma.category.create({
         data: {
-          name: 'Hóa đơn / Tiền thuốc',
+          name: 'Bills & Utilities',
           type: 'EXPENSE',
           userId,
         },
@@ -163,7 +163,7 @@ export class RemindersService {
           categoryId: category.id,
           amount: reminder.amount,
           type: 'EXPENSE',
-          note: `Đã đóng: ${reminder.title}`,
+          note: `Paid: ${reminder.title}`,
           date: new Date(),
         },
       });

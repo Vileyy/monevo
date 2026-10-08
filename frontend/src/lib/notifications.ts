@@ -25,8 +25,8 @@ export async function initNotifications(): Promise<void> {
 
     if (Platform.OS === "android") {
       await Notifications.setNotificationChannelAsync("bill-reminders", {
-        name: "Nhắc nhở hóa đơn & định kỳ",
-        description: "Thông báo nhắc hạn đóng tiền hóa đơn",
+        name: "Bill Reminders & Recurring",
+        description: "Notifications for bill due dates",
         importance: Notifications.AndroidImportance.HIGH,
         vibrationPattern: [0, 250, 250, 250],
         lightColor: "#22C55E",
@@ -135,13 +135,13 @@ export async function scheduleReminderNotification(
     );
 
     const formattedAmount = formatCurrency(reminder.amount);
-    const dueDayText = `ngày ${reminder.dueDate}`;
+    const dueDayText = `day ${reminder.dueDate}`;
 
     const notificationId = await Notifications.scheduleNotificationAsync({
       identifier,
       content: {
-        title: `🔔 Nhắc hóa đơn: ${reminder.title}`,
-        body: `Khoản ${formattedAmount} đến hạn vào ${dueDayText}. Đừng quên thanh toán đúng hạn nhé!`,
+        title: `🔔 Bill Reminder: ${reminder.title}`,
+        body: `${reminder.title} (${formattedAmount}) is due on ${dueDayText}. Remember to pay on time!`,
         data: {
           reminderId: reminder.id,
           amount: reminder.amount,

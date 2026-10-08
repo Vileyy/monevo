@@ -1,5 +1,18 @@
-import React, { useEffect, useRef } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import React, { useEffect } from "react";
+import { LayoutChangeEvent, Platform, StyleSheet, Text } from "react-native";
+import {
+  CodeField,
+  Cursor,
+  useBlurOnFulfill,
+  useClearByFocusCell,
+} from "react-native-confirmation-code-field";
+import Animated, {
+  FadeIn,
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withTiming,
+} from "react-native-reanimated";
 import { colors, radius, spacing } from "@/theme";
 import { hapticFeedback } from "@/lib/haptics";
 
@@ -13,6 +26,52 @@ export interface OtpInputProps {
   autoFocus?: boolean;
 }
 
+interface OtpCellProps {
+  index: number;
+  symbol: string;
+  isFocused: boolean;
+  hasError: boolean;
+  onLayout: (event: LayoutChangeEvent) => void;
+}
+
+function OtpCell({
+  index,
+  symbol,
+  isFocused,
+  hasError,
+  onLayout,
+}: OtpCellProps) {
+  const isFilled = Boolean(symbol);
+
+  return (
+    <Animated.View
+      onLayout={onLayout}
+      style={[
+        styles.cell,
+        isFilled && styles.cellFilled,
+        isFocused && styles.cellFocused,
+        hasError && styles.cellError,
+      ]}
+    >
+      {symbol ? (
+        <Animated.View
+          key={`${index}-${symbol}`}
+          entering={FadeIn.duration(120)}
+          style={styles.symbolContainer}
+        >
+          <Text style={[styles.cellText, hasError && styles.cellTextError]}>
+            {symbol}
+          </Text>
+        </Animated.View>
+      ) : isFocused ? (
+        <Text style={styles.cursorText}>
+          <Cursor cursorSymbol="|" />
+        </Text>
+      ) : null}
+    </Animated.View>
+  );
+}
+
 export function OtpInput({
   code,
   length = 6,
@@ -22,85 +81,67 @@ export function OtpInput({
   disabled = false,
   autoFocus = true,
 }: OtpInputProps) {
-  const inputRef = useRef<TextInput>(null);
-
-  useEffect(() => {
-    if (autoFocus) {
-      const timer = setTimeout(() => {
-        inputRef.current?.focus();
-      }, 200);
-      return () => clearTimeout(timer);
-    }
-  }, [autoFocus]);
-
-  const handleChangeText = (text: string) => {
-    const sanitized = text.replace(/\D/g, "").slice(0, length);
-    hapticFeedback.selection();
-    onCodeChange(sanitized);
-
-    if (sanitized.length === length && onFilled) {
-      onFilled(sanitized);
-    }
-  };
-
-  const handleCellPress = () => {
-    if (!disabled) {
-      inputRef.current?.focus();
-    }
-  };
-
-  const cells = Array.from({ length }, (_, i) => {
-    const digit = code[i] || "";
-    const isCurrent = i === code.length && !disabled;
-    const isFilled = Boolean(digit);
-
-    return (
-      <View
-        key={i}
-        style={[
-          styles.cell,
-          isFilled && styles.cellFilled,
-          isCurrent && styles.cellActive,
-          hasError && styles.cellError,
-        ]}
-      >
-        <Text
-          style={[
-            styles.cellText,
-            isFilled && styles.cellTextFilled,
-            hasError && styles.cellTextError,
-          ]}
-        >
-          {digit}
-        </Text>
-        {isCurrent && <View style={styles.cursor} />}
-      </View>
-    );
+  const ref = useBlurOnFulfill({ value: code, cellCount: length });
+  const [props, getCellOnLayoutHandler] = useClearByFocusCell({
+    value: code,
+    setValue: onCodeChange,
   });
 
-  return (
-    <Pressable
-      onPress={handleCellPress}
-      style={styles.container}
-      accessibilityRole="none"
-      accessibilityLabel="Nhập mã xác nhận 6 chữ số"
-    >
-      <View style={styles.cellsContainer}>{cells}</View>
+  const shakeX = useSharedValue(0);
 
-      {/* Hidden Native TextInput */}
-      <TextInput
-        ref={inputRef}
+  useEffect(() => {
+    if (hasError) {
+      shakeX.value = withSequence(
+        withTiming(-6, { duration: 40 }),
+        withTiming(6, { duration: 40 }),
+        withTiming(-4, { duration: 40 }),
+        withTiming(4, { duration: 40 }),
+        withTiming(0, { duration: 40 }),
+      );
+    }
+  }, [hasError, shakeX]);
+
+  const shakeAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: shakeX.value }],
+  }));
+
+  const handleTextChange = (text: string) => {
+    const clean = text.replace(/\D/g, "").slice(0, length);
+    hapticFeedback.selection();
+    onCodeChange(clean);
+
+    if (clean.length === length && onFilled) {
+      onFilled(clean);
+    }
+  };
+
+  return (
+    <Animated.View style={[styles.container, shakeAnimatedStyle]}>
+      <CodeField
+        ref={ref}
+        {...props}
         value={code}
-        onChangeText={handleChangeText}
-        maxLength={length}
+        onChangeText={handleTextChange}
+        cellCount={length}
+        rootStyle={styles.codeFieldRoot}
         keyboardType="number-pad"
         textContentType="oneTimeCode"
-        autoComplete="one-time-code"
+        autoComplete={Platform.OS === "android" ? "sms-otp" : "one-time-code"}
+        autoFocus={autoFocus}
         editable={!disabled}
-        style={styles.hiddenInput}
-        caretHidden
+        testID="otp-code-field"
+        renderCell={({ index, symbol, isFocused }) => (
+          <OtpCell
+            key={index}
+            index={index}
+            symbol={symbol}
+            isFocused={isFocused}
+            hasError={hasError}
+            onLayout={getCellOnLayoutHandler(index)}
+          />
+        )}
       />
-    </Pressable>
+    </Animated.View>
   );
 }
 
@@ -109,62 +150,59 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginVertical: spacing.md,
+    width: "100%",
   },
-  cellsContainer: {
+  codeFieldRoot: {
     flexDirection: "row",
-    gap: 8,
-    justifyContent: "center",
+    justifyContent: "space-between",
     alignItems: "center",
+    width: "100%",
+    maxWidth: 300,
+    gap: 8,
   },
   cell: {
-    width: 46,
-    height: 56,
-    borderRadius: radius.lg,
-    backgroundColor: colors.surfaceSecondary,
-    borderWidth: 1.5,
-    borderColor: colors.border,
+    flex: 1,
+    height: 50,
+    borderRadius: radius.md,
+    backgroundColor: "#F8FAFC",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
     justifyContent: "center",
     alignItems: "center",
-    position: "relative",
   },
-  cellActive: {
+  cellFocused: {
     borderColor: colors.primary,
-    backgroundColor: colors.surface,
-    transform: [{ scale: 1.05 }],
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1.5,
   },
   cellFilled: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primaryLight,
+    borderColor: "#CBD5E1",
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
   },
   cellError: {
     borderColor: colors.danger,
-    backgroundColor: colors.expenseBg,
+    backgroundColor: "#FEF2F2",
+  },
+  symbolContainer: {
+    justifyContent: "center",
+    alignItems: "center",
   },
   cellText: {
-    fontSize: 24,
-    lineHeight: 30,
-    fontWeight: "800",
+    fontSize: 20,
+    lineHeight: 26,
+    fontWeight: "600",
     color: colors.text,
     textAlign: "center",
-  },
-  cellTextFilled: {
-    color: colors.primaryDark,
   },
   cellTextError: {
     color: colors.danger,
   },
-  cursor: {
-    position: "absolute",
-    bottom: 12,
-    width: 16,
-    height: 2.5,
-    borderRadius: 1.5,
-    backgroundColor: colors.primary,
-  },
-  hiddenInput: {
-    position: "absolute",
-    opacity: 0,
-    width: 1,
-    height: 1,
+  cursorText: {
+    fontSize: 20,
+    lineHeight: 24,
+    fontWeight: "300",
+    color: colors.primary,
+    textAlign: "center",
   },
 });

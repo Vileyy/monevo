@@ -14,6 +14,7 @@ export interface WalletSelectorModalProps {
   wallets: Wallet[];
   selectedWalletId: string | null;
   onSelectWallet: (walletId: string | null) => void;
+  allowAllAccounts?: boolean;
 }
 
 export function WalletSelectorModal({
@@ -22,6 +23,7 @@ export function WalletSelectorModal({
   wallets,
   selectedWalletId,
   onSelectWallet,
+  allowAllAccounts = true,
 }: WalletSelectorModalProps) {
   const hideBalance = useSettingsStore((state) => state.hideBalance);
   const totalBalance = wallets.reduce((sum, w) => sum + w.balance, 0);
@@ -45,48 +47,54 @@ export function WalletSelectorModal({
         </Text>
 
         {/* All Accounts Option */}
-        <Pressable
-          onPress={() => handleSelect(null)}
-          style={({ pressed }) => [
-            styles.itemRow,
-            isAllSelected && styles.itemRowSelected,
-            pressed && styles.itemRowPressed,
-          ]}
-          accessibilityRole="radio"
-          accessibilityState={{ selected: isAllSelected }}
-          accessibilityLabel={`All Accounts, balance ${formatCurrency(totalBalance)}`}
-        >
-          <View
-            style={[
-              styles.iconContainer,
-              { backgroundColor: colors.primaryLight },
+        {allowAllAccounts && (
+          <Pressable
+            onPress={() => handleSelect(null)}
+            style={({ pressed }) => [
+              styles.itemRow,
+              isAllSelected && styles.itemRowSelected,
+              pressed && styles.itemRowPressed,
             ]}
+            accessibilityRole="radio"
+            accessibilityState={{ selected: isAllSelected }}
+            accessibilityLabel={`All Accounts, balance ${formatCurrency(totalBalance)}`}
           >
-            <Ionicons name="grid-outline" size={20} color={colors.primary} />
-          </View>
-
-          <View style={styles.infoContainer}>
-            <Text style={styles.nameText}>All Accounts</Text>
-            <Text style={styles.subText}>
-              {wallets.length} {wallets.length === 1 ? "Account" : "Accounts"}
-            </Text>
-          </View>
-
-          <View style={styles.rightContainer}>
-            <Text style={styles.balanceText}>
-              {hideBalance ? "••••••••" : formatCurrency(totalBalance)}
-            </Text>
-            <View style={styles.radioContainer}>
-              {isAllSelected ? (
-                <View style={styles.radioChecked}>
-                  <Ionicons name="checkmark" size={14} color={colors.surface} />
-                </View>
-              ) : (
-                <View style={styles.radioUnchecked} />
-              )}
+            <View
+              style={[
+                styles.iconContainer,
+                { backgroundColor: colors.primaryLight },
+              ]}
+            >
+              <Ionicons name="grid-outline" size={20} color={colors.primary} />
             </View>
-          </View>
-        </Pressable>
+
+            <View style={styles.infoContainer}>
+              <Text style={styles.nameText}>All Accounts</Text>
+              <Text style={styles.subText}>
+                {wallets.length} {wallets.length === 1 ? "Account" : "Accounts"}
+              </Text>
+            </View>
+
+            <View style={styles.rightContainer}>
+              <Text style={styles.balanceText}>
+                {hideBalance ? "••••••••" : formatCurrency(totalBalance)}
+              </Text>
+              <View style={styles.radioContainer}>
+                {isAllSelected ? (
+                  <View style={styles.radioChecked}>
+                    <Ionicons
+                      name="checkmark"
+                      size={14}
+                      color={colors.surface}
+                    />
+                  </View>
+                ) : (
+                  <View style={styles.radioUnchecked} />
+                )}
+              </View>
+            </View>
+          </Pressable>
+        )}
 
         {/* Individual Wallets */}
         {wallets.map((wallet) => {

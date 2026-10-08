@@ -46,6 +46,7 @@ interface BudgetState {
   ) => Promise<void>;
   deleteBudget: (id: string) => Promise<void>;
   setSelectedDate: (month: number, year: number) => void;
+  getBudgetForCategory: (categoryId: string) => BudgetItem | undefined;
 }
 
 const now = new Date();
@@ -131,5 +132,9 @@ export const useBudgetStore = create<BudgetState>((set, get) => ({
   setSelectedDate: (month, year) => {
     set({ selectedMonth: month, selectedYear: year });
     void get().fetchBudgets(month, year);
+  },
+
+  getBudgetForCategory: (categoryId: string) => {
+    return get().budgets.find((b) => b.categoryId === categoryId);
   },
 }));

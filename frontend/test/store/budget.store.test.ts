@@ -127,4 +127,35 @@ describe("budget.store", () => {
       expect(apiClient.delete).toHaveBeenCalledWith("/budgets/b1");
     });
   });
+
+  describe("getBudgetForCategory", () => {
+    it("should return the matching budget for a given category ID", () => {
+      const mockItem = {
+        id: "b1",
+        amount: 2000000,
+        month: 8,
+        year: 2026,
+        categoryId: "cat-123",
+        category: {
+          id: "cat-123",
+          name: "Food",
+          type: "EXPENSE",
+          icon: null,
+          createdAt: "2026-01-01",
+          updatedAt: "2026-01-01",
+        },
+        spent: 500000,
+        remaining: 1500000,
+        percentage: 25,
+      };
+
+      useBudgetStore.setState({ budgets: [mockItem] });
+
+      const found = useBudgetStore.getState().getBudgetForCategory("cat-123");
+      expect(found).toEqual(mockItem);
+
+      const notFound = useBudgetStore.getState().getBudgetForCategory("non-existent");
+      expect(notFound).toBeUndefined();
+    });
+  });
 });

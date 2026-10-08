@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import {
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -126,7 +127,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
-    minHeight: 48,
+    height: 48,
   },
   inputContainerFocused: {
     borderColor: colors.primary,
@@ -138,12 +139,21 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    ...typography.body,
+    fontSize: 15,
+    fontWeight: "400",
     color: colors.text,
-    paddingVertical: spacing.md,
+    paddingVertical: 0,
+    paddingHorizontal: 0,
+    margin: 0,
+    textAlignVertical: "center",
+    ...Platform.select({
+      android: {
+        includeFontPadding: false,
+      },
+    }),
   },
   iconSlot: {
-    marginRight: spacing.sm,
+    marginRight: spacing.md,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -151,6 +161,7 @@ const styles = StyleSheet.create({
     padding: spacing.xs,
     justifyContent: "center",
     alignItems: "center",
+    height: "100%",
   },
   errorText: {
     ...typography.footnote,

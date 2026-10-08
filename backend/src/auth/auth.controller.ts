@@ -11,6 +11,7 @@ import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
+import { ClerkLoginDto } from './dto/clerk-login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { GetUser } from './decorators/get-user.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -35,6 +36,12 @@ export class AuthController {
   @Post('google')
   googleLogin(@Body() googleLoginDto: GoogleLoginDto) {
     return this.authService.googleLogin(googleLoginDto);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('clerk')
+  clerkLogin(@Body() clerkLoginDto: ClerkLoginDto) {
+    return this.authService.clerkLogin(clerkLoginDto.clerkToken);
   }
 
   @UseGuards(JwtAuthGuard)

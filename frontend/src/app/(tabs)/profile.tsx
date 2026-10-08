@@ -64,13 +64,13 @@ export default function ProfileScreen() {
         setReminderNotifications(true);
         void syncReminderNotifications(reminders);
         Alert.alert(
-          "Đã bật thông báo",
-          "Ứng dụng sẽ gửi thông báo nhắc nhở trước ngày đến hạn của hóa đơn lúc 9:00 sáng.",
+          "Notifications Enabled",
+          "You will receive bill reminder notifications at 9:00 AM before the due date.",
         );
       } else {
         Alert.alert(
-          "Quyền thông báo bị từ chối",
-          "Vui lòng vào Cài đặt của điện thoại để cho phép ứng dụng gửi thông báo.",
+          "Permission Denied",
+          "Please enable notification permissions in your device settings to receive bill reminders.",
         );
       }
     } else {
@@ -119,10 +119,10 @@ export default function ProfileScreen() {
   }, [currency]);
 
   const handleLogout = () => {
-    Alert.alert("Đăng xuất", "Bạn có chắc chắn muốn đăng xuất khỏi Monevo?", [
-      { text: "Hủy", style: "cancel" },
+    Alert.alert("Sign Out", "Are you sure you want to sign out of Monevo?", [
+      { text: "Cancel", style: "cancel" },
       {
-        text: "Đăng xuất",
+        text: "Sign Out",
         style: "destructive",
         onPress: async () => {
           try {

@@ -1,11 +1,19 @@
 import React from "react";
-import { Tabs } from "expo-router";
+import { Redirect, Tabs } from "expo-router";
 import { Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, typography } from "@/theme";
 import { hapticFeedback } from "@/lib/haptics";
+import { useAuthStore } from "@/store/auth.store";
 
 export default function TabLayout() {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isHydrated = useAuthStore((state) => state.isHydrated);
+
+  if (isHydrated && !isAuthenticated) {
+    return <Redirect href="/login" />;
+  }
+
   const tabPressListener = {
     tabPress: () => {
       hapticFeedback.selection();

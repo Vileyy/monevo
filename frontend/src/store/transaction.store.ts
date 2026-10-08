@@ -52,8 +52,10 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
         params: query,
       });
       set({ transactions: response.data, hasFetched: true });
-    } catch (error) {
-      console.error("Failed to fetch transactions:", error);
+    } catch (error: any) {
+      if (error?.response?.status !== 401) {
+        console.error("Failed to fetch transactions:", error);
+      }
       set({ hasFetched: true });
     } finally {
       set({ isLoading: false });

@@ -90,7 +90,7 @@ export function Modal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: colors.backdrop,
+    backgroundColor: "transparent",
     justifyContent: "flex-end",
   },
   backdrop: {
@@ -104,6 +104,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderTopLeftRadius: radius.xxl,
     borderTopRightRadius: radius.xxl,
+    borderTopWidth: 1,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderColor: colors.border,
     paddingTop: spacing.xs,
     paddingBottom: Platform.OS === "ios" ? spacing.xl : spacing.base,
     maxHeight: "88%",
