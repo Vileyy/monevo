@@ -1,14 +1,20 @@
+import {
+  extractClerkErrorMessage,
+  isRateLimitError,
+  isSessionExistsError,
+  isUserExistsError,
+  isUserNotFoundError,
+  isValidEmailFormat,
+} from "../../src/features/auth/utils/auth-helpers";
+
 describe("auth feature validation", () => {
   it("should validate email format properly", () => {
-    const isValidEmail = (email: string) =>
-      Boolean(email.trim()) && /\S+@\S+\.\S+/.test(email.trim());
-
-    expect(isValidEmail("test@example.com")).toBe(true);
-    expect(isValidEmail("user.name@domain.co.uk")).toBe(true);
-    expect(isValidEmail("invalid-email")).toBe(false);
-    expect(isValidEmail("")).toBe(false);
-    expect(isValidEmail("   ")).toBe(false);
-    expect(isValidEmail("test@")).toBe(false);
+    expect(isValidEmailFormat("test@example.com")).toBe(true);
+    expect(isValidEmailFormat("user.name@domain.co.uk")).toBe(true);
+    expect(isValidEmailFormat("invalid-email")).toBe(false);
+    expect(isValidEmailFormat("")).toBe(false);
+    expect(isValidEmailFormat("   ")).toBe(false);
+    expect(isValidEmailFormat("test@")).toBe(false);
   });
 
   it("should validate 6-digit OTP code properly", () => {
@@ -33,5 +39,64 @@ describe("auth feature validation", () => {
     expect(sanitizeOtp("12a34b56c78")).toBe("123456");
     expect(sanitizeOtp(" 9 8 7 6 5 4 ")).toBe("987654");
     expect(sanitizeOtp("")).toBe("");
+  });
+
+  it("should detect rate limit errors correctly from Clerk responses", () => {
+    const clerkRateLimitObj = {
+      errors: [
+        {
+          code: "too_many_requests",
+          message: "Too many requests. Please try again in a bit.",
+        },
+      ],
+    };
+    expect(isRateLimitError(clerkRateLimitObj)).toBe(true);
+
+    const clerkMessageOnly = {
+      errors: [
+        {
+          message: "Too many requests. Please try again in a bit.",
+        },
+      ],
+    };
+    expect(isRateLimitError(clerkMessageOnly)).toBe(true);
+
+    const errorInstance = new Error("Too many requests. Please try again in a bit.");
+    expect(isRateLimitError(errorInstance)).toBe(true);
+
+    const normalError = new Error("Invalid password");
+    expect(isRateLimitError(normalError)).toBe(false);
+    expect(isRateLimitError(null)).toBe(false);
+  });
+
+  it("should detect user existence, not found, and session errors correctly", () => {
+    expect(
+      isUserExistsError({ errors: [{ code: "form_identifier_exists" }] }),
+    ).toBe(true);
+    expect(
+      isUserNotFoundError({ errors: [{ code: "form_identifier_not_found" }] }),
+    ).toBe(true);
+    expect(
+      isSessionExistsError({ errors: [{ code: "session_exists" }] }),
+    ).toBe(true);
+    expect(
+      isSessionExistsError(new Error("already signed in")),
+    ).toBe(true);
+  });
+
+  it("should extract appropriate Clerk error messages", () => {
+    expect(
+      extractClerkErrorMessage({
+        errors: [{ message: "Custom message" }],
+      }),
+    ).toBe("Custom message");
+
+    expect(
+      extractClerkErrorMessage(new Error("Plain error")),
+    ).toBe("Plain error");
+
+    expect(
+      extractClerkErrorMessage({}, "Fallback message"),
+    ).toBe("Fallback message");
   });
 });

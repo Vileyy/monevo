@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -20,6 +20,13 @@ import { useAuthStore } from "@/store/auth.store";
 import { apiClient } from "@/services/api/client";
 import { hapticFeedback } from "@/lib/haptics";
 import { authStyles } from "@/features/auth/styles/auth.styles";
+import {
+  extractClerkErrorMessage,
+  isRateLimitError,
+  isSessionExistsError,
+  isUserExistsError,
+  isValidEmailFormat,
+} from "../utils/auth-helpers";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -80,6 +87,10 @@ export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
     return () => clearTimeout(timer);
   }, [countdown]);
 
+  // Prevent rapid double-tap or concurrent submissions
+  const isSendingRef = useRef(false);
+  const isVerifyingRef = useRef(false);
+
   // Validate email address
   const validateEmail = (inputEmail: string) => {
     const trimmed = inputEmail.trim().toLowerCase();
@@ -87,7 +98,7 @@ export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
       setEmailError("Please enter your email address");
       return false;
     }
-    if (!/\S+@\S+\.\S+/.test(trimmed)) {
+    if (!isValidEmailFormat(trimmed)) {
       setEmailError("Invalid email address format");
       return false;
     }
@@ -97,6 +108,10 @@ export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
 
   // Send Email OTP Code
   const handleSendOtpCode = async (targetEmail?: string) => {
+    if (isSendingRef.current || isLoading) {
+      return;
+    }
+
     const emailToUse = (targetEmail || email).trim().toLowerCase();
     if (!validateEmail(emailToUse)) {
       hapticFeedback.warning();
@@ -111,6 +126,7 @@ export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
       return;
     }
 
+    isSendingRef.current = true;
     setIsLoading(true);
     setHasOtpError(false);
     setOtpCode("");
@@ -136,19 +152,56 @@ export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
         );
 
         if (emailFactor && "emailAddressId" in emailFactor) {
-          await signIn.prepareFirstFactor({
-            strategy: "email_code",
-            emailAddressId: emailFactor.emailAddressId,
-          });
-          setOtpFlow("SIGN_IN");
-          setStep("OTP");
-          setCountdown(60);
-          hapticFeedback.success();
-          codeSent = true;
-          return;
+          try {
+            await signIn.prepareFirstFactor({
+              strategy: "email_code",
+              emailAddressId: emailFactor.emailAddressId,
+            });
+            setOtpFlow("SIGN_IN");
+            setStep("OTP");
+            setCountdown(60);
+            hapticFeedback.success();
+            codeSent = true;
+            return;
+          } catch (factorErr: unknown) {
+            if (isRateLimitError(factorErr)) {
+              setOtpFlow("SIGN_IN");
+              setStep("OTP");
+              setCountdown(60);
+              hapticFeedback.success();
+              codeSent = true;
+              Alert.alert(
+                "Code Already Sent",
+                "A verification code was recently sent to your email. Please check your inbox or wait before requesting a new one.",
+              );
+              return;
+            }
+            throw factorErr;
+          }
         }
-      } catch {
-        // User not found in signIn or in different status, fall through to signUp
+      } catch (signInErr: unknown) {
+        if (isRateLimitError(signInErr)) {
+          if (signIn.status === "needs_first_factor") {
+            setOtpFlow("SIGN_IN");
+            setStep("OTP");
+            setCountdown(60);
+            hapticFeedback.success();
+            Alert.alert(
+              "Code Already Sent",
+              "A verification code was recently sent to your email. Please check your inbox.",
+            );
+            return;
+          }
+          throw signInErr;
+        }
+
+        if (isSessionExistsError(signInErr)) {
+          try {
+            await signOut();
+            isSendingRef.current = false;
+            return handleSendOtpCode(targetEmail);
+          } catch {}
+        }
       }
 
       // 2. Try Sign Up flow (for new user)
@@ -158,22 +211,44 @@ export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
             emailAddress: emailToUse,
           });
 
-          await signUp.prepareEmailAddressVerification({
-            strategy: "email_code",
-          });
-
-          setOtpFlow("SIGN_UP");
-          setStep("OTP");
-          setCountdown(60);
-          hapticFeedback.success();
+          try {
+            await signUp.prepareEmailAddressVerification({
+              strategy: "email_code",
+            });
+            setOtpFlow("SIGN_UP");
+            setStep("OTP");
+            setCountdown(60);
+            hapticFeedback.success();
+          } catch (prepErr: unknown) {
+            if (isRateLimitError(prepErr)) {
+              setOtpFlow("SIGN_UP");
+              setStep("OTP");
+              setCountdown(60);
+              hapticFeedback.success();
+              Alert.alert(
+                "Code Already Sent",
+                "A verification code was recently sent to your email. Please check your inbox.",
+              );
+              return;
+            }
+            throw prepErr;
+          }
         } catch (signUpErr: unknown) {
-          const isUserExists =
-            (signUpErr as { errors?: { code: string }[] })?.errors?.[0]
-              ?.code === "form_identifier_exists" ||
-            (signUpErr instanceof Error &&
-              signUpErr.message.toLowerCase().includes("already exists"));
+          if (isRateLimitError(signUpErr)) {
+            if (signIn.status === "needs_first_factor") {
+              setOtpFlow("SIGN_IN");
+              setStep("OTP");
+              setCountdown(60);
+              hapticFeedback.success();
+              Alert.alert(
+                "Code Already Sent",
+                "A verification code was recently sent to your email. Please check your inbox.",
+              );
+              return;
+            }
+          }
 
-          if (isUserExists) {
+          if (isUserExistsError(signUpErr)) {
             // User exists already, retry signIn factor preparation
             try {
               const retrySignIn = await signIn.create({
@@ -183,54 +258,90 @@ export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
                 (f) => f.strategy === "email_code",
               );
               if (factor && "emailAddressId" in factor) {
-                await signIn.prepareFirstFactor({
-                  strategy: "email_code",
-                  emailAddressId: factor.emailAddressId,
-                });
+                try {
+                  await signIn.prepareFirstFactor({
+                    strategy: "email_code",
+                    emailAddressId: factor.emailAddressId,
+                  });
+                } catch (retryFactorErr: unknown) {
+                  if (isRateLimitError(retryFactorErr)) {
+                    // Factor already generated/sent
+                  } else {
+                    throw retryFactorErr;
+                  }
+                }
                 setOtpFlow("SIGN_IN");
                 setStep("OTP");
                 setCountdown(60);
                 hapticFeedback.success();
                 return;
               }
-            } catch {}
+            } catch (retryErr: unknown) {
+              if (isRateLimitError(retryErr)) {
+                setOtpFlow("SIGN_IN");
+                setStep("OTP");
+                setCountdown(60);
+                hapticFeedback.success();
+                Alert.alert(
+                  "Code Already Sent",
+                  "A verification code was recently sent to your email. Please check your inbox.",
+                );
+                return;
+              }
+            }
           }
+
           throw signUpErr;
         }
       }
     } catch (err: unknown) {
-      const clerkError = (
-        err as {
-          errors?: { code?: string; longMessage?: string; message?: string }[];
-        }
-      )?.errors?.[0];
-      const rawMsg =
-        clerkError?.longMessage ||
-        clerkError?.message ||
-        (err instanceof Error ? err.message : "");
-
-      // If Clerk session exists error, sign out and retry once
-      if (
-        rawMsg.toLowerCase().includes("already signed in") ||
-        clerkError?.code === "session_exists"
-      ) {
+      if (isSessionExistsError(err)) {
         try {
           await signOut();
+          isSendingRef.current = false;
           return handleSendOtpCode(targetEmail);
         } catch {}
       }
 
       hapticFeedback.error();
-      const msg =
-        rawMsg || "Could not send verification code. Please check your email.";
-      Alert.alert("Failed to Send Code", msg);
+
+      if (isRateLimitError(err)) {
+        Alert.alert(
+          "Too Many Requests",
+          "A verification code may have already been sent to your email. Would you like to enter the code you received?",
+          [
+            {
+              text: "Enter Code",
+              onPress: () => {
+                setStep("OTP");
+                setCountdown(60);
+              },
+            },
+            {
+              text: "Wait",
+              style: "cancel",
+            },
+          ],
+        );
+      } else {
+        const msg = extractClerkErrorMessage(
+          err,
+          "Could not send verification code. Please check your email.",
+        );
+        Alert.alert("Failed to Send Code", msg);
+      }
     } finally {
       setIsLoading(false);
+      setTimeout(() => {
+        isSendingRef.current = false;
+      }, 1000);
     }
   };
 
   // Verify 6-digit OTP Code
   const handleVerifyOtpCode = async (customCode?: string) => {
+    if (isVerifyingRef.current || isLoading) return;
+
     const raw = customCode || otpCode;
     const cleanCode = raw.replace(/\D/g, "").trim();
 
@@ -245,6 +356,7 @@ export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
 
     if (!isSignInLoaded || !isSignUpLoaded) return;
 
+    isVerifyingRef.current = true;
     setIsLoading(true);
     setHasOtpError(false);
 
@@ -443,6 +555,9 @@ export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
       Alert.alert("Verification Error", msg);
     } finally {
       setIsLoading(false);
+      setTimeout(() => {
+        isVerifyingRef.current = false;
+      }, 500);
     }
   };
 
