@@ -80,6 +80,7 @@ export const AddWalletCardButton = memo(function AddWalletCardButton({
       style={({ pressed }) => [
         styles.card,
         styles.compactCard,
+        styles.addCompactCard,
         styles.addCard,
         pressed && styles.pressed,
       ]}
@@ -89,8 +90,8 @@ export const AddWalletCardButton = memo(function AddWalletCardButton({
       <View style={styles.addIconCircle}>
         <Ionicons name="add" size={24} color={colors.primary} />
       </View>
-      <Text style={styles.addTitle}>New Account</Text>
-      <Text style={styles.addSubtitle}>Bank, Cash or Card</Text>
+      <Text style={styles.addTitle}>New</Text>
+      <Text style={styles.addSubtitle}>Account</Text>
     </Pressable>
   );
 });
@@ -161,6 +162,9 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginTop: 2,
     ...typography.tabular,
+  },
+  addCompactCard: {
+    width: 104,
   },
   addCard: {
     borderStyle: "dashed",

@@ -8,9 +8,13 @@ import { ReminderModal } from "./ReminderModal";
 
 export interface ReminderSectionProps {
   reminders: ReminderItem[];
+  onChanged?: () => void;
 }
 
-export function ReminderSection({ reminders }: ReminderSectionProps) {
+export function ReminderSection({
+  reminders,
+  onChanged,
+}: ReminderSectionProps) {
   const [showModal, setShowModal] = useState(false);
 
   return (
@@ -29,29 +33,37 @@ export function ReminderSection({ reminders }: ReminderSectionProps) {
       </View>
 
       {reminders.length === 0 ? (
-        <View style={styles.emptyCard}>
+        <Pressable
+          onPress={() => setShowModal(true)}
+          style={({ pressed }) => [
+            styles.emptyCard,
+            pressed && styles.emptyCardPressed,
+          ]}
+          accessibilityRole="button"
+          accessibilityLabel="Add your first bill reminder"
+        >
           <View style={styles.emptyIconBox}>
             <Ionicons
               name="notifications-outline"
-              size={24}
+              size={18}
               color={colors.primary}
             />
           </View>
-          <Text style={styles.emptyTitle}>No Bill Reminders</Text>
-          <Text style={styles.emptyDescription}>
-            Add recurring expenses like electricity, water, medicine, or rent to
-            stay on top of payments.
-          </Text>
-          <Pressable
-            onPress={() => setShowModal(true)}
-            style={styles.emptyActionBtn}
-          >
-            <Text style={styles.emptyActionText}>+ Add First Reminder</Text>
-          </Pressable>
-        </View>
+          <View style={styles.emptyTextCol}>
+            <Text style={styles.emptyTitle}>No bills yet</Text>
+            <Text style={styles.emptyDescription} numberOfLines={1}>
+              Tap to track a recurring payment
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+        </Pressable>
       ) : (
         reminders.map((reminder) => (
-          <ReminderCard key={reminder.id} reminder={reminder} />
+          <ReminderCard
+            key={reminder.id}
+            reminder={reminder}
+            onPaySuccess={onChanged}
+          />
         ))
       )}
 
@@ -83,46 +95,39 @@ const styles = StyleSheet.create({
   },
   emptyCard: {
     backgroundColor: colors.surface,
-    borderRadius: radius.xl,
-    padding: spacing.lg,
+    borderRadius: radius.lg,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.base,
+    flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
     borderColor: colors.border,
     marginBottom: spacing.sm,
     ...shadows.sm,
   },
+  emptyCardPressed: {
+    backgroundColor: colors.surfaceSecondary,
+  },
   emptyIconBox: {
-    width: 48,
-    height: 48,
+    width: 36,
+    height: 36,
     borderRadius: radius.full,
     backgroundColor: colors.primaryLight,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: spacing.sm,
+  },
+  emptyTextCol: {
+    flex: 1,
+    marginLeft: spacing.md,
   },
   emptyTitle: {
-    ...typography.headline,
+    ...typography.subhead,
     color: colors.text,
-    marginBottom: 4,
+    fontWeight: "700",
   },
   emptyDescription: {
     ...typography.caption,
     color: colors.textMuted,
-    textAlign: "center",
-    lineHeight: 18,
-    marginBottom: spacing.md,
-  },
-  emptyActionBtn: {
-    backgroundColor: colors.surfaceSecondary,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: radius.full,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  emptyActionText: {
-    ...typography.subhead,
-    fontWeight: "700",
-    color: colors.primary,
+    marginTop: 2,
   },
 });

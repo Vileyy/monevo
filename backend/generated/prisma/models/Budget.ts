@@ -27,20 +27,20 @@ export type AggregateBudget = {
 }
 
 export type BudgetAvgAggregateOutputType = {
-  amount: number | null
+  amount: runtime.Decimal | null
   month: number | null
   year: number | null
 }
 
 export type BudgetSumAggregateOutputType = {
-  amount: number | null
+  amount: runtime.Decimal | null
   month: number | null
   year: number | null
 }
 
 export type BudgetMinAggregateOutputType = {
   id: string | null
-  amount: number | null
+  amount: runtime.Decimal | null
   month: number | null
   year: number | null
   categoryId: string | null
@@ -51,7 +51,7 @@ export type BudgetMinAggregateOutputType = {
 
 export type BudgetMaxAggregateOutputType = {
   id: string | null
-  amount: number | null
+  amount: runtime.Decimal | null
   month: number | null
   year: number | null
   categoryId: string | null
@@ -207,7 +207,7 @@ export type BudgetGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalA
 
 export type BudgetGroupByOutputType = {
   id: string
-  amount: number
+  amount: runtime.Decimal
   month: number
   year: number
   categoryId: string
@@ -241,7 +241,7 @@ export type BudgetWhereInput = {
   OR?: Prisma.BudgetWhereInput[]
   NOT?: Prisma.BudgetWhereInput | Prisma.BudgetWhereInput[]
   id?: Prisma.StringFilter<"Budget"> | string
-  amount?: Prisma.FloatFilter<"Budget"> | number
+  amount?: Prisma.DecimalFilter<"Budget"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   month?: Prisma.IntFilter<"Budget"> | number
   year?: Prisma.IntFilter<"Budget"> | number
   categoryId?: Prisma.StringFilter<"Budget"> | string
@@ -271,7 +271,7 @@ export type BudgetWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.BudgetWhereInput | Prisma.BudgetWhereInput[]
   OR?: Prisma.BudgetWhereInput[]
   NOT?: Prisma.BudgetWhereInput | Prisma.BudgetWhereInput[]
-  amount?: Prisma.FloatFilter<"Budget"> | number
+  amount?: Prisma.DecimalFilter<"Budget"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   month?: Prisma.IntFilter<"Budget"> | number
   year?: Prisma.IntFilter<"Budget"> | number
   categoryId?: Prisma.StringFilter<"Budget"> | string
@@ -303,7 +303,7 @@ export type BudgetScalarWhereWithAggregatesInput = {
   OR?: Prisma.BudgetScalarWhereWithAggregatesInput[]
   NOT?: Prisma.BudgetScalarWhereWithAggregatesInput | Prisma.BudgetScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Budget"> | string
-  amount?: Prisma.FloatWithAggregatesFilter<"Budget"> | number
+  amount?: Prisma.DecimalWithAggregatesFilter<"Budget"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   month?: Prisma.IntWithAggregatesFilter<"Budget"> | number
   year?: Prisma.IntWithAggregatesFilter<"Budget"> | number
   categoryId?: Prisma.StringWithAggregatesFilter<"Budget"> | string
@@ -314,7 +314,7 @@ export type BudgetScalarWhereWithAggregatesInput = {
 
 export type BudgetCreateInput = {
   id?: string
-  amount: number
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   month: number
   year: number
   createdAt?: Date | string
@@ -325,7 +325,7 @@ export type BudgetCreateInput = {
 
 export type BudgetUncheckedCreateInput = {
   id?: string
-  amount: number
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   month: number
   year: number
   categoryId: string
@@ -336,7 +336,7 @@ export type BudgetUncheckedCreateInput = {
 
 export type BudgetUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   month?: Prisma.IntFieldUpdateOperationsInput | number
   year?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -347,7 +347,7 @@ export type BudgetUpdateInput = {
 
 export type BudgetUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   month?: Prisma.IntFieldUpdateOperationsInput | number
   year?: Prisma.IntFieldUpdateOperationsInput | number
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -358,7 +358,7 @@ export type BudgetUncheckedUpdateInput = {
 
 export type BudgetCreateManyInput = {
   id?: string
-  amount: number
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   month: number
   year: number
   categoryId: string
@@ -369,7 +369,7 @@ export type BudgetCreateManyInput = {
 
 export type BudgetUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   month?: Prisma.IntFieldUpdateOperationsInput | number
   year?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -378,7 +378,7 @@ export type BudgetUpdateManyMutationInput = {
 
 export type BudgetUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   month?: Prisma.IntFieldUpdateOperationsInput | number
   year?: Prisma.IntFieldUpdateOperationsInput | number
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -543,7 +543,7 @@ export type IntFieldUpdateOperationsInput = {
 
 export type BudgetCreateWithoutUserInput = {
   id?: string
-  amount: number
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   month: number
   year: number
   createdAt?: Date | string
@@ -553,7 +553,7 @@ export type BudgetCreateWithoutUserInput = {
 
 export type BudgetUncheckedCreateWithoutUserInput = {
   id?: string
-  amount: number
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   month: number
   year: number
   categoryId: string
@@ -592,7 +592,7 @@ export type BudgetScalarWhereInput = {
   OR?: Prisma.BudgetScalarWhereInput[]
   NOT?: Prisma.BudgetScalarWhereInput | Prisma.BudgetScalarWhereInput[]
   id?: Prisma.StringFilter<"Budget"> | string
-  amount?: Prisma.FloatFilter<"Budget"> | number
+  amount?: Prisma.DecimalFilter<"Budget"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   month?: Prisma.IntFilter<"Budget"> | number
   year?: Prisma.IntFilter<"Budget"> | number
   categoryId?: Prisma.StringFilter<"Budget"> | string
@@ -603,7 +603,7 @@ export type BudgetScalarWhereInput = {
 
 export type BudgetCreateWithoutCategoryInput = {
   id?: string
-  amount: number
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   month: number
   year: number
   createdAt?: Date | string
@@ -613,7 +613,7 @@ export type BudgetCreateWithoutCategoryInput = {
 
 export type BudgetUncheckedCreateWithoutCategoryInput = {
   id?: string
-  amount: number
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   month: number
   year: number
   userId: string
@@ -649,7 +649,7 @@ export type BudgetUpdateManyWithWhereWithoutCategoryInput = {
 
 export type BudgetCreateManyUserInput = {
   id?: string
-  amount: number
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   month: number
   year: number
   categoryId: string
@@ -659,7 +659,7 @@ export type BudgetCreateManyUserInput = {
 
 export type BudgetUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   month?: Prisma.IntFieldUpdateOperationsInput | number
   year?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -669,7 +669,7 @@ export type BudgetUpdateWithoutUserInput = {
 
 export type BudgetUncheckedUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   month?: Prisma.IntFieldUpdateOperationsInput | number
   year?: Prisma.IntFieldUpdateOperationsInput | number
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -679,7 +679,7 @@ export type BudgetUncheckedUpdateWithoutUserInput = {
 
 export type BudgetUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   month?: Prisma.IntFieldUpdateOperationsInput | number
   year?: Prisma.IntFieldUpdateOperationsInput | number
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -689,7 +689,7 @@ export type BudgetUncheckedUpdateManyWithoutUserInput = {
 
 export type BudgetCreateManyCategoryInput = {
   id?: string
-  amount: number
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   month: number
   year: number
   userId: string
@@ -699,7 +699,7 @@ export type BudgetCreateManyCategoryInput = {
 
 export type BudgetUpdateWithoutCategoryInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   month?: Prisma.IntFieldUpdateOperationsInput | number
   year?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -709,7 +709,7 @@ export type BudgetUpdateWithoutCategoryInput = {
 
 export type BudgetUncheckedUpdateWithoutCategoryInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   month?: Prisma.IntFieldUpdateOperationsInput | number
   year?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -719,7 +719,7 @@ export type BudgetUncheckedUpdateWithoutCategoryInput = {
 
 export type BudgetUncheckedUpdateManyWithoutCategoryInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   month?: Prisma.IntFieldUpdateOperationsInput | number
   year?: Prisma.IntFieldUpdateOperationsInput | number
   userId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -801,7 +801,7 @@ export type $BudgetPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
-    amount: number
+    amount: runtime.Decimal
     month: number
     year: number
     categoryId: string
@@ -1234,7 +1234,7 @@ export interface Prisma__BudgetClient<T, Null = never, ExtArgs extends runtime.T
  */
 export interface BudgetFieldRefs {
   readonly id: Prisma.FieldRef<"Budget", 'String'>
-  readonly amount: Prisma.FieldRef<"Budget", 'Float'>
+  readonly amount: Prisma.FieldRef<"Budget", 'Decimal'>
   readonly month: Prisma.FieldRef<"Budget", 'Int'>
   readonly year: Prisma.FieldRef<"Budget", 'Int'>
   readonly categoryId: Prisma.FieldRef<"Budget", 'String'>

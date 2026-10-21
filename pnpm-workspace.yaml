@@ -19,6 +19,8 @@ overrides:
   minimatch@5>brace-expansion: "2.1.7"
   minimatch@10>brace-expansion: "5.0.12"
   "@xmldom/xmldom": ">=0.9.12"
+  handlebars: "4.7.10"
+  follow-redirects: "1.16.1"
 audit:
   ignore:
     # image-size@2.0.3 is not on npm yet; latest is 2.0.2 (dev-only via Metro)

@@ -86,7 +86,7 @@ export class BudgetsService {
     const categorySpentMap: Record<string, number> = {};
     for (const tx of transactions) {
       categorySpentMap[tx.categoryId] =
-        (categorySpentMap[tx.categoryId] || 0) + tx.amount;
+        (categorySpentMap[tx.categoryId] || 0) + Number(tx.amount);
     }
 
     let totalBudget = 0;
@@ -94,10 +94,11 @@ export class BudgetsService {
 
     const items = budgets.map((b) => {
       const spent = categorySpentMap[b.categoryId] || 0;
-      const remaining = b.amount - spent;
-      const percentage = b.amount > 0 ? (spent / b.amount) * 100 : 0;
+      const budgetAmount = Number(b.amount);
+      const remaining = budgetAmount - spent;
+      const percentage = budgetAmount > 0 ? (spent / budgetAmount) * 100 : 0;
 
-      totalBudget += b.amount;
+      totalBudget += budgetAmount;
       totalSpent += spent;
 
       return {
@@ -157,12 +158,11 @@ export class BudgetsService {
       },
     });
 
-    const spent = transactions.reduce((sum, tx) => sum + tx.amount, 0);
-    const remaining = budget.amount - spent;
+    const spent = transactions.reduce((sum, tx) => sum + Number(tx.amount), 0);
+    const budgetAmount = Number(budget.amount);
+    const remaining = budgetAmount - spent;
     const percentage =
-      budget.amount > 0
-        ? Number(((spent / budget.amount) * 100).toFixed(1))
-        : 0;
+      budgetAmount > 0 ? Number(((spent / budgetAmount) * 100).toFixed(1)) : 0;
 
     return {
       ...budget,

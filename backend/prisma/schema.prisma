@@ -8,67 +8,67 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String?
-  password  String?
-  clerkId   String?  @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  wallets   Wallet[]
-  categories Category[]
+  id           String        @id @default(uuid())
+  email        String        @unique
+  name         String?
+  password     String?
+  clerkId      String?       @unique
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  wallets      Wallet[]
+  categories   Category[]
   transactions Transaction[]
-  budgets   Budget[]
-  reminders Reminder[]
+  budgets      Budget[]
+  reminders    Reminder[]
 }
 
 model Wallet {
-  id        String   @id @default(uuid())
-  name      String
-  balance   Float    @default(0)
-  type      String   // e.g. "CASH", "BANK", "CREDIT_CARD"
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String        @id @default(uuid())
+  name         String
+  balance      Decimal       @default(0) @db.Decimal(18, 2)
+  type         String // e.g. "CASH", "BANK", "CREDIT_CARD"
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
   transactions Transaction[]
-  reminders Reminder[]
+  reminders    Reminder[]
 }
 
 model Category {
-  id        String   @id @default(uuid())
-  name      String
-  type      String   // "INCOME" or "EXPENSE"
-  icon      String?
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String        @id @default(uuid())
+  name         String
+  type         String // "INCOME" or "EXPENSE"
+  icon         String?
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
   transactions Transaction[]
-  budgets   Budget[]
+  budgets      Budget[]
 }
 
 model Transaction {
-  id          String   @id @default(uuid())
-  amount      Float
-  type        String   // "INCOME" or "EXPENSE"
-  note        String?
-  date        DateTime @default(now())
-  walletId    String
-  wallet      Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
-  categoryId  String
-  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(uuid())
+  amount     Decimal  @db.Decimal(18, 2)
+  type       String // "INCOME" or "EXPENSE"
+  note       String?
+  date       DateTime @default(now())
+  walletId   String
+  wallet     Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 model Budget {
   id         String   @id @default(uuid())
-  amount     Float
-  month      Int      // 1 - 12
-  year       Int      // e.g. 2026
+  amount     Decimal  @db.Decimal(18, 2)
+  month      Int // 1 - 12
+  year       Int // e.g. 2026
   categoryId String
   category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   userId     String
@@ -80,17 +80,17 @@ model Budget {
 }
 
 model Reminder {
-  id          String    @id @default(uuid())
-  title       String
-  amount      Float
-  dueDate     Int       // Day of month (1 - 31)
-  frequency   String    @default("MONTHLY")
-  category    String?   // e.g. "MEDICINE", "ELECTRICITY", "WATER", "RENT", "INTERNET", "OTHER"
-  lastPaidAt  DateTime?
-  walletId    String?
-  wallet      Wallet?   @relation(fields: [walletId], references: [id], onDelete: SetNull)
-  userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id         String    @id @default(uuid())
+  title      String
+  amount     Decimal   @db.Decimal(18, 2)
+  dueDate    Int // Day of month (1 - 31)
+  frequency  String    @default("MONTHLY")
+  category   String? // e.g. "MEDICINE", "ELECTRICITY", "WATER", "RENT", "INTERNET", "OTHER"
+  lastPaidAt DateTime?
+  walletId   String?
+  wallet     Wallet?   @relation(fields: [walletId], references: [id], onDelete: SetNull)
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 }

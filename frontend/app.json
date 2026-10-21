@@ -9,7 +9,10 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.monevo.app"
+      "bundleIdentifier": "com.monevo.app",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "Allow Monevo to use Face ID to sign you in securely."
+      }
     },
     "android": {
       "package": "com.monevo.app",
@@ -43,6 +46,12 @@
           "android": {
             "usesCleartextTraffic": true
           }
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow Monevo to use Face ID to sign you in securely."
         }
       ]
     ],

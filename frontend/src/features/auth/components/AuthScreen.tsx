@@ -13,7 +13,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuth, useSignIn, useSignUp } from "@clerk/clerk-expo";
 import * as WebBrowser from "expo-web-browser";
-import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { colors } from "@/theme";
 import { Button, Input, OtpInput } from "@/components/ui";
 import { useAuthStore } from "@/store/auth.store";
@@ -41,6 +42,15 @@ export interface AuthScreenProps {
 export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
   const router = useRouter();
   const loginStore = useAuthStore((state) => state.login);
+  const biometricAvailable = useAuthStore((state) => state.biometricAvailable);
+  const biometricLabel = useAuthStore((state) => state.biometricLabel);
+  const biometricIcon = useAuthStore((state) => state.biometricIcon);
+  const refreshBiometricState = useAuthStore(
+    (state) => state.refreshBiometricState,
+  );
+  const loginWithBiometrics = useAuthStore(
+    (state) => state.loginWithBiometrics,
+  );
 
   // Clerk hooks
   const {
@@ -63,6 +73,7 @@ export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
   const [otpCode, setOtpCode] = useState("");
   const [hasOtpError, setHasOtpError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isBiometricLoading, setIsBiometricLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
 
   // If user navigated to AuthScreen while Clerk still has a stale session, sign out cleanly
@@ -75,6 +86,10 @@ export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
       })();
     }
   }, [isSignedIn, signOut]);
+
+  useEffect(() => {
+    void refreshBiometricState();
+  }, [refreshBiometricState]);
 
   // 60-second countdown for OTP resend
   useEffect(() => {
@@ -561,6 +576,32 @@ export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
     }
   };
 
+  const handleBiometricLogin = async () => {
+    if (isBiometricLoading) return;
+
+    hapticFeedback.light();
+    setIsBiometricLoading(true);
+    try {
+      const result = await loginWithBiometrics();
+      if (result === "success") {
+        hapticFeedback.success();
+        router.replace("/(tabs)");
+      } else if (result === "no-session") {
+        Alert.alert(
+          "No Saved Account",
+          `Sign in with your email once, then you can use ${biometricLabel} next time.`,
+        );
+      } else if (result === "unavailable") {
+        Alert.alert(
+          `${biometricLabel} unavailable`,
+          `Set up ${biometricLabel} in your device settings, then try again.`,
+        );
+      }
+    } finally {
+      setIsBiometricLoading(false);
+    }
+  };
+
   return (
     <SafeAreaView style={authStyles.container}>
       <KeyboardAvoidingView
@@ -590,30 +631,77 @@ export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
             {step === "EMAIL" ? (
               /* ================= STEP 1: ENTER EMAIL ================= */
               <View style={authStyles.form}>
-                <Input
-                  label="Email Address"
-                  placeholder="name@example.com"
-                  value={email}
-                  onChangeText={(text) => {
-                    setEmail(text);
-                    if (emailError) setEmailError(undefined);
-                  }}
-                  error={emailError}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  autoFocus
-                  clearable
-                  returnKeyType="send"
-                  onSubmitEditing={() => void handleSendOtpCode()}
-                  leftIcon={
-                    <Ionicons
-                      name="mail-outline"
-                      size={20}
-                      color={colors.primary}
+                <View style={authStyles.emailRow}>
+                  <View style={authStyles.emailField}>
+                    <Input
+                      label="Email Address"
+                      placeholder="name@example.com"
+                      value={email}
+                      onChangeText={(text) => {
+                        setEmail(text);
+                        if (emailError) setEmailError(undefined);
+                      }}
+                      error={emailError}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      autoFocus
+                      clearable
+                      returnKeyType="send"
+                      onSubmitEditing={() => void handleSendOtpCode()}
+                      leftIcon={
+                        <Ionicons
+                          name="mail-outline"
+                          size={20}
+                          color={colors.primary}
+                        />
+                      }
                     />
-                  }
-                />
+                  </View>
+
+                  {biometricAvailable && (
+                    <Pressable
+                      onPress={() => void handleBiometricLogin()}
+                      disabled={isBiometricLoading}
+                      hitSlop={8}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Sign in with ${biometricLabel}`}
+                      style={({ pressed }) => [
+                        authStyles.biometricIconButton,
+                        pressed && authStyles.biometricIconButtonPressed,
+                      ]}
+                    >
+                      <LinearGradient
+                        colors={["#F0FDFA", "#CCFBF1"]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={authStyles.biometricIconGradient}
+                      >
+                        {isBiometricLoading ? (
+                          <ActivityIndicator size="small" color="#0F172A" />
+                        ) : biometricIcon === "scan-outline" ? (
+                          <MaterialCommunityIcons
+                            name="face-recognition"
+                            size={25}
+                            color="#0F172A"
+                          />
+                        ) : biometricIcon === "finger-print-outline" ? (
+                          <MaterialCommunityIcons
+                            name="fingerprint"
+                            size={25}
+                            color="#0F172A"
+                          />
+                        ) : (
+                          <Ionicons
+                            name={biometricIcon}
+                            size={23}
+                            color="#0F172A"
+                          />
+                        )}
+                      </LinearGradient>
+                    </Pressable>
+                  )}
+                </View>
 
                 <Button
                   title="Send Login Code ➜"

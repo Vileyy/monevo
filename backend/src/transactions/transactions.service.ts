@@ -121,43 +121,38 @@ export class TransactionsService {
       const finalCategoryId = updateDto.categoryId || currentTx.categoryId;
       const finalType = updateDto.type || currentTx.type;
       const finalAmount =
-        updateDto.amount !== undefined ? updateDto.amount : currentTx.amount;
+        updateDto.amount !== undefined
+          ? updateDto.amount
+          : Number(currentTx.amount);
 
-      // If wallet is changing, verify new wallet belongs to user
-      if (updateDto.walletId && updateDto.walletId !== currentTx.walletId) {
-        const newWallet = await tx.wallet.findUnique({
-          where: { id: updateDto.walletId },
-        });
-        if (!newWallet || newWallet.userId !== userId) {
-          throw new NotFoundException(
-            `Wallet with ID "${updateDto.walletId}" not found`,
-          );
-        }
+      const [targetWallet, targetCategory] = await Promise.all([
+        tx.wallet.findUnique({ where: { id: finalWalletId } }),
+        tx.category.findUnique({ where: { id: finalCategoryId } }),
+      ]);
+
+      if (!targetWallet || targetWallet.userId !== userId) {
+        throw new NotFoundException(
+          `Wallet with ID "${finalWalletId}" not found`,
+        );
       }
 
-      // If category is changing, verify new category belongs to user & types match
-      if (
-        updateDto.categoryId &&
-        updateDto.categoryId !== currentTx.categoryId
-      ) {
-        const newCategory = await tx.category.findUnique({
-          where: { id: updateDto.categoryId },
-        });
-        if (!newCategory || newCategory.userId !== userId) {
-          throw new NotFoundException(
-            `Category with ID "${updateDto.categoryId}" not found`,
-          );
-        }
-        if (newCategory.type !== finalType) {
-          throw new BadRequestException(
-            `Transaction type (${finalType}) does not match category type (${newCategory.type})`,
-          );
-        }
+      if (!targetCategory || targetCategory.userId !== userId) {
+        throw new NotFoundException(
+          `Category with ID "${finalCategoryId}" not found`,
+        );
+      }
+
+      if (targetCategory.type !== finalType) {
+        throw new BadRequestException(
+          `Transaction type (${finalType}) does not match category type (${targetCategory.type})`,
+        );
       }
 
       // 2. Revert current transaction's balance impact on the old wallet
       const oldRevertChange =
-        currentTx.type === 'INCOME' ? -currentTx.amount : currentTx.amount;
+        currentTx.type === 'INCOME'
+          ? -Number(currentTx.amount)
+          : Number(currentTx.amount);
       await tx.wallet.update({
         where: { id: currentTx.walletId },
         data: { balance: { increment: oldRevertChange } },
@@ -197,8 +192,8 @@ export class TransactionsService {
       // 2. Revert wallet balance
       const balanceChange =
         transaction.type === 'INCOME'
-          ? -transaction.amount
-          : transaction.amount;
+          ? -Number(transaction.amount)
+          : Number(transaction.amount);
       await tx.wallet.update({
         where: { id: transaction.walletId },
         data: {

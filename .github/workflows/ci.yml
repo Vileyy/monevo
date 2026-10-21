@@ -64,6 +64,9 @@ jobs:
       - name: Type check
         run: pnpm --filter frontend typecheck
 
+      - name: Test
+        run: pnpm --filter frontend exec jest --ci
+
   audit:
     runs-on: ubuntu-24.04
     steps:

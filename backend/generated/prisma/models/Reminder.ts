@@ -27,19 +27,19 @@ export type AggregateReminder = {
 }
 
 export type ReminderAvgAggregateOutputType = {
-  amount: number | null
+  amount: runtime.Decimal | null
   dueDate: number | null
 }
 
 export type ReminderSumAggregateOutputType = {
-  amount: number | null
+  amount: runtime.Decimal | null
   dueDate: number | null
 }
 
 export type ReminderMinAggregateOutputType = {
   id: string | null
   title: string | null
-  amount: number | null
+  amount: runtime.Decimal | null
   dueDate: number | null
   frequency: string | null
   category: string | null
@@ -53,7 +53,7 @@ export type ReminderMinAggregateOutputType = {
 export type ReminderMaxAggregateOutputType = {
   id: string | null
   title: string | null
-  amount: number | null
+  amount: runtime.Decimal | null
   dueDate: number | null
   frequency: string | null
   category: string | null
@@ -222,7 +222,7 @@ export type ReminderGroupByArgs<ExtArgs extends runtime.Types.Extensions.Interna
 export type ReminderGroupByOutputType = {
   id: string
   title: string
-  amount: number
+  amount: runtime.Decimal
   dueDate: number
   frequency: string
   category: string | null
@@ -259,7 +259,7 @@ export type ReminderWhereInput = {
   NOT?: Prisma.ReminderWhereInput | Prisma.ReminderWhereInput[]
   id?: Prisma.StringFilter<"Reminder"> | string
   title?: Prisma.StringFilter<"Reminder"> | string
-  amount?: Prisma.FloatFilter<"Reminder"> | number
+  amount?: Prisma.DecimalFilter<"Reminder"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   dueDate?: Prisma.IntFilter<"Reminder"> | number
   frequency?: Prisma.StringFilter<"Reminder"> | string
   category?: Prisma.StringNullableFilter<"Reminder"> | string | null
@@ -294,7 +294,7 @@ export type ReminderWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.ReminderWhereInput[]
   NOT?: Prisma.ReminderWhereInput | Prisma.ReminderWhereInput[]
   title?: Prisma.StringFilter<"Reminder"> | string
-  amount?: Prisma.FloatFilter<"Reminder"> | number
+  amount?: Prisma.DecimalFilter<"Reminder"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   dueDate?: Prisma.IntFilter<"Reminder"> | number
   frequency?: Prisma.StringFilter<"Reminder"> | string
   category?: Prisma.StringNullableFilter<"Reminder"> | string | null
@@ -332,7 +332,7 @@ export type ReminderScalarWhereWithAggregatesInput = {
   NOT?: Prisma.ReminderScalarWhereWithAggregatesInput | Prisma.ReminderScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Reminder"> | string
   title?: Prisma.StringWithAggregatesFilter<"Reminder"> | string
-  amount?: Prisma.FloatWithAggregatesFilter<"Reminder"> | number
+  amount?: Prisma.DecimalWithAggregatesFilter<"Reminder"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   dueDate?: Prisma.IntWithAggregatesFilter<"Reminder"> | number
   frequency?: Prisma.StringWithAggregatesFilter<"Reminder"> | string
   category?: Prisma.StringNullableWithAggregatesFilter<"Reminder"> | string | null
@@ -346,7 +346,7 @@ export type ReminderScalarWhereWithAggregatesInput = {
 export type ReminderCreateInput = {
   id?: string
   title: string
-  amount: number
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   dueDate: number
   frequency?: string
   category?: string | null
@@ -360,7 +360,7 @@ export type ReminderCreateInput = {
 export type ReminderUncheckedCreateInput = {
   id?: string
   title: string
-  amount: number
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   dueDate: number
   frequency?: string
   category?: string | null
@@ -374,7 +374,7 @@ export type ReminderUncheckedCreateInput = {
 export type ReminderUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   dueDate?: Prisma.IntFieldUpdateOperationsInput | number
   frequency?: Prisma.StringFieldUpdateOperationsInput | string
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -388,7 +388,7 @@ export type ReminderUpdateInput = {
 export type ReminderUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   dueDate?: Prisma.IntFieldUpdateOperationsInput | number
   frequency?: Prisma.StringFieldUpdateOperationsInput | string
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -402,7 +402,7 @@ export type ReminderUncheckedUpdateInput = {
 export type ReminderCreateManyInput = {
   id?: string
   title: string
-  amount: number
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   dueDate: number
   frequency?: string
   category?: string | null
@@ -416,7 +416,7 @@ export type ReminderCreateManyInput = {
 export type ReminderUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   dueDate?: Prisma.IntFieldUpdateOperationsInput | number
   frequency?: Prisma.StringFieldUpdateOperationsInput | string
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -428,7 +428,7 @@ export type ReminderUpdateManyMutationInput = {
 export type ReminderUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   dueDate?: Prisma.IntFieldUpdateOperationsInput | number
   frequency?: Prisma.StringFieldUpdateOperationsInput | string
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -592,7 +592,7 @@ export type NullableDateTimeFieldUpdateOperationsInput = {
 export type ReminderCreateWithoutUserInput = {
   id?: string
   title: string
-  amount: number
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   dueDate: number
   frequency?: string
   category?: string | null
@@ -605,7 +605,7 @@ export type ReminderCreateWithoutUserInput = {
 export type ReminderUncheckedCreateWithoutUserInput = {
   id?: string
   title: string
-  amount: number
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   dueDate: number
   frequency?: string
   category?: string | null
@@ -647,7 +647,7 @@ export type ReminderScalarWhereInput = {
   NOT?: Prisma.ReminderScalarWhereInput | Prisma.ReminderScalarWhereInput[]
   id?: Prisma.StringFilter<"Reminder"> | string
   title?: Prisma.StringFilter<"Reminder"> | string
-  amount?: Prisma.FloatFilter<"Reminder"> | number
+  amount?: Prisma.DecimalFilter<"Reminder"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   dueDate?: Prisma.IntFilter<"Reminder"> | number
   frequency?: Prisma.StringFilter<"Reminder"> | string
   category?: Prisma.StringNullableFilter<"Reminder"> | string | null
@@ -661,7 +661,7 @@ export type ReminderScalarWhereInput = {
 export type ReminderCreateWithoutWalletInput = {
   id?: string
   title: string
-  amount: number
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   dueDate: number
   frequency?: string
   category?: string | null
@@ -674,7 +674,7 @@ export type ReminderCreateWithoutWalletInput = {
 export type ReminderUncheckedCreateWithoutWalletInput = {
   id?: string
   title: string
-  amount: number
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   dueDate: number
   frequency?: string
   category?: string | null
@@ -713,7 +713,7 @@ export type ReminderUpdateManyWithWhereWithoutWalletInput = {
 export type ReminderCreateManyUserInput = {
   id?: string
   title: string
-  amount: number
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   dueDate: number
   frequency?: string
   category?: string | null
@@ -726,7 +726,7 @@ export type ReminderCreateManyUserInput = {
 export type ReminderUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   dueDate?: Prisma.IntFieldUpdateOperationsInput | number
   frequency?: Prisma.StringFieldUpdateOperationsInput | string
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -739,7 +739,7 @@ export type ReminderUpdateWithoutUserInput = {
 export type ReminderUncheckedUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   dueDate?: Prisma.IntFieldUpdateOperationsInput | number
   frequency?: Prisma.StringFieldUpdateOperationsInput | string
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -752,7 +752,7 @@ export type ReminderUncheckedUpdateWithoutUserInput = {
 export type ReminderUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   dueDate?: Prisma.IntFieldUpdateOperationsInput | number
   frequency?: Prisma.StringFieldUpdateOperationsInput | string
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -765,7 +765,7 @@ export type ReminderUncheckedUpdateManyWithoutUserInput = {
 export type ReminderCreateManyWalletInput = {
   id?: string
   title: string
-  amount: number
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   dueDate: number
   frequency?: string
   category?: string | null
@@ -778,7 +778,7 @@ export type ReminderCreateManyWalletInput = {
 export type ReminderUpdateWithoutWalletInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   dueDate?: Prisma.IntFieldUpdateOperationsInput | number
   frequency?: Prisma.StringFieldUpdateOperationsInput | string
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -791,7 +791,7 @@ export type ReminderUpdateWithoutWalletInput = {
 export type ReminderUncheckedUpdateWithoutWalletInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   dueDate?: Prisma.IntFieldUpdateOperationsInput | number
   frequency?: Prisma.StringFieldUpdateOperationsInput | string
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -804,7 +804,7 @@ export type ReminderUncheckedUpdateWithoutWalletInput = {
 export type ReminderUncheckedUpdateManyWithoutWalletInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
-  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   dueDate?: Prisma.IntFieldUpdateOperationsInput | number
   frequency?: Prisma.StringFieldUpdateOperationsInput | string
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -901,7 +901,7 @@ export type $ReminderPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     title: string
-    amount: number
+    amount: runtime.Decimal
     dueDate: number
     frequency: string
     category: string | null
@@ -1337,7 +1337,7 @@ export interface Prisma__ReminderClient<T, Null = never, ExtArgs extends runtime
 export interface ReminderFieldRefs {
   readonly id: Prisma.FieldRef<"Reminder", 'String'>
   readonly title: Prisma.FieldRef<"Reminder", 'String'>
-  readonly amount: Prisma.FieldRef<"Reminder", 'Float'>
+  readonly amount: Prisma.FieldRef<"Reminder", 'Decimal'>
   readonly dueDate: Prisma.FieldRef<"Reminder", 'Int'>
   readonly frequency: Prisma.FieldRef<"Reminder", 'String'>
   readonly category: Prisma.FieldRef<"Reminder", 'String'>
