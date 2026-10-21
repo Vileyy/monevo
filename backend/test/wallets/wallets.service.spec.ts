@@ -55,7 +55,7 @@ describe('WalletsService', () => {
 
       jest
         .spyOn(prismaService.wallet, 'create')
-        .mockResolvedValue(expectedWallet);
+        .mockResolvedValue(expectedWallet as any);
 
       const result = await service.create('u1', dto);
       expect(result).toEqual(expectedWallet);

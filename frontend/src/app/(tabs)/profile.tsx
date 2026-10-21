@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Pressable,
@@ -25,7 +25,6 @@ import { SettingsRow } from "@/features/profile/components/SettingsRow";
 import { CurrencyPickerModal } from "@/features/profile/components/CurrencyPickerModal";
 import { EditProfileModal } from "@/features/profile/components/EditProfileModal";
 import { CategoryModal } from "@/features/categories/components/CategoryModal";
-import { apiClient } from "@/services/api/client";
 import {
   requestNotificationPermission,
   syncReminderNotifications,
@@ -47,14 +46,40 @@ export default function ProfileScreen() {
     reminderNotifications,
     setReminderNotifications,
   } = useSettingsStore();
+  const biometricEnabled = useAuthStore((state) => state.biometricEnabled);
+  const biometricAvailable = useAuthStore((state) => state.biometricAvailable);
+  const biometricLabel = useAuthStore((state) => state.biometricLabel);
+  const biometricIcon = useAuthStore((state) => state.biometricIcon);
+  const refreshBiometricState = useAuthStore(
+    (state) => state.refreshBiometricState,
+  );
+  const enableBiometrics = useAuthStore((state) => state.enableBiometrics);
+  const disableBiometrics = useAuthStore((state) => state.disableBiometrics);
 
   const [refreshing, setRefreshing] = useState(false);
   const [showCurrencyModal, setShowCurrencyModal] = useState(false);
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
-  const [serverStatus, setServerStatus] = useState<
-    "online" | "offline" | "checking"
-  >("checking");
+
+  useEffect(() => {
+    void refreshBiometricState();
+  }, [refreshBiometricState]);
+
+  const handleBiometricToggle = async (nextValue: boolean) => {
+    hapticFeedback.selection();
+    if (!nextValue) {
+      await disableBiometrics();
+      return;
+    }
+
+    const result = await enableBiometrics();
+    if (result === "unavailable") {
+      Alert.alert(
+        `${biometricLabel} unavailable`,
+        `Set up ${biometricLabel} in your device settings, then try again.`,
+      );
+    }
+  };
 
   const handleToggleNotifications = async () => {
     hapticFeedback.selection();
@@ -79,34 +104,9 @@ export default function ProfileScreen() {
     }
   };
 
-  const checkHealth = useCallback(async () => {
-    try {
-      setServerStatus("checking");
-      await apiClient.get("/health", { timeout: 4000 });
-      setServerStatus("online");
-    } catch {
-      setServerStatus("offline");
-    }
-  }, []);
-
-  useEffect(() => {
-    let isMounted = true;
-    apiClient
-      .get("/health", { timeout: 4000 })
-      .then(() => {
-        if (isMounted) setServerStatus("online");
-      })
-      .catch(() => {
-        if (isMounted) setServerStatus("offline");
-      });
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
   const onRefresh = async () => {
     setRefreshing(true);
-    await Promise.all([fetchWallets(), fetchTransactions(), checkHealth()]);
+    await Promise.all([fetchWallets(), fetchTransactions()]);
     setRefreshing(false);
   };
 
@@ -136,6 +136,11 @@ export default function ProfileScreen() {
       },
     ]);
   };
+
+  const displayEmail = useMemo(() => {
+    const email = user?.email;
+    return email && email.includes("@") ? email : null;
+  }, [user?.email]);
 
   const userInitials = useMemo(() => {
     if (user?.name) {
@@ -187,9 +192,11 @@ export default function ProfileScreen() {
                   <Ionicons name="pencil" size={14} color={colors.primary} />
                 </Pressable>
               </View>
-              <Text style={styles.userEmail} numberOfLines={1}>
-                {user?.email || "No email"}
-              </Text>
+              {displayEmail && (
+                <Text style={styles.userEmail} numberOfLines={1}>
+                  {displayEmail}
+                </Text>
+              )}
             </View>
           </View>
 
@@ -236,6 +243,20 @@ export default function ProfileScreen() {
           />
           <View style={styles.rowDivider} />
           <SettingsRow
+            icon={biometricIcon}
+            title={biometricLabel}
+            subtitle={
+              biometricAvailable
+                ? `Unlock Monevo with ${biometricLabel}`
+                : `${biometricLabel} is not set up on this device`
+            }
+            isSwitch
+            switchValue={biometricEnabled}
+            disabled={!biometricAvailable}
+            onSwitchChange={(value) => void handleBiometricToggle(value)}
+          />
+          <View style={styles.rowDivider} />
+          <SettingsRow
             icon="notifications-outline"
             title="Bill Reminders"
             subtitle="Local push notification at 9:00 AM"
@@ -249,39 +270,6 @@ export default function ProfileScreen() {
             title="Manage Categories"
             subtitle="Add custom income and expense categories"
             onPress={() => setShowCategoryModal(true)}
-          />
-        </Card>
-
-        {/* System & Support Section */}
-        <Text style={styles.sectionHeader}>System & App</Text>
-        <Card style={styles.sectionCard}>
-          <SettingsRow
-            icon="server-outline"
-            title="API Server Status"
-            subtitle={
-              serverStatus === "online"
-                ? "Backend connected & operational"
-                : serverStatus === "checking"
-                  ? "Checking connection..."
-                  : "Unable to reach server"
-            }
-            value={
-              serverStatus === "online"
-                ? "● Online"
-                : serverStatus === "checking"
-                  ? "Checking"
-                  : "Offline"
-            }
-            showChevron={false}
-            onPress={checkHealth}
-          />
-          <View style={styles.rowDivider} />
-          <SettingsRow
-            icon="information-circle-outline"
-            title="App Version"
-            subtitle="Monevo Personal Finance"
-            value="v1.0.0"
-            showChevron={false}
           />
         </Card>
 

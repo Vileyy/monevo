@@ -95,24 +95,33 @@ export const authStyles = StyleSheet.create({
     color: colors.primary,
     fontWeight: "600",
   },
-  dividerRow: {
+  emailRow: {
     flexDirection: "row",
-    alignItems: "center",
-    marginVertical: spacing.lg,
+    alignItems: "flex-end",
+    gap: spacing.sm,
   },
-  dividerLine: {
+  emailField: {
     flex: 1,
-    height: 1,
-    backgroundColor: colors.border,
   },
-  dividerText: {
-    ...typography.caption,
-    color: colors.textMuted,
-    marginHorizontal: spacing.md,
-    textTransform: "uppercase",
-    fontWeight: "700",
-    fontSize: 11,
-    letterSpacing: 0.5,
+  biometricIconButton: {
+    width: 48,
+    height: 48,
+    borderRadius: radius.full,
+    overflow: "hidden",
+    marginBottom: spacing.base,
+    ...shadows.sm,
+  },
+  biometricIconButtonPressed: {
+    opacity: 0.75,
+    transform: [{ scale: 0.96 }],
+  },
+  biometricIconGradient: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "rgba(13, 148, 136, 0.22)",
+    borderRadius: radius.full,
   },
   googleButtonContainer: {
     marginBottom: spacing.xs,

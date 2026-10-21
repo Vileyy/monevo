@@ -13,8 +13,8 @@ export interface WalletSummaryCardProps {
   walletCount: number;
   selectedWalletName?: string | null;
   onOpenAccountSelector?: () => void;
-  onAddTransaction: () => void;
-  onAddWallet: () => void;
+  onAddIncome: () => void;
+  onAddExpense: () => void;
 }
 
 export const WalletSummaryCard = memo(function WalletSummaryCard({
@@ -24,8 +24,8 @@ export const WalletSummaryCard = memo(function WalletSummaryCard({
   walletCount,
   selectedWalletName,
   onOpenAccountSelector,
-  onAddTransaction,
-  onAddWallet,
+  onAddIncome,
+  onAddExpense,
 }: WalletSummaryCardProps) {
   const { hideBalance, toggleHideBalance } = useSettingsStore();
 
@@ -48,14 +48,14 @@ export const WalletSummaryCard = memo(function WalletSummaryCard({
     onOpenAccountSelector?.();
   };
 
-  const handleAddTx = () => {
+  const handleAddIncome = () => {
     hapticFeedback.light();
-    onAddTransaction();
+    onAddIncome();
   };
 
-  const handleAddWallet = () => {
+  const handleAddExpense = () => {
     hapticFeedback.light();
-    onAddWallet();
+    onAddExpense();
   };
 
   return (
@@ -155,31 +155,31 @@ export const WalletSummaryCard = memo(function WalletSummaryCard({
       {/* Quick Action Bar */}
       <View style={styles.actionBar}>
         <Pressable
-          onPress={handleAddTx}
+          onPress={handleAddIncome}
           style={({ pressed }) => [
             styles.actionButton,
-            styles.primaryAction,
+            styles.incomeAction,
             pressed && styles.actionPressed,
           ]}
           accessibilityRole="button"
-          accessibilityLabel="Add transaction"
+          accessibilityLabel="Add money"
         >
-          <Ionicons name="add-circle" size={20} color="#FFFFFF" />
-          <Text style={styles.primaryActionText}>Add Transaction</Text>
+          <Ionicons name="arrow-down-circle" size={20} color="#FFFFFF" />
+          <Text style={styles.incomeActionText}>Add money</Text>
         </Pressable>
 
         <Pressable
-          onPress={handleAddWallet}
+          onPress={handleAddExpense}
           style={({ pressed }) => [
             styles.actionButton,
-            styles.secondaryAction,
+            styles.expenseAction,
             pressed && styles.actionPressed,
           ]}
           accessibilityRole="button"
-          accessibilityLabel="Add wallet"
+          accessibilityLabel="Spend money"
         >
-          <Ionicons name="wallet-outline" size={18} color={colors.text} />
-          <Text style={styles.secondaryActionText}>New Wallet</Text>
+          <Ionicons name="arrow-up-circle" size={20} color={colors.expense} />
+          <Text style={styles.expenseActionText}>Spend</Text>
         </Pressable>
       </View>
     </View>
@@ -315,27 +315,27 @@ const styles = StyleSheet.create({
     opacity: 0.85,
     transform: [{ scale: 0.98 }],
   },
-  primaryAction: {
-    flex: 1.4,
-    backgroundColor: colors.primary,
+  incomeAction: {
+    flex: 1,
+    backgroundColor: colors.income,
     ...shadows.sm,
   },
-  primaryActionText: {
+  incomeActionText: {
     ...typography.headline,
     color: "#FFFFFF",
     marginLeft: spacing.xs,
   },
-  secondaryAction: {
+  expenseAction: {
     flex: 1,
     backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.expenseBorder,
     ...shadows.sm,
   },
-  secondaryActionText: {
-    ...typography.subhead,
-    fontWeight: "600",
-    color: colors.text,
+  expenseActionText: {
+    ...typography.headline,
+    fontWeight: "700",
+    color: colors.expense,
     marginLeft: spacing.xs,
   },
 });

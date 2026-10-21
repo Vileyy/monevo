@@ -110,4 +110,42 @@ describe('TransactionsService', () => {
       );
     });
   });
+
+  describe('update', () => {
+    it('should reject changing type when the current category type no longer matches', async () => {
+      const tx = {
+        transaction: {
+          findUnique: jest.fn().mockResolvedValue({
+            id: 't1',
+            amount: '100',
+            type: 'INCOME',
+            walletId: 'w1',
+            categoryId: 'c1',
+            userId: 'u1',
+            note: null,
+            date: new Date(),
+          }),
+          update: jest.fn(),
+        },
+        wallet: {
+          findUnique: jest.fn().mockResolvedValue({ id: 'w1', userId: 'u1' }),
+          update: jest.fn(),
+        },
+        category: {
+          findUnique: jest
+            .fn()
+            .mockResolvedValue({ id: 'c1', userId: 'u1', type: 'INCOME' }),
+        },
+      };
+
+      jest
+        .spyOn(prismaService, '$transaction')
+        .mockImplementation((callback: any) => callback(tx));
+
+      await expect(
+        service.update('u1', 't1', { type: 'EXPENSE' } as any),
+      ).rejects.toThrow(BadRequestException);
+      expect(tx.wallet.update).not.toHaveBeenCalled();
+    });
+  });
 });

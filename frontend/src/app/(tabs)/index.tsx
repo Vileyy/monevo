@@ -31,6 +31,7 @@ import { WalletSelectorModal } from "@/features/wallets/components/WalletSelecto
 import { ReminderSection } from "@/features/reminders/components/ReminderSection";
 import { TransactionItem } from "@/features/transactions/components/TransactionItem";
 import { TransactionDetailModal } from "@/features/transactions/components/TransactionDetailModal";
+import { QuickTransactionModal } from "@/features/transactions/components/QuickTransactionModal";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -56,6 +57,7 @@ export default function HomeScreen() {
   const [activeWalletId, setActiveWalletId] = useState<string | null>(null);
   const [selectedWallet, setSelectedWallet] = useState<Wallet | null>(null);
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+  const [quickType, setQuickType] = useState<"INCOME" | "EXPENSE" | null>(null);
 
   const loadData = useCallback(async () => {
     await Promise.all([fetchWallets(), fetchTransactions(), fetchReminders()]);
@@ -178,11 +180,8 @@ export default function HomeScreen() {
           walletCount={wallets.length}
           selectedWalletName={activeWallet ? activeWallet.name : null}
           onOpenAccountSelector={() => setShowWalletSelector(true)}
-          onAddTransaction={() => router.push("/add-transaction")}
-          onAddWallet={() => {
-            setSelectedWallet(null);
-            setShowWalletModal(true);
-          }}
+          onAddIncome={() => setQuickType("INCOME")}
+          onAddExpense={() => setQuickType("EXPENSE")}
         />
 
         {/* My Accounts Carousel */}
@@ -233,9 +232,6 @@ export default function HomeScreen() {
             </ScrollView>
           )}
         </View>
-
-        {/* Reminders Section */}
-        <ReminderSection reminders={reminders} />
 
         {/* Recent Activity */}
         <View style={styles.section}>
@@ -296,6 +292,9 @@ export default function HomeScreen() {
             )}
           </View>
         </View>
+
+        {/* Reminders Section */}
+        <ReminderSection reminders={reminders} onChanged={loadData} />
       </ScrollView>
 
       {/* Account Selector Modal */}
@@ -319,6 +318,15 @@ export default function HomeScreen() {
         visible={!!selectedTx}
         onClose={() => setSelectedTx(null)}
         transaction={selectedTx}
+      />
+
+      {/* Quick Income / Expense Modal */}
+      <QuickTransactionModal
+        key={quickType ?? "closed"}
+        visible={quickType !== null}
+        initialType={quickType ?? "EXPENSE"}
+        onClose={() => setQuickType(null)}
+        onSaved={loadData}
       />
     </SafeAreaView>
   );
@@ -386,7 +394,7 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.9 }],
   },
   scrollContent: {
-    paddingBottom: spacing.xl,
+    paddingBottom: spacing.huge,
   },
   section: {
     marginTop: spacing.md,

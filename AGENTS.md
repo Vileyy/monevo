@@ -177,15 +177,18 @@ AWS **trial** account: service stops when credits run out. Stop the instance to 
 
 ## 12. CI
 
-`.github/workflows/ci.yml` — backend lint/typecheck/test, frontend lint/typecheck, audit. Triggers: PR/push to **`main`**. Work on `dev-hieu` does not run CI until a PR targets `main`.
+`.github/workflows/ci.yml` — backend lint/typecheck/test/build, frontend lint/typecheck/test, audit. Triggers: PR/push to **`main`**. Work on `dev-hieu` does not run CI until a PR targets `main`.
 
 ## 13. Next work (do not skip ahead)
 
-1. Local notifications for Bill Reminders (`expo-notifications`).
-2. Budget overspending warning on transaction creation.
-3. Export transaction data / reports (CSV / Excel).
-4. Receipt photo attachments for transactions.
-5. Offline caching & sync.
+Shipped: notifications for Bill Reminders, budget overspending warning, budgets,
+reminders, insights (cashflow + category pie), Clerk auth.
+
+1. Transaction search UI (API already supports filters).
+2. Export transaction data / reports (CSV / Excel).
+3. Receipt photo attachments for transactions.
+4. Offline caching & sync.
+5. Store release (Play Store internal testing).
 
 ## 14. Known mistakes — do not repeat
 
