@@ -101,7 +101,12 @@ export default function RootLayout() {
     <ClerkProvider publishableKey={clerkPublishableKey} tokenCache={tokenCache}>
       <ClerkLoaded>
         {analytics ? (
-          <PostHogProvider client={analytics}>{app}</PostHogProvider>
+          <PostHogProvider
+            client={analytics}
+            autocapture={{ captureTouches: true }}
+          >
+            {app}
+          </PostHogProvider>
         ) : (
           app
         )}
