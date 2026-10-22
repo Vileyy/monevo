@@ -24,6 +24,7 @@ import {
   parseVndInput,
 } from "@/lib/format";
 import { apiErrorMessage } from "@/lib/api-error";
+import { captureEvent } from "@/lib/analytics";
 import { DEFAULT_CATEGORY_METAS } from "@/lib/categories";
 import { hapticFeedback } from "@/lib/haptics";
 import { calculateBudgetWarning } from "@/lib/budget-warning";
@@ -179,6 +180,11 @@ export default function AddTransactionScreen() {
       });
 
       hapticFeedback.success();
+      captureEvent("transaction_created", {
+        type,
+        category: selectedCategory?.name ?? null,
+        has_note: note.trim().length > 0,
+      });
       await Promise.all([fetchWallets(), fetchTransactions(), fetchBudgets()]);
       router.back();
     } catch (error) {
