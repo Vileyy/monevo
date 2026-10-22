@@ -2,9 +2,17 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
-import type { Request, Response, NextFunction } from 'express';
+import * as Sentry from '@sentry/nestjs';
 import { AppModule } from './app.module';
 import { DecimalSerializerInterceptor } from './common/interceptors/decimal-serializer.interceptor';
+
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment:
+      process.env.SENTRY_ENVIRONMENT ?? process.env.NODE_ENV ?? 'development',
+  });
+}
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -31,15 +39,13 @@ async function bootstrap() {
     credentials: true,
   });
 
-  app.use((req: Request, res: Response, next: NextFunction) => {
-    const hasAuth = Boolean(req.headers.authorization);
-    res.on('finish', () => {
-      console.log(
-        `[HTTP] ${req.method} ${req.url} -> ${res.statusCode} (auth: ${hasAuth ? 'present' : 'none'})`,
-      );
-    });
-    next();
-  });
+  if (process.env.SENTRY_DSN) {
+    Sentry.setupExpressErrorHandler(
+      app.getHttpAdapter().getInstance() as Parameters<
+        typeof Sentry.setupExpressErrorHandler
+      >[0],
+    );
+  }
 
   app.useGlobalInterceptors(new DecimalSerializerInterceptor());
 

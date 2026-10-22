@@ -28,3 +28,8 @@ export function validateQuickAmount(amount: number): string | null {
   }
   return null;
 }
+
+export function normalizeQuickNote(note: string): string | undefined {
+  const trimmed = note.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+}

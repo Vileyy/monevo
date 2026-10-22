@@ -19,6 +19,7 @@ import {
   EmptyState,
   Header,
   SegmentedControl,
+  WalletIcon,
   WalletSkeletonCard,
 } from "@/components/ui";
 import { WalletModal } from "@/features/wallets/components/WalletModal";
@@ -230,14 +231,7 @@ export default function WalletsScreen() {
                   accessibilityRole="button"
                   accessibilityLabel={`${wallet.name}, ${meta.label}, Balance ${formatCurrency(wallet.balance)}`}
                 >
-                  <View
-                    style={[
-                      styles.walletIconContainer,
-                      { backgroundColor: meta.bgColor },
-                    ]}
-                  >
-                    <Ionicons name={meta.icon} size={22} color={meta.color} />
-                  </View>
+                  <WalletIcon type={wallet.type} size="md" />
 
                   <View style={styles.walletDetails}>
                     <Text style={styles.walletName}>{wallet.name}</Text>
@@ -378,13 +372,6 @@ const styles = StyleSheet.create({
   walletRowCardPressed: {
     backgroundColor: colors.surfaceSecondary,
     transform: [{ scale: 0.99 }],
-  },
-  walletIconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: radius.lg,
-    alignItems: "center",
-    justifyContent: "center",
   },
   walletDetails: {
     flex: 1,

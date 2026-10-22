@@ -1,5 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
+  ActivityIndicator,
   Platform,
   Pressable,
   RefreshControl,
@@ -12,11 +13,16 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { Transaction, useTransactionStore } from "@/store/transaction.store";
+import {
+  Transaction,
+  TransactionQueryParams,
+  useTransactionStore,
+} from "@/store/transaction.store";
 import { useWalletStore } from "@/store/wallet.store";
 import { colors, radius, shadows, spacing, typography } from "@/theme";
-import { categoryDisplayName, formatCurrency } from "@/lib/format";
+import { formatCurrency } from "@/lib/format";
 import { hapticFeedback } from "@/lib/haptics";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import {
   EmptyState,
   Header,
@@ -29,13 +35,31 @@ import { TransactionDetailModal } from "@/features/transactions/components/Trans
 
 type SortOption = "DATE_DESC" | "AMOUNT_DESC" | "AMOUNT_ASC";
 
+const SORT_QUERY: Record<
+  Exclude<SortOption, "DATE_DESC">,
+  Pick<TransactionQueryParams, "sortBy" | "sortOrder">
+> = {
+  AMOUNT_DESC: { sortBy: "amount", sortOrder: "desc" },
+  AMOUNT_ASC: { sortBy: "amount", sortOrder: "asc" },
+};
+
 export default function TransactionsScreen() {
   const router = useRouter();
-  const { transactions, isLoading, fetchTransactions } = useTransactionStore();
+  const {
+    transactions,
+    isLoading,
+    isLoadingMore,
+    pageMeta,
+    summary,
+    fetchTransactionsPage,
+    loadMoreTransactions,
+    fetchTransactionSummary,
+  } = useTransactionStore();
   const { wallets, fetchWallets } = useWalletStore();
 
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearch = useDebouncedValue(searchQuery.trim(), 400);
   const [typeFilter, setTypeFilter] = useState<"ALL" | "EXPENSE" | "INCOME">(
     "ALL",
   );
@@ -43,89 +67,55 @@ export default function TransactionsScreen() {
   const [sortBy, setSortBy] = useState<SortOption>("DATE_DESC");
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
 
-  const loadData = useCallback(async () => {
-    await Promise.all([fetchTransactions(), fetchWallets()]);
-  }, [fetchTransactions, fetchWallets]);
+  // Server-side query: filters, debounced search and sorting
+  const serverQuery = useMemo<TransactionQueryParams>(() => {
+    const query: TransactionQueryParams = {};
+    if (typeFilter !== "ALL") query.type = typeFilter;
+    if (selectedWalletId !== "ALL") query.walletId = selectedWalletId;
+    if (debouncedSearch) query.search = debouncedSearch;
+    if (sortBy !== "DATE_DESC") Object.assign(query, SORT_QUERY[sortBy]);
+    return query;
+  }, [typeFilter, selectedWalletId, debouncedSearch, sortBy]);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    fetchTransactionsPage(serverQuery);
+    fetchTransactionSummary(serverQuery);
+  }, [serverQuery, fetchTransactionsPage, fetchTransactionSummary]);
+
+  useEffect(() => {
+    fetchWallets();
+  }, [fetchWallets]);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await loadData();
+    await Promise.all([
+      fetchTransactionsPage(serverQuery),
+      fetchTransactionSummary(serverQuery),
+      fetchWallets(),
+    ]);
     setRefreshing(false);
   };
 
-  // 1. Filter logic
-  const filteredTransactions = useMemo(() => {
-    return transactions.filter((tx) => {
-      // Type filter
-      if (typeFilter !== "ALL" && tx.type !== typeFilter) {
-        return false;
-      }
-
-      // Wallet filter
-      if (selectedWalletId !== "ALL" && tx.walletId !== selectedWalletId) {
-        return false;
-      }
-
-      // Search query
-      if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase().trim();
-        const catName = categoryDisplayName(
-          tx.category?.name || "",
-        ).toLowerCase();
-        const note = (tx.note || "").toLowerCase();
-        const walletName = (tx.wallet?.name || "").toLowerCase();
-        if (
-          !catName.includes(query) &&
-          !note.includes(query) &&
-          !walletName.includes(query)
-        ) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-  }, [transactions, typeFilter, selectedWalletId, searchQuery]);
-
-  // 2. Sort logic
-  const sortedTransactions = useMemo(() => {
-    const list = [...filteredTransactions];
-    if (sortBy === "AMOUNT_DESC") {
-      return list.sort((a, b) => b.amount - a.amount);
-    }
-    if (sortBy === "AMOUNT_ASC") {
-      return list.sort((a, b) => a.amount - b.amount);
-    }
-    return list.sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-    );
-  }, [filteredTransactions, sortBy]);
-
-  // 3. Sections for SectionList
+  // Sections for SectionList (server already filtered/sorted)
   const sections = useMemo(() => {
-    if (sortedTransactions.length === 0) return [];
+    if (transactions.length === 0) return [];
 
     if (sortBy !== "DATE_DESC") {
       const label =
         sortBy === "AMOUNT_DESC"
           ? "Sorted: Highest → Lowest"
           : "Sorted: Lowest → Highest";
-      return [{ title: label, data: sortedTransactions }];
+      return [{ title: label, data: transactions }];
     }
 
-    const result: { title: string; data: Transaction[] }[] = [];
     const map = new Map<string, Transaction[]>();
-
+    const order: string[] = [];
     const todayStr = new Date().toDateString();
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayStr = yesterday.toDateString();
 
-    for (const tx of sortedTransactions) {
+    for (const tx of transactions) {
       const txDate = new Date(tx.date);
       const txDateStr = txDate.toDateString();
 
@@ -144,24 +134,26 @@ export default function TransactionsScreen() {
 
       if (!map.has(label)) {
         map.set(label, []);
-        result.push({ title: label, data: map.get(label)! });
+        order.push(label);
       }
       map.get(label)!.push(tx);
     }
 
-    return result;
-  }, [sortedTransactions, sortBy]);
+    return order.map((title) => ({ title, data: map.get(title)! }));
+  }, [transactions, sortBy]);
 
-  // Summary stats for filtered
-  const { totalIn, totalOut } = useMemo(() => {
-    let totalIn = 0;
-    let totalOut = 0;
-    for (const tx of filteredTransactions) {
-      if (tx.type === "INCOME") totalIn += tx.amount;
-      else totalOut += tx.amount;
-    }
-    return { totalIn, totalOut };
-  }, [filteredTransactions]);
+  const hasActiveFilters =
+    debouncedSearch.length > 0 ||
+    typeFilter !== "ALL" ||
+    selectedWalletId !== "ALL" ||
+    sortBy !== "DATE_DESC";
+
+  const resetFilters = () => {
+    setSearchQuery("");
+    setTypeFilter("ALL");
+    setSelectedWalletId("ALL");
+    setSortBy("DATE_DESC");
+  };
 
   const handleTypeChange = (val: "ALL" | "EXPENSE" | "INCOME") => {
     hapticFeedback.selection();
@@ -178,13 +170,39 @@ export default function TransactionsScreen() {
     setSortBy(sort);
   };
 
+  const handleCloseModal = () => {
+    setSelectedTx(null);
+    // Keep the summary bar exact after a delete happened in the modal
+    fetchTransactionSummary(serverQuery);
+  };
+
+  const renderFooter = () => {
+    if (isLoadingMore) {
+      return (
+        <View style={styles.footer}>
+          <ActivityIndicator color={colors.primary} />
+        </View>
+      );
+    }
+    if (pageMeta && !pageMeta.hasMore && transactions.length > 0) {
+      return (
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>
+            Showing all {pageMeta.total} records
+          </Text>
+        </View>
+      );
+    }
+    return null;
+  };
+
   const renderHeader = useMemo(
     () => (
       <View>
         {/* Search Input */}
         <View style={styles.searchContainer}>
           <Input
-            placeholder="Search by category, note or account..."
+            placeholder="Search notes..."
             value={searchQuery}
             onChangeText={setSearchQuery}
             clearable
@@ -351,12 +369,12 @@ export default function TransactionsScreen() {
           </ScrollView>
         </View>
 
-        {/* Summary Card for Selected Filters */}
+        {/* Summary Card from Server */}
         <View style={styles.summaryBar}>
           <View style={styles.summaryItem}>
             <Text style={styles.summaryLabel}>Total Income</Text>
             <Text style={[styles.summaryVal, { color: colors.income }]}>
-              +{formatCurrency(totalIn)}
+              +{formatCurrency(summary?.totalIncome ?? 0)}
             </Text>
           </View>
 
@@ -365,28 +383,20 @@ export default function TransactionsScreen() {
           <View style={styles.summaryItem}>
             <Text style={styles.summaryLabel}>Total Expense</Text>
             <Text style={[styles.summaryVal, { color: colors.expense }]}>
-              −{formatCurrency(totalOut)}
+              −{formatCurrency(summary?.totalExpense ?? 0)}
             </Text>
           </View>
         </View>
       </View>
     ),
-    [
-      searchQuery,
-      typeFilter,
-      selectedWalletId,
-      wallets,
-      sortBy,
-      totalIn,
-      totalOut,
-    ],
+    [searchQuery, typeFilter, selectedWalletId, wallets, sortBy, summary],
   );
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <Header
         title="Transaction History"
-        subtitle={`${filteredTransactions.length} records found`}
+        subtitle={`${pageMeta?.total ?? 0} records found`}
         rightAction={
           <Pressable
             onPress={() => {
@@ -416,6 +426,7 @@ export default function TransactionsScreen() {
           <Text style={styles.groupHeader}>{title}</Text>
         )}
         ListHeaderComponent={renderHeader}
+        ListFooterComponent={renderFooter}
         ListEmptyComponent={
           isLoading && transactions.length === 0 ? (
             <TransactionSkeletonList count={6} />
@@ -425,25 +436,12 @@ export default function TransactionsScreen() {
               title="No Transactions Found"
               description="Try adjusting your search query, sorting, or filters to find what you're looking for."
               actionTitle={
-                searchQuery ||
-                typeFilter !== "ALL" ||
-                selectedWalletId !== "ALL" ||
-                sortBy !== "DATE_DESC"
-                  ? "Reset Filters"
-                  : "Add Transaction"
+                hasActiveFilters ? "Reset Filters" : "Add Transaction"
               }
               onAction={() => {
                 hapticFeedback.light();
-                if (
-                  searchQuery ||
-                  typeFilter !== "ALL" ||
-                  selectedWalletId !== "ALL" ||
-                  sortBy !== "DATE_DESC"
-                ) {
-                  setSearchQuery("");
-                  setTypeFilter("ALL");
-                  setSelectedWalletId("ALL");
-                  setSortBy("DATE_DESC");
+                if (hasActiveFilters) {
+                  resetFilters();
                 } else {
                   router.push("/add-transaction");
                 }
@@ -458,6 +456,8 @@ export default function TransactionsScreen() {
         initialNumToRender={12}
         maxToRenderPerBatch={10}
         windowSize={7}
+        onEndReachedThreshold={0.3}
+        onEndReached={loadMoreTransactions}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -471,7 +471,7 @@ export default function TransactionsScreen() {
       {/* Transaction Detail Modal */}
       <TransactionDetailModal
         visible={!!selectedTx}
-        onClose={() => setSelectedTx(null)}
+        onClose={handleCloseModal}
         transaction={selectedTx}
       />
     </SafeAreaView>
@@ -581,5 +581,13 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     marginBottom: spacing.xs,
     marginLeft: spacing.xs,
+  },
+  footer: {
+    paddingVertical: spacing.lg,
+    alignItems: "center",
+  },
+  footerText: {
+    ...typography.footnote,
+    color: colors.textSecondary,
   },
 });

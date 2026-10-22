@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Alert,
   Pressable,
@@ -19,6 +19,7 @@ import { useReminderStore } from "@/store/reminder.store";
 import { useSettingsStore } from "@/store/settings.store";
 import { getCurrencyConfig } from "@/lib/currencies";
 import { formatCurrency } from "@/lib/format";
+import { displayableEmail, getInitials } from "@/lib/user-profile";
 import { colors, radius, shadows, spacing, typography } from "@/theme";
 import { Card, Header } from "@/components/ui";
 import { SettingsRow } from "@/features/profile/components/SettingsRow";
@@ -46,40 +47,10 @@ export default function ProfileScreen() {
     reminderNotifications,
     setReminderNotifications,
   } = useSettingsStore();
-  const biometricEnabled = useAuthStore((state) => state.biometricEnabled);
-  const biometricAvailable = useAuthStore((state) => state.biometricAvailable);
-  const biometricLabel = useAuthStore((state) => state.biometricLabel);
-  const biometricIcon = useAuthStore((state) => state.biometricIcon);
-  const refreshBiometricState = useAuthStore(
-    (state) => state.refreshBiometricState,
-  );
-  const enableBiometrics = useAuthStore((state) => state.enableBiometrics);
-  const disableBiometrics = useAuthStore((state) => state.disableBiometrics);
-
   const [refreshing, setRefreshing] = useState(false);
   const [showCurrencyModal, setShowCurrencyModal] = useState(false);
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
-
-  useEffect(() => {
-    void refreshBiometricState();
-  }, [refreshBiometricState]);
-
-  const handleBiometricToggle = async (nextValue: boolean) => {
-    hapticFeedback.selection();
-    if (!nextValue) {
-      await disableBiometrics();
-      return;
-    }
-
-    const result = await enableBiometrics();
-    if (result === "unavailable") {
-      Alert.alert(
-        `${biometricLabel} unavailable`,
-        `Set up ${biometricLabel} in your device settings, then try again.`,
-      );
-    }
-  };
 
   const handleToggleNotifications = async () => {
     hapticFeedback.selection();
@@ -137,28 +108,22 @@ export default function ProfileScreen() {
     ]);
   };
 
-  const displayEmail = useMemo(() => {
-    const email = user?.email;
-    return email && email.includes("@") ? email : null;
-  }, [user?.email]);
+  const displayEmail = useMemo(
+    () => displayableEmail(user?.email),
+    [user?.email],
+  );
 
-  const userInitials = useMemo(() => {
-    if (user?.name) {
-      const parts = user.name.trim().split(/\s+/);
-      if (parts.length >= 2) {
-        return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
-      }
-      return parts[0].substring(0, 2).toUpperCase();
-    }
-    if (user?.email) {
-      return user.email.substring(0, 2).toUpperCase();
-    }
-    return "ME";
-  }, [user]);
+  const userInitials = useMemo(
+    () => getInitials(user?.name, user?.email),
+    [user],
+  );
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
-      <Header title="Profile & Settings" />
+      <Header
+        title="Profile & Settings"
+        subtitle="Manage your account and preferences"
+      />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -175,38 +140,51 @@ export default function ProfileScreen() {
         {/* User Card */}
         <Card style={styles.profileCard}>
           <View style={styles.profileHeader}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{userInitials}</Text>
-            </View>
-            <View style={styles.profileInfo}>
-              <View style={styles.nameRow}>
-                <Text style={styles.userName} numberOfLines={1}>
-                  {user?.name || "Monevo User"}
-                </Text>
-                <Pressable
-                  onPress={() => setShowEditProfileModal(true)}
-                  hitSlop={8}
-                  style={styles.editButton}
-                  accessibilityLabel="Edit profile name"
-                >
-                  <Ionicons name="pencil" size={14} color={colors.primary} />
-                </Pressable>
+            <View style={styles.avatarRing}>
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>{userInitials}</Text>
               </View>
-              {displayEmail && (
-                <Text style={styles.userEmail} numberOfLines={1}>
-                  {displayEmail}
-                </Text>
-              )}
             </View>
+
+            <View style={styles.profileInfo}>
+              <Text style={styles.userName} numberOfLines={1}>
+                {user?.name || "Monevo User"}
+              </Text>
+              <Text
+                style={styles.userEmail}
+                numberOfLines={1}
+                ellipsizeMode="middle"
+              >
+                {displayEmail ?? "Personal account"}
+              </Text>
+            </View>
+
+            <Pressable
+              onPress={() => setShowEditProfileModal(true)}
+              hitSlop={8}
+              style={({ pressed }) => [
+                styles.editButton,
+                pressed && styles.editButtonPressed,
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel="Edit profile name"
+            >
+              <Ionicons name="pencil" size={15} color={colors.primary} />
+            </Pressable>
           </View>
 
           {/* Mini Stats Bar */}
           <View style={styles.statsDivider} />
           <View style={styles.statsRow}>
-            <View style={styles.statCol}>
+            <View style={[styles.statCol, styles.statColWide]}>
               <Text style={styles.statLabel}>Net Worth</Text>
-              <Text style={styles.statValue} numberOfLines={1}>
-                {hideBalance ? "••••••••" : formatCurrency(totalNetWorth)}
+              <Text
+                style={styles.statValue}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.75}
+              >
+                {hideBalance ? "••••••" : formatCurrency(totalNetWorth)}
               </Text>
             </View>
             <View style={styles.statSeparator} />
@@ -228,13 +206,15 @@ export default function ProfileScreen() {
           <SettingsRow
             icon="cash-outline"
             title="Currency"
-            subtitle="Display currency across the app"
-            value={`${currencyConfig.flag} ${currencyConfig.code} (${currencyConfig.symbol})`}
+            subtitle={currencyConfig.name}
+            value={`${currencyConfig.flag} ${currencyConfig.code}`}
             onPress={() => setShowCurrencyModal(true)}
           />
           <View style={styles.rowDivider} />
           <SettingsRow
             icon={hideBalance ? "eye-off-outline" : "eye-outline"}
+            iconColor={colors.info}
+            iconBgColor={colors.infoBg}
             title="Hide Balance"
             subtitle="Mask financial balances by default"
             isSwitch
@@ -243,21 +223,9 @@ export default function ProfileScreen() {
           />
           <View style={styles.rowDivider} />
           <SettingsRow
-            icon={biometricIcon}
-            title={biometricLabel}
-            subtitle={
-              biometricAvailable
-                ? `Unlock Monevo with ${biometricLabel}`
-                : `${biometricLabel} is not set up on this device`
-            }
-            isSwitch
-            switchValue={biometricEnabled}
-            disabled={!biometricAvailable}
-            onSwitchChange={(value) => void handleBiometricToggle(value)}
-          />
-          <View style={styles.rowDivider} />
-          <SettingsRow
             icon="notifications-outline"
+            iconColor={colors.warning}
+            iconBgColor={colors.warningBg}
             title="Bill Reminders"
             subtitle="Local push notification at 9:00 AM"
             isSwitch
@@ -267,6 +235,8 @@ export default function ProfileScreen() {
           <View style={styles.rowDivider} />
           <SettingsRow
             icon="grid-outline"
+            iconColor={colors.accent}
+            iconBgColor={colors.incomeBg}
             title="Manage Categories"
             subtitle="Add custom income and expense categories"
             onPress={() => setShowCategoryModal(true)}
@@ -321,20 +291,28 @@ const styles = StyleSheet.create({
   profileCard: {
     padding: spacing.lg,
     marginBottom: spacing.lg,
+    ...shadows.sm,
   },
   profileHeader: {
     flexDirection: "row",
     alignItems: "center",
   },
-  avatar: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
-    backgroundColor: colors.primary,
-    justifyContent: "center",
+  avatarRing: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.primaryMuted,
     marginRight: spacing.md,
-    ...shadows.sm,
+  },
+  avatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.primary,
+    alignItems: "center",
+    justifyContent: "center",
   },
   avatarText: {
     ...typography.title2,
@@ -345,53 +323,68 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
   },
-  nameRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.xs,
-  },
   userName: {
     ...typography.title3,
+    fontSize: 18,
+    lineHeight: 24,
     fontWeight: "700",
     color: colors.text,
   },
   editButton: {
-    backgroundColor: colors.primaryLight,
-    padding: 4,
+    width: 34,
+    height: 34,
     borderRadius: radius.full,
+    backgroundColor: colors.primaryLight,
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: spacing.sm,
+  },
+  editButtonPressed: {
+    backgroundColor: colors.primaryMuted,
+    transform: [{ scale: 0.94 }],
   },
   userEmail: {
-    ...typography.caption,
+    ...typography.footnote,
     color: colors.textSecondary,
     marginTop: 2,
   },
   statsDivider: {
     height: 1,
-    backgroundColor: colors.border,
+    backgroundColor: colors.borderLight,
     marginVertical: spacing.md,
   },
   statsRow: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
   },
   statCol: {
     flex: 1,
     alignItems: "center",
   },
+  statColWide: {
+    flex: 1.5,
+  },
   statLabel: {
-    ...typography.caption,
+    fontSize: 10,
+    lineHeight: 14,
+    fontWeight: "600",
+    letterSpacing: 0.6,
+    textTransform: "uppercase",
     color: colors.textMuted,
-    marginBottom: 2,
+    marginBottom: 4,
   },
   statValue: {
-    ...typography.bodyBold,
+    fontSize: 17,
+    lineHeight: 22,
+    fontWeight: "700",
     color: colors.text,
+    ...typography.tabular,
   },
   statSeparator: {
     width: 1,
-    height: 24,
-    backgroundColor: colors.border,
+    height: 32,
+    backgroundColor: colors.borderLight,
+    marginHorizontal: spacing.xs,
   },
   sectionHeader: {
     ...typography.caption,
@@ -410,7 +403,7 @@ const styles = StyleSheet.create({
   rowDivider: {
     height: 1,
     backgroundColor: colors.borderLight,
-    marginLeft: 62,
+    marginLeft: 70,
   },
   footerSpacing: {
     height: spacing.xl,

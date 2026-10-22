@@ -3,7 +3,6 @@ import { StyleSheet, Text, View } from "react-native";
 import { PieChart } from "react-native-gifted-charts";
 import { colors, radius, shadows, spacing, typography } from "@/theme";
 import { categoryDisplayName, formatCurrency } from "@/lib/format";
-import { getCategoryMeta } from "@/lib/categories";
 import { CategoryIcon } from "@/components/ui";
 
 export interface CategoryBreakdownItem {
@@ -31,6 +30,10 @@ const PALETTE = [
   "#F97316",
 ];
 
+// Top categories keep their own slice; the rest are folded into "Other"
+// so the donut always sums up to the total.
+const MAX_SLICES = 5;
+
 export function CategoryPieChart({
   items,
   totalAmount,
@@ -40,19 +43,28 @@ export function CategoryPieChart({
     return null;
   }
 
-  const chartData = items.slice(0, 6).map((item, index) => {
-    const meta = getCategoryMeta(item.name, "EXPENSE");
-    const color = meta.color || PALETTE[index % PALETTE.length];
-    const percent = Math.round((item.amount / totalAmount) * 100);
+  const top = items.slice(0, MAX_SLICES);
+  const rest = items.slice(MAX_SLICES);
+  const slices: CategoryBreakdownItem[] =
+    rest.length > 0
+      ? [
+          ...top,
+          {
+            name: "Other",
+            amount: rest.reduce((sum, item) => sum + item.amount, 0),
+            count: rest.reduce((sum, item) => sum + item.count, 0),
+          },
+        ]
+      : top;
 
+  const chartData = slices.map((item, index) => {
+    const percent = Math.round((item.amount / totalAmount) * 100);
     return {
       value: item.amount,
-      color,
-      text: `${percent}%`,
+      color: PALETTE[index % PALETTE.length],
+      text: percent >= 6 ? `${percent}%` : "",
       textColor: colors.surface,
       textSize: 11,
-      name: item.name,
-      count: item.count,
     };
   });
 
@@ -85,9 +97,8 @@ export function CategoryPieChart({
 
       {/* Legend / Breakdown List */}
       <View style={styles.legendContainer}>
-        {items.map((item, index) => {
-          const meta = getCategoryMeta(item.name, "EXPENSE");
-          const color = meta.color || PALETTE[index % PALETTE.length];
+        {slices.map((item, index) => {
+          const color = PALETTE[index % PALETTE.length];
           const percent =
             totalAmount > 0 ? Math.round((item.amount / totalAmount) * 100) : 0;
           const displayName = categoryDisplayName(item.name);
@@ -160,7 +171,7 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     color: colors.text,
     marginTop: 2,
-    fontSize: 11,
+    fontSize: 13,
     ...typography.tabular,
   },
   legendContainer: {

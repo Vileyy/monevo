@@ -23,7 +23,7 @@ import {
   parseVndInput,
 } from "@/lib/format";
 import { apiErrorMessage } from "@/lib/api-error";
-import { DEFAULT_CATEGORY_METAS, getWalletMeta } from "@/lib/categories";
+import { DEFAULT_CATEGORY_METAS } from "@/lib/categories";
 import { hapticFeedback } from "@/lib/haptics";
 import { calculateBudgetWarning } from "@/lib/budget-warning";
 import {
@@ -32,6 +32,7 @@ import {
   CurrencyInput,
   Header,
   Input,
+  WalletIcon,
 } from "@/components/ui";
 import { CategoryModal } from "@/features/categories/components/CategoryModal";
 import { CategorySelectorModal } from "@/features/categories/components/CategorySelectorModal";
@@ -109,10 +110,6 @@ export default function AddTransactionScreen() {
   const selectedWallet = useMemo(() => {
     return wallets.find((w) => w.id === selectedWalletId) || wallets[0] || null;
   }, [wallets, selectedWalletId]);
-
-  const selectedWalletMeta = useMemo(() => {
-    return getWalletMeta(selectedWallet?.type);
-  }, [selectedWallet?.type]);
 
   const visibleCategories = useMemo(
     () => categories.filter((c) => c.type === type),
@@ -350,18 +347,7 @@ export default function AddTransactionScreen() {
               accessibilityLabel={`Account: ${selectedWallet?.name || "Account"}`}
             >
               <View style={styles.rowLeft}>
-                <View
-                  style={[
-                    styles.walletIconCircle,
-                    { backgroundColor: selectedWalletMeta.bgColor },
-                  ]}
-                >
-                  <Ionicons
-                    name={selectedWalletMeta.icon}
-                    size={18}
-                    color={selectedWalletMeta.color}
-                  />
-                </View>
+                <WalletIcon type={selectedWallet?.type ?? "CASH"} size="sm" />
                 <View style={styles.rowTextCol}>
                   <Text style={styles.rowLabel}>
                     {type === "INCOME" ? "Deposit To" : "Pay From"}
@@ -531,13 +517,6 @@ const styles = StyleSheet.create({
   },
   typeBadgeTextIncome: {
     color: colors.income,
-  },
-  walletIconCircle: {
-    width: 38,
-    height: 38,
-    borderRadius: radius.md,
-    alignItems: "center",
-    justifyContent: "center",
   },
   walletBalanceText: {
     ...typography.subhead,

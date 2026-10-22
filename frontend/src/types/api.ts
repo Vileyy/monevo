@@ -52,3 +52,22 @@ export type CreateTransactionBody = {
 };
 
 export type UpdateTransactionBody = Partial<CreateTransactionBody>;
+
+export type TransactionPageMeta = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasMore: boolean;
+};
+
+export type TransactionSummary = {
+  totalIncome: number;
+  totalExpense: number;
+  count: number;
+};
+
+export type Paginated<T> = {
+  data: T[];
+  meta: TransactionPageMeta;
+};

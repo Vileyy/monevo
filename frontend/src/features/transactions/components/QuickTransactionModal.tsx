@@ -14,12 +14,13 @@ import {
   Button,
   CategoryIcon,
   CurrencyInput,
+  Input,
   Modal,
   SegmentedControl,
+  WalletIcon,
 } from "@/components/ui";
 import { categoryDisplayName, parseVndInput } from "@/lib/format";
 import { apiErrorMessage } from "@/lib/api-error";
-import { getWalletMeta } from "@/lib/categories";
 import { hapticFeedback } from "@/lib/haptics";
 import { calculateBudgetWarning } from "@/lib/budget-warning";
 import { useWalletStore } from "@/store/wallet.store";
@@ -27,6 +28,7 @@ import { useCategoryStore } from "@/store/category.store";
 import { useTransactionStore } from "@/store/transaction.store";
 import { useBudgetStore } from "@/store/budget.store";
 import {
+  normalizeQuickNote,
   resolveCategoryId,
   resolveWalletId,
   validateQuickAmount,
@@ -53,6 +55,7 @@ export function QuickTransactionModal({
 
   const [type, setType] = useState<"INCOME" | "EXPENSE">(initialType);
   const [amount, setAmount] = useState("");
+  const [note, setNote] = useState("");
   const [walletId, setWalletId] = useState<string | null>(null);
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -90,6 +93,7 @@ export function QuickTransactionModal({
       await createTransaction({
         amount: amountToSave,
         type,
+        note: normalizeQuickNote(note),
         walletId: selectedWalletId,
         categoryId: selectedCategoryId,
       });
@@ -263,7 +267,6 @@ export function QuickTransactionModal({
             keyboardShouldPersistTaps="handled"
           >
             {wallets.map((wallet) => {
-              const meta = getWalletMeta(wallet.type);
               const isSelected = wallet.id === selectedWalletId;
               return (
                 <Pressable
@@ -280,14 +283,7 @@ export function QuickTransactionModal({
                   accessibilityRole="button"
                   accessibilityState={{ selected: isSelected }}
                 >
-                  <View
-                    style={[
-                      styles.walletIcon,
-                      { backgroundColor: meta.bgColor },
-                    ]}
-                  >
-                    <Ionicons name={meta.icon} size={14} color={meta.color} />
-                  </View>
+                  <WalletIcon type={wallet.type} size="xs" />
                   <Text
                     style={[
                       styles.chipText,
@@ -301,6 +297,26 @@ export function QuickTransactionModal({
               );
             })}
           </ScrollView>
+
+          <Text style={styles.fieldLabel}>Note (optional)</Text>
+          <Input
+            placeholder={
+              isIncome
+                ? "e.g. October salary, Freelance project"
+                : "e.g. Lunch with team, Grab ride"
+            }
+            value={note}
+            onChangeText={setNote}
+            maxLength={140}
+            returnKeyType="done"
+            leftIcon={
+              <Ionicons
+                name="chatbubble-ellipses"
+                size={18}
+                color={colors.textMuted}
+              />
+            }
+          />
 
           {type === "EXPENSE" &&
             budgetWarning &&
@@ -354,7 +370,7 @@ export function QuickTransactionModal({
             style={styles.moreLink}
             accessibilityRole="button"
           >
-            <Text style={styles.moreLinkText}>Add a note or more details</Text>
+            <Text style={styles.moreLinkText}>Add a date or more details</Text>
           </Pressable>
         </>
       )}
@@ -414,13 +430,6 @@ const styles = StyleSheet.create({
   },
   chipPressed: {
     opacity: 0.85,
-  },
-  walletIcon: {
-    width: 24,
-    height: 24,
-    borderRadius: radius.full,
-    alignItems: "center",
-    justifyContent: "center",
   },
   chipText: {
     ...typography.subhead,

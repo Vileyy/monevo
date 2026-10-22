@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View, ViewStyle } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, radius, shadows, spacing, typography } from "@/theme";
 import { formatCurrency } from "@/lib/format";
+import { WalletIcon } from "@/components/ui";
 import { getWalletMeta } from "@/lib/categories";
 import { Wallet } from "@/store/wallet.store";
 import { hapticFeedback } from "@/lib/haptics";
@@ -43,9 +44,7 @@ export const WalletCard = memo(function WalletCard({
       accessibilityLabel={`${wallet.name} account, balance ${formatCurrency(wallet.balance)}`}
     >
       <View style={styles.topRow}>
-        <View style={[styles.iconContainer, { backgroundColor: meta.bgColor }]}>
-          <Ionicons name={meta.icon} size={18} color={meta.color} />
-        </View>
+        <WalletIcon type={wallet.type} size="sm" />
 
         <View style={styles.typeBadge}>
           <Text style={[styles.typeText, { color: meta.color }]}>
@@ -128,13 +127,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-  },
-  iconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: radius.md,
-    alignItems: "center",
-    justifyContent: "center",
   },
   typeBadge: {
     paddingHorizontal: spacing.xs + 2,

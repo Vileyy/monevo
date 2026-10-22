@@ -11,22 +11,28 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { useAuth, useSignIn, useSignUp } from "@clerk/clerk-expo";
+import { useAuth, useSignIn, useSignUp, useSSO } from "@clerk/clerk-expo";
 import * as WebBrowser from "expo-web-browser";
+import * as Linking from "expo-linking";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { colors } from "@/theme";
 import { Button, Input, OtpInput } from "@/components/ui";
+import { FaceIdIcon } from "@/components/FaceIdIcon";
 import { useAuthStore } from "@/store/auth.store";
 import { apiClient } from "@/services/api/client";
 import { hapticFeedback } from "@/lib/haptics";
 import { authStyles } from "@/features/auth/styles/auth.styles";
+import { GoogleButton } from "./GoogleButton";
 import {
+  buildMissingProfileUpdate,
   extractClerkErrorMessage,
+  getGoogleFallbackUser,
   isRateLimitError,
   isSessionExistsError,
   isUserExistsError,
   isValidEmailFormat,
+  resolveGoogleSessionId,
 } from "../utils/auth-helpers";
 
 WebBrowser.maybeCompleteAuthSession();
@@ -63,7 +69,8 @@ export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
     signUp,
     setActive: setSignUpActive,
   } = useSignUp();
-  const { getToken, signOut, isSignedIn } = useAuth();
+  const { getToken, signOut, isSignedIn, isLoaded: isAuthLoaded } = useAuth();
+  const { startSSOFlow } = useSSO();
 
   // Screen state
   const [step, setStep] = useState<"EMAIL" | "OTP">("EMAIL");
@@ -73,19 +80,24 @@ export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
   const [otpCode, setOtpCode] = useState("");
   const [hasOtpError, setHasOtpError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isBiometricLoading, setIsBiometricLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
 
-  // If user navigated to AuthScreen while Clerk still has a stale session, sign out cleanly
+  // Sign out a stale Clerk session only once, on entry. A reactive check would
+  // also fire right after a fresh sign-in and invalidate the new session.
+  const cleanedStaleSessionRef = useRef(false);
   useEffect(() => {
-    if (isSignedIn) {
+    if (!isAuthLoaded || cleanedStaleSessionRef.current) return;
+    cleanedStaleSessionRef.current = true;
+    if (isSignedIn && !useAuthStore.getState().isAuthenticated) {
       void (async () => {
         try {
           await signOut();
         } catch {}
       })();
     }
-  }, [isSignedIn, signOut]);
+  }, [isAuthLoaded, isSignedIn, signOut]);
 
   useEffect(() => {
     void refreshBiometricState();
@@ -119,6 +131,38 @@ export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
     }
     setEmailError(undefined);
     return true;
+  };
+
+  const fetchClerkToken = async (): Promise<string | null> => {
+    for (let attempt = 0; attempt < 5; attempt++) {
+      try {
+        const t = await getToken();
+        if (t) return t;
+      } catch {}
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+    return null;
+  };
+
+  const commitSession = async (
+    clerkToken: string,
+    fallbackUser: { id: string; email: string; name: string },
+  ) => {
+    try {
+      const res = await apiClient.post<{
+        user: { id: string; email: string; name?: string };
+        accessToken: string;
+      }>("/auth/clerk", { clerkToken });
+      if (res.data?.accessToken && res.data?.user) {
+        loginStore(res.data.user, res.data.accessToken);
+        router.replace("/(tabs)");
+        return;
+      }
+    } catch (err) {
+      console.warn("Failed to exchange clerk token, falling back:", err);
+    }
+    loginStore(fallbackUser, clerkToken);
+    router.replace("/(tabs)");
   };
 
   // Send Email OTP Code
@@ -375,38 +419,6 @@ export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
     setIsLoading(true);
     setHasOtpError(false);
 
-    const fetchClerkToken = async (): Promise<string | null> => {
-      for (let attempt = 0; attempt < 5; attempt++) {
-        try {
-          const t = await getToken();
-          if (t) return t;
-        } catch {}
-        await new Promise((resolve) => setTimeout(resolve, 250));
-      }
-      return null;
-    };
-
-    const commitSession = async (
-      clerkToken: string,
-      fallbackUser: { id: string; email: string; name: string },
-    ) => {
-      try {
-        const res = await apiClient.post<{
-          user: { id: string; email: string; name?: string };
-          accessToken: string;
-        }>("/auth/clerk", { clerkToken });
-        if (res.data?.accessToken && res.data?.user) {
-          loginStore(res.data.user, res.data.accessToken);
-          router.replace("/(tabs)");
-          return;
-        }
-      } catch (err) {
-        console.warn("Failed to exchange clerk token, falling back:", err);
-      }
-      loginStore(fallbackUser, clerkToken);
-      router.replace("/(tabs)");
-    };
-
     try {
       // Flow 1: Verify via Sign In
       if (otpFlow === "SIGN_IN" && signIn.status === "needs_first_factor") {
@@ -576,6 +588,67 @@ export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    if (isGoogleLoading || isLoading) return;
+
+    hapticFeedback.light();
+    setIsGoogleLoading(true);
+    try {
+      const redirectUrl = Linking.createURL("oauth-native-callback", {
+        scheme: "monevo",
+      });
+
+      const result = await startSSOFlow({
+        strategy: "oauth_google",
+        redirectUrl,
+      });
+
+      let sessionId = resolveGoogleSessionId(result);
+
+      if (!sessionId && result.signUp?.status === "missing_requirements") {
+        const update = buildMissingProfileUpdate(
+          result.signUp.missingFields ?? [],
+        );
+        if (Object.keys(update).length > 0) {
+          const updated = await result.signUp.update(update);
+          if (updated.status === "complete" && updated.createdSessionId) {
+            sessionId = updated.createdSessionId;
+          }
+        }
+      }
+
+      if (!sessionId) return;
+
+      if (result.setActive) {
+        await result.setActive({ session: sessionId });
+      }
+
+      hapticFeedback.success();
+      const token = await fetchClerkToken();
+      if (!token) {
+        Alert.alert(
+          "Session Error",
+          "Could not obtain authentication token from Clerk. Please try again.",
+        );
+        return;
+      }
+
+      const fallback = getGoogleFallbackUser(result);
+      await commitSession(token, { id: sessionId, ...fallback });
+    } catch (err: unknown) {
+      hapticFeedback.error();
+      Alert.alert(
+        "Google Sign-In",
+        extractClerkErrorMessage(
+          err,
+          "Could not sign in with Google. Please try again.",
+        ),
+      );
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
+
   const handleBiometricLogin = async () => {
     if (isBiometricLoading) return;
 
@@ -680,11 +753,7 @@ export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
                         {isBiometricLoading ? (
                           <ActivityIndicator size="small" color="#0F172A" />
                         ) : biometricIcon === "scan-outline" ? (
-                          <MaterialCommunityIcons
-                            name="face-recognition"
-                            size={25}
-                            color="#0F172A"
-                          />
+                          <FaceIdIcon size={25} color="#0F172A" />
                         ) : biometricIcon === "finger-print-outline" ? (
                           <MaterialCommunityIcons
                             name="fingerprint"
@@ -725,6 +794,18 @@ export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
                     A verification code will be sent to your email
                   </Text>
                 </View>
+
+                <View style={authStyles.dividerRow}>
+                  <View style={authStyles.dividerLine} />
+                  <Text style={authStyles.dividerText}>OR</Text>
+                  <View style={authStyles.dividerLine} />
+                </View>
+
+                <GoogleButton
+                  onPress={() => void handleGoogleLogin()}
+                  isLoading={isGoogleLoading}
+                  disabled={isLoading || isGoogleLoading}
+                />
               </View>
             ) : (
               /* ================= STEP 2: ENTER OTP ================= */

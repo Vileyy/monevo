@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import type { Ionicons } from "@expo/vector-icons";
 import { ReminderCategory } from "@/store/reminder.store";
 
 export interface ReminderCategoryMeta {
@@ -16,31 +16,31 @@ export const REMINDER_PRESETS: ReminderCategoryMeta[] = [
     label: "Medicine",
     defaultTitle: "Prescription Medicine",
     icon: "medkit",
-    color: "#DC2626",
-    bgColor: "#FEE2E2",
+    color: "#B91C1C",
+    bgColor: "#FEF2F2",
   },
   {
     category: "ELECTRICITY",
     label: "Electricity",
     defaultTitle: "Electricity Bill",
     icon: "flash",
-    color: "#D97706",
-    bgColor: "#FEF3C7",
+    color: "#B45309",
+    bgColor: "#FFFBEB",
   },
   {
     category: "WATER",
     label: "Water",
     defaultTitle: "Water Utility",
     icon: "water",
-    color: "#0284C7",
-    bgColor: "#E0F2FE",
+    color: "#0369A1",
+    bgColor: "#F0F9FF",
   },
   {
     category: "RENT",
     label: "Rent",
     defaultTitle: "House / Apartment Rent",
     icon: "home",
-    color: "#4F46E5",
+    color: "#4338CA",
     bgColor: "#EEF2FF",
   },
   {
@@ -48,24 +48,24 @@ export const REMINDER_PRESETS: ReminderCategoryMeta[] = [
     label: "Internet",
     defaultTitle: "Internet Subscription",
     icon: "wifi",
-    color: "#059669",
-    bgColor: "#D1FAE5",
+    color: "#047857",
+    bgColor: "#ECFDF5",
   },
   {
     category: "PHONE",
     label: "Mobile Plan",
     defaultTitle: "Mobile Plan / Phone Bill",
     icon: "call",
-    color: "#7C3AED",
-    bgColor: "#EDE9FE",
+    color: "#6D28D9",
+    bgColor: "#F5F3FF",
   },
   {
     category: "OTHER",
     label: "Other",
     defaultTitle: "Recurring Payment",
     icon: "receipt",
-    color: "#0D9488",
-    bgColor: "#E6F7F5",
+    color: "#0F766E",
+    bgColor: "#F0FDFA",
   },
 ];
 
