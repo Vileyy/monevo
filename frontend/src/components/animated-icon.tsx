@@ -1,8 +1,6 @@
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect, useState } from "react";
-import { Animated, Easing, StyleSheet, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
+import { Animated, Easing, Image, StyleSheet, Text, View } from "react-native";
 import { colors, shadows, spacing } from "@/theme";
 import { useAuthStore } from "@/store/auth.store";
 
@@ -118,7 +116,7 @@ export function AnimatedSplashOverlay() {
     const timer = setTimeout(() => {
       Animated.parallel([
         Animated.timing(zoom, {
-          toValue: 1.55,
+          toValue: 1.35,
           duration: ZOOM_DURATION,
           easing: Easing.in(Easing.cubic),
           useNativeDriver: true,
@@ -147,14 +145,6 @@ export function AnimatedSplashOverlay() {
       style={[styles.splashOverlay, { opacity: opacityAnim }]}
       pointerEvents="auto"
     >
-      <LinearGradient
-        colors={["#060D17", "#0B1626", "#052E2B"]}
-        locations={[0, 0.55, 1]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={StyleSheet.absoluteFill}
-      />
-
       <View style={styles.auroraTop} />
       <View style={styles.auroraBottom} />
 
@@ -182,22 +172,19 @@ export function AnimatedSplashOverlay() {
           </Animated.View>
 
           <Animated.View
-            style={{
-              opacity: badgeOpacity,
-              transform: [{ scale: badgeScale }],
-            }}
+            style={[
+              styles.logoFrame,
+              {
+                opacity: badgeOpacity,
+                transform: [{ scale: badgeScale }],
+              },
+            ]}
           >
-            <View style={styles.logoFrame}>
-              <LinearGradient
-                colors={["#0F766E", "#10B981", "#0D9488"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.logoBadge}
-              >
-                <View style={styles.logoShine} />
-                <Ionicons name="wallet" size={44} color="#FFFFFF" />
-              </LinearGradient>
-            </View>
+            <Image
+              source={require("../../assets/images/icon.png")}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
           </Animated.View>
         </View>
 
@@ -226,7 +213,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: colors.surfaceDark,
+    backgroundColor: colors.surface,
     alignItems: "center",
     justifyContent: "center",
     zIndex: 1000,
@@ -238,7 +225,7 @@ const styles = StyleSheet.create({
     width: 320,
     height: 320,
     borderRadius: 160,
-    backgroundColor: "rgba(16, 185, 129, 0.12)",
+    backgroundColor: "rgba(13, 148, 136, 0.06)",
   },
   auroraBottom: {
     position: "absolute",
@@ -247,7 +234,7 @@ const styles = StyleSheet.create({
     width: 360,
     height: 360,
     borderRadius: 180,
-    backgroundColor: "rgba(37, 99, 235, 0.10)",
+    backgroundColor: "rgba(16, 185, 129, 0.05)",
   },
   contentWrapper: {
     alignItems: "center",
@@ -266,7 +253,7 @@ const styles = StyleSheet.create({
     width: 150,
     height: 150,
     borderRadius: 75,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.primaryLight,
   },
   ring: {
     position: "absolute",
@@ -281,32 +268,15 @@ const styles = StyleSheet.create({
     borderRadius: 82,
     borderWidth: 1,
     borderStyle: "dashed",
-    borderColor: "rgba(45, 212, 191, 0.35)",
+    borderColor: "rgba(13, 148, 136, 0.28)",
   },
   logoFrame: {
-    padding: 9,
-    borderRadius: 32,
-    backgroundColor: "#0A1626",
-    borderWidth: 1,
-    borderColor: "rgba(148, 163, 184, 0.16)",
     ...shadows.lg,
   },
-  logoBadge: {
-    width: 96,
-    height: 96,
-    borderRadius: 24,
-    alignItems: "center",
-    justifyContent: "center",
-    overflow: "hidden",
-  },
-  logoShine: {
-    position: "absolute",
-    top: -30,
-    right: -20,
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    backgroundColor: "rgba(255, 255, 255, 0.16)",
+  logoImage: {
+    width: 132,
+    height: 132,
+    borderRadius: 32,
   },
   wordmarkRow: {
     flexDirection: "row",
@@ -316,14 +286,14 @@ const styles = StyleSheet.create({
     fontSize: 40,
     fontWeight: "900",
     letterSpacing: 0.6,
-    color: "#FFFFFF",
+    color: colors.text,
     textAlign: "center",
   },
   wordmarkDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: colors.accent,
+    backgroundColor: colors.primary,
     marginLeft: 3,
     marginBottom: 9,
   },
@@ -331,7 +301,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: "700",
     letterSpacing: 4,
-    color: "rgba(204, 251, 241, 0.72)",
+    color: colors.textMuted,
     marginTop: 8,
     marginLeft: 4,
     textAlign: "center",

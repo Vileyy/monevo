@@ -8,6 +8,7 @@ import {
   SectionList,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -45,6 +46,8 @@ const SORT_QUERY: Record<
 
 export default function TransactionsScreen() {
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const compact = width < 360;
   const {
     transactions,
     isLoading,
@@ -372,8 +375,19 @@ export default function TransactionsScreen() {
         {/* Summary Card from Server */}
         <View style={styles.summaryBar}>
           <View style={styles.summaryItem}>
-            <Text style={styles.summaryLabel}>Total Income</Text>
-            <Text style={[styles.summaryVal, { color: colors.income }]}>
+            <Text style={styles.summaryLabel} numberOfLines={1}>
+              Total Income
+            </Text>
+            <Text
+              style={[
+                styles.summaryVal,
+                compact && styles.summaryValCompact,
+                { color: colors.income },
+              ]}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.7}
+            >
               +{formatCurrency(summary?.totalIncome ?? 0)}
             </Text>
           </View>
@@ -381,15 +395,34 @@ export default function TransactionsScreen() {
           <View style={styles.summaryDivider} />
 
           <View style={styles.summaryItem}>
-            <Text style={styles.summaryLabel}>Total Expense</Text>
-            <Text style={[styles.summaryVal, { color: colors.expense }]}>
+            <Text style={styles.summaryLabel} numberOfLines={1}>
+              Total Expense
+            </Text>
+            <Text
+              style={[
+                styles.summaryVal,
+                compact && styles.summaryValCompact,
+                { color: colors.expense },
+              ]}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.7}
+            >
               −{formatCurrency(summary?.totalExpense ?? 0)}
             </Text>
           </View>
         </View>
       </View>
     ),
-    [searchQuery, typeFilter, selectedWalletId, wallets, sortBy, summary],
+    [
+      searchQuery,
+      typeFilter,
+      selectedWalletId,
+      wallets,
+      sortBy,
+      summary,
+      compact,
+    ],
   );
 
   return (
@@ -555,6 +588,7 @@ const styles = StyleSheet.create({
   },
   summaryItem: {
     flex: 1,
+    minWidth: 0,
     alignItems: "center",
   },
   summaryLabel: {
@@ -567,7 +601,12 @@ const styles = StyleSheet.create({
     ...typography.headline,
     fontWeight: "700",
     marginTop: 2,
+    flexShrink: 1,
     ...typography.tabular,
+  },
+  summaryValCompact: {
+    fontSize: 14,
+    lineHeight: 18,
   },
   summaryDivider: {
     width: 1,
