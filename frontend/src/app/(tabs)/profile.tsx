@@ -31,6 +31,9 @@ import {
   syncReminderNotifications,
 } from "@/lib/notifications";
 import { hapticFeedback } from "@/lib/haptics";
+import { deleteUserAccount } from "@/lib/account";
+import { openLegalPage } from "@/lib/legal-links";
+import { apiErrorMessage } from "@/lib/api-error";
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -51,6 +54,7 @@ export default function ProfileScreen() {
   const [showCurrencyModal, setShowCurrencyModal] = useState(false);
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
   const handleToggleNotifications = async () => {
     hapticFeedback.selection();
@@ -106,6 +110,68 @@ export default function ProfileScreen() {
         },
       },
     ]);
+  };
+
+  const performAccountDeletion = async () => {
+    if (isDeletingAccount) return;
+
+    setIsDeletingAccount(true);
+    try {
+      await deleteUserAccount();
+
+      // Remove local session and any scheduled bill reminders.
+      void syncReminderNotifications([]);
+      try {
+        await signOut();
+      } catch (e) {
+        console.warn("Clerk signOut error after account deletion:", e);
+      }
+      logout();
+      router.replace("/login");
+    } catch (error) {
+      Alert.alert(
+        "Deletion Failed",
+        apiErrorMessage(
+          error,
+          "Could not delete your account. Please try again or contact support.",
+        ),
+      );
+    } finally {
+      setIsDeletingAccount(false);
+    }
+  };
+
+  const handleDeleteAccount = () => {
+    if (isDeletingAccount) return;
+
+    Alert.alert(
+      "Delete Account?",
+      "This permanently deletes your account and all wallets, transactions, categories, budgets and reminders. This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete Account",
+          style: "destructive",
+          onPress: () => void performAccountDeletion(),
+        },
+      ],
+    );
+  };
+
+  const handleOpenLegalPage = async (
+    page: "privacy" | "terms" | "account-deletion",
+  ) => {
+    hapticFeedback.light();
+    try {
+      await openLegalPage(page);
+    } catch (error) {
+      Alert.alert(
+        "Unavailable",
+        error instanceof Error
+          ? error.message
+          : "Could not open this page right now.",
+      );
+    }
   };
 
   const displayEmail = useMemo(
@@ -253,6 +319,43 @@ export default function ProfileScreen() {
             destructive
             showChevron={false}
             onPress={handleLogout}
+          />
+          <View style={styles.rowDivider} />
+          <SettingsRow
+            icon="trash-outline"
+            title={isDeletingAccount ? "Deleting Account..." : "Delete Account"}
+            subtitle="Permanently remove your account and all data"
+            destructive
+            showChevron={false}
+            disabled={isDeletingAccount}
+            onPress={handleDeleteAccount}
+          />
+        </Card>
+
+        {/* Legal Section */}
+        <Text style={styles.sectionHeader}>Privacy & Legal</Text>
+        <Card style={styles.sectionCard}>
+          <SettingsRow
+            icon="shield-checkmark-outline"
+            iconColor={colors.info}
+            iconBgColor={colors.infoBg}
+            title="Privacy Policy"
+            subtitle="How we collect, use and protect your data"
+            onPress={() => void handleOpenLegalPage("privacy")}
+          />
+          <View style={styles.rowDivider} />
+          <SettingsRow
+            icon="document-text-outline"
+            title="Terms of Service"
+            subtitle="Rules for using Monevo"
+            onPress={() => void handleOpenLegalPage("terms")}
+          />
+          <View style={styles.rowDivider} />
+          <SettingsRow
+            icon="information-circle-outline"
+            title="Account Deletion Info"
+            subtitle="Delete in the app or request deletion online"
+            onPress={() => void handleOpenLegalPage("account-deletion")}
           />
         </Card>
 

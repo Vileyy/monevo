@@ -22,8 +22,11 @@ import { FaceIdIcon } from "@/components/FaceIdIcon";
 import { useAuthStore } from "@/store/auth.store";
 import { apiClient } from "@/services/api/client";
 import { hapticFeedback } from "@/lib/haptics";
+import { apiErrorMessage } from "@/lib/api-error";
+import { openLegalPage } from "@/lib/legal-links";
 import { authStyles } from "@/features/auth/styles/auth.styles";
 import { GoogleButton } from "./GoogleButton";
+import { loginWithPassword } from "../utils/password-login";
 import {
   buildMissingProfileUpdate,
   extractClerkErrorMessage,
@@ -83,6 +86,10 @@ export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isBiometricLoading, setIsBiometricLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
+  const [authMethod, setAuthMethod] = useState<"CODE" | "PASSWORD">("CODE");
+  const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState<string | undefined>();
+  const [isPasswordLoading, setIsPasswordLoading] = useState(false);
 
   // Sign out a stale Clerk session only once, on entry. A reactive check would
   // also fire right after a fresh sign-in and invalidate the new session.
@@ -649,6 +656,55 @@ export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
     }
   };
 
+  const handlePasswordLogin = async () => {
+    if (isPasswordLoading || isLoading) return;
+
+    const targetEmail = email.trim().toLowerCase();
+    if (!validateEmail(targetEmail)) {
+      hapticFeedback.warning();
+      return;
+    }
+    if (!password) {
+      setPasswordError("Please enter your password.");
+      hapticFeedback.warning();
+      return;
+    }
+
+    setIsPasswordLoading(true);
+    try {
+      const result = await loginWithPassword(targetEmail, password);
+      loginStore(result.user, result.accessToken);
+      hapticFeedback.success();
+      router.replace("/(tabs)");
+    } catch (err: unknown) {
+      hapticFeedback.error();
+      setPasswordError(
+        err instanceof Error ? err.message : "Could not sign in.",
+      );
+      Alert.alert(
+        "Sign-In Failed",
+        apiErrorMessage(err, "Incorrect email or password."),
+      );
+    } finally {
+      setIsPasswordLoading(false);
+    }
+  };
+
+  const handleOpenLegalPage = async (
+    page: "privacy" | "terms" | "account-deletion",
+  ) => {
+    try {
+      await openLegalPage(page);
+    } catch (err) {
+      Alert.alert(
+        "Unavailable",
+        err instanceof Error
+          ? err.message
+          : "Could not open this page right now.",
+      );
+    }
+  };
+
   const handleBiometricLogin = async () => {
     if (isBiometricLoading) return;
 
@@ -693,9 +749,11 @@ export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
             </View>
             <Text style={authStyles.appName}>Monevo</Text>
             <Text style={authStyles.appTagline}>
-              {step === "EMAIL"
-                ? "Sign in quickly and securely with an email verification code"
-                : "Enter the 6-digit verification code sent to your email"}
+              {step === "OTP"
+                ? "Enter the 6-digit verification code sent to your email"
+                : authMethod === "PASSWORD"
+                  ? "Sign in with your email and password"
+                  : "Sign in quickly and securely with an email verification code"}
             </Text>
           </View>
 
@@ -720,8 +778,14 @@ export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
                       autoCorrect={false}
                       autoFocus
                       clearable
-                      returnKeyType="send"
-                      onSubmitEditing={() => void handleSendOtpCode()}
+                      returnKeyType={authMethod === "PASSWORD" ? "go" : "send"}
+                      onSubmitEditing={() => {
+                        if (authMethod === "PASSWORD") {
+                          void handlePasswordLogin();
+                        } else {
+                          void handleSendOtpCode();
+                        }
+                      }}
                       leftIcon={
                         <Ionicons
                           name="mail-outline"
@@ -772,28 +836,84 @@ export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
                   )}
                 </View>
 
-                <Button
-                  title="Send Login Code ➜"
-                  onPress={() => void handleSendOtpCode()}
-                  isLoading={isLoading}
-                  size="lg"
-                  style={authStyles.submitButton}
-                />
+                {authMethod === "PASSWORD" ? (
+                  <>
+                    <Input
+                      label="Password"
+                      placeholder="Enter your password"
+                      value={password}
+                      onChangeText={(text) => {
+                        setPassword(text);
+                        if (passwordError) setPasswordError(undefined);
+                      }}
+                      error={passwordError}
+                      isPassword
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      returnKeyType="go"
+                      textContentType="password"
+                      onSubmitEditing={() => void handlePasswordLogin()}
+                      leftIcon={
+                        <Ionicons
+                          name="lock-closed-outline"
+                          size={20}
+                          color={colors.primary}
+                        />
+                      }
+                    />
 
-                <View style={authStyles.helperBadge}>
-                  <Ionicons
-                    name="shield-checkmark-outline"
-                    size={13}
-                    color={colors.textSecondary}
-                  />
-                  <Text
-                    style={authStyles.helperText}
-                    numberOfLines={1}
-                    adjustsFontSizeToFit
-                  >
-                    A verification code will be sent to your email
+                    <Button
+                      title="Sign In"
+                      onPress={() => void handlePasswordLogin()}
+                      isLoading={isPasswordLoading}
+                      size="lg"
+                      style={authStyles.submitButton}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      title="Send Login Code ➜"
+                      onPress={() => void handleSendOtpCode()}
+                      isLoading={isLoading}
+                      size="lg"
+                      style={authStyles.submitButton}
+                    />
+
+                    <View style={authStyles.helperBadge}>
+                      <Ionicons
+                        name="shield-checkmark-outline"
+                        size={13}
+                        color={colors.textSecondary}
+                      />
+                      <Text
+                        style={authStyles.helperText}
+                        numberOfLines={1}
+                        adjustsFontSizeToFit
+                      >
+                        A verification code will be sent to your email
+                      </Text>
+                    </View>
+                  </>
+                )}
+
+                <Pressable
+                  onPress={() => {
+                    hapticFeedback.light();
+                    setAuthMethod((current) =>
+                      current === "CODE" ? "PASSWORD" : "CODE",
+                    );
+                    setPasswordError(undefined);
+                  }}
+                  style={authStyles.backToEmailBtn}
+                  accessibilityRole="button"
+                >
+                  <Text style={authStyles.backToEmailText}>
+                    {authMethod === "CODE"
+                      ? "Sign in with a password instead"
+                      : "Use an email verification code instead"}
                   </Text>
-                </View>
+                </Pressable>
 
                 <View style={authStyles.dividerRow}>
                   <View style={authStyles.dividerLine} />
@@ -804,7 +924,7 @@ export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
                 <GoogleButton
                   onPress={() => void handleGoogleLogin()}
                   isLoading={isGoogleLoading}
-                  disabled={isLoading || isGoogleLoading}
+                  disabled={isLoading || isGoogleLoading || isPasswordLoading}
                 />
               </View>
             ) : (
@@ -901,6 +1021,37 @@ export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
                 </Pressable>
               </View>
             )}
+          </View>
+
+          <View style={authStyles.legalFooter}>
+            <Text style={authStyles.legalText}>
+              By continuing, you agree to our{" "}
+              <Text
+                style={authStyles.legalLink}
+                onPress={() => void handleOpenLegalPage("terms")}
+                accessibilityRole="link"
+              >
+                Terms of Service
+              </Text>{" "}
+              and{" "}
+              <Text
+                style={authStyles.legalLink}
+                onPress={() => void handleOpenLegalPage("privacy")}
+                accessibilityRole="link"
+              >
+                Privacy Policy
+              </Text>
+              .
+            </Text>
+            <Pressable
+              onPress={() => void handleOpenLegalPage("account-deletion")}
+              accessibilityRole="link"
+              hitSlop={8}
+            >
+              <Text style={authStyles.legalLink}>
+                How to delete your account
+              </Text>
+            </Pressable>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

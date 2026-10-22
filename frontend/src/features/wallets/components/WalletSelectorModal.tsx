@@ -36,17 +36,17 @@ export function WalletSelectorModal({
   const isAllSelected = selectedWalletId === null;
 
   return (
-    <Modal visible={visible} onClose={onClose} title="Select Account">
+    <Modal visible={visible} onClose={onClose} title="Select Wallet">
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.list}
       >
         <Text style={styles.description}>
-          Choose an account to view its individual balance, cashflow, and recent
+          Choose a wallet to view its individual balance, cashflow, and recent
           activity.
         </Text>
 
-        {/* All Accounts Option */}
+        {/* All Wallets Option */}
         {allowAllAccounts && (
           <Pressable
             onPress={() => handleSelect(null)}
@@ -57,7 +57,7 @@ export function WalletSelectorModal({
             ]}
             accessibilityRole="radio"
             accessibilityState={{ selected: isAllSelected }}
-            accessibilityLabel={`All Accounts, balance ${formatCurrency(totalBalance)}`}
+            accessibilityLabel={`All Wallets, balance ${formatCurrency(totalBalance)}`}
           >
             <IconBadge
               icon="grid"
@@ -66,9 +66,9 @@ export function WalletSelectorModal({
             />
 
             <View style={styles.infoContainer}>
-              <Text style={styles.nameText}>All Accounts</Text>
+              <Text style={styles.nameText}>All Wallets</Text>
               <Text style={styles.subText}>
-                {wallets.length} {wallets.length === 1 ? "Account" : "Accounts"}
+                {wallets.length} {wallets.length === 1 ? "Wallet" : "Wallets"}
               </Text>
             </View>
 

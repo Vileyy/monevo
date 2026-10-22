@@ -1,5 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { createClerkClient } from '@clerk/backend';
+jest.mock('@clerk/backend', () => ({
+  createClerkClient: jest.fn(),
+}));
 jest.mock(
   '../../generated/prisma/client',
   () => ({
@@ -10,24 +15,29 @@ jest.mock(
 import { UsersService } from '../../src/users/users.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
 
+const mockedCreateClerkClient = createClerkClient as jest.Mock;
+
 describe('UsersService', () => {
   let service: UsersService;
+  let config: { get: jest.Mock };
   let prisma: {
     user: {
-      findMany: jest.Mock;
       create: jest.Mock;
       findUnique: jest.Mock;
       update: jest.Mock;
+      delete: jest.Mock;
     };
   };
 
   beforeEach(async () => {
+    config = { get: jest.fn().mockReturnValue(undefined) };
+    mockedCreateClerkClient.mockReset();
     prisma = {
       user: {
-        findMany: jest.fn(),
         create: jest.fn(),
         findUnique: jest.fn(),
         update: jest.fn(),
+        delete: jest.fn(),
       },
     };
 
@@ -38,6 +48,10 @@ describe('UsersService', () => {
           provide: PrismaService,
           useValue: prisma,
         },
+        {
+          provide: ConfigService,
+          useValue: config,
+        },
       ],
     }).compile();
 
@@ -46,17 +60,6 @@ describe('UsersService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
-  });
-
-  describe('findAll', () => {
-    it('should return list of users without password', async () => {
-      const mockUsers = [{ id: '1', email: 'test@example.com', name: 'Test' }];
-      prisma.user.findMany.mockResolvedValue(mockUsers);
-
-      const result = await service.findAll();
-      expect(result).toEqual(mockUsers);
-      expect(prisma.user.findMany).toHaveBeenCalled();
-    });
   });
 
   describe('create', () => {
@@ -147,6 +150,71 @@ describe('UsersService', () => {
       await expect(
         service.updateProfile('unknown', { name: 'New' }),
       ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('deleteAccount', () => {
+    it('should delete the user row (cascade removes finance data)', async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        id: 'user-1',
+        email: 'user@example.com',
+      });
+      prisma.user.delete.mockResolvedValue({ id: 'user-1' });
+
+      const result = await service.deleteAccount('user-1');
+
+      expect(result).toEqual({ deleted: true });
+      expect(prisma.user.delete).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+      });
+    });
+
+    it('should delete the Clerk identity when one is linked', async () => {
+      const deleteUser = jest.fn().mockResolvedValue({ id: 'clerk_1' });
+      mockedCreateClerkClient.mockReturnValue({ users: { deleteUser } });
+      config.get.mockReturnValue('sk_test_secret');
+      prisma.user.findUnique.mockResolvedValue({
+        id: 'user-1',
+        email: 'user@example.com',
+        clerkId: 'clerk_1',
+      });
+      prisma.user.delete.mockResolvedValue({ id: 'user-1' });
+
+      await service.deleteAccount('user-1');
+
+      expect(mockedCreateClerkClient).toHaveBeenCalledWith({
+        secretKey: 'sk_test_secret',
+      });
+      expect(deleteUser).toHaveBeenCalledWith('clerk_1');
+      expect(prisma.user.delete).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+      });
+    });
+
+    it('should still delete local data when Clerk deletion fails', async () => {
+      const deleteUser = jest.fn().mockRejectedValue(new Error('clerk down'));
+      mockedCreateClerkClient.mockReturnValue({ users: { deleteUser } });
+      config.get.mockReturnValue('sk_test_secret');
+      prisma.user.findUnique.mockResolvedValue({
+        id: 'user-1',
+        email: 'user@example.com',
+        clerkId: 'clerk_1',
+      });
+      prisma.user.delete.mockResolvedValue({ id: 'user-1' });
+
+      await expect(service.deleteAccount('user-1')).resolves.toEqual({
+        deleted: true,
+      });
+      expect(prisma.user.delete).toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundException when deleting an unknown user', async () => {
+      prisma.user.findUnique.mockResolvedValue(null);
+
+      await expect(service.deleteAccount('unknown')).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(prisma.user.delete).not.toHaveBeenCalled();
     });
   });
 });

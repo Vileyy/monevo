@@ -191,8 +191,8 @@ export default function AddTransactionScreen() {
     if (!selectedWalletId) {
       hapticFeedback.warning();
       Alert.alert(
-        "No Account Selected",
-        "Please select an account or wait a moment for the default account to initialize.",
+        "No Wallet Selected",
+        "Please select a wallet or wait a moment for the default wallet to initialize.",
       );
       return;
     }
@@ -333,7 +333,7 @@ export default function AddTransactionScreen() {
 
             <View style={styles.divider} />
 
-            {/* Account / Wallet Row */}
+            {/* Wallet Row */}
             <Pressable
               onPress={() => {
                 hapticFeedback.light();
@@ -344,7 +344,7 @@ export default function AddTransactionScreen() {
                 pressed && styles.formRowPressed,
               ]}
               accessibilityRole="button"
-              accessibilityLabel={`Account: ${selectedWallet?.name || "Account"}`}
+              accessibilityLabel={`Wallet: ${selectedWallet?.name || "Wallet"}`}
             >
               <View style={styles.rowLeft}>
                 <WalletIcon type={selectedWallet?.type ?? "CASH"} size="sm" />
@@ -353,7 +353,7 @@ export default function AddTransactionScreen() {
                     {type === "INCOME" ? "Deposit To" : "Pay From"}
                   </Text>
                   <Text style={styles.rowValue} numberOfLines={1}>
-                    {selectedWallet?.name || "Select Account"}
+                    {selectedWallet?.name || "Select Wallet"}
                   </Text>
                 </View>
               </View>

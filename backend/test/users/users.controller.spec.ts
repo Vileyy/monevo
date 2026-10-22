@@ -12,22 +12,22 @@ import { UsersService } from '../../src/users/users.service';
 describe('UsersController', () => {
   let controller: UsersController;
   let usersService: {
-    findAll: jest.Mock;
     create: jest.Mock;
     findByEmail: jest.Mock;
     findById: jest.Mock;
     getProfile: jest.Mock;
     updateProfile: jest.Mock;
+    deleteAccount: jest.Mock;
   };
 
   beforeEach(async () => {
     usersService = {
-      findAll: jest.fn(),
       create: jest.fn(),
       findByEmail: jest.fn(),
       findById: jest.fn(),
       getProfile: jest.fn(),
       updateProfile: jest.fn(),
+      deleteAccount: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -45,17 +45,6 @@ describe('UsersController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
-  });
-
-  describe('findAll', () => {
-    it('should return all users', async () => {
-      const mockUsers = [{ id: '1', email: 'test@example.com' }];
-      usersService.findAll.mockResolvedValue(mockUsers);
-
-      const result = await controller.findAll();
-      expect(result).toBe(mockUsers);
-      expect(usersService.findAll).toHaveBeenCalled();
-    });
   });
 
   describe('getProfile', () => {
@@ -82,6 +71,17 @@ describe('UsersController', () => {
       const result = await controller.updateProfile('u1', updateDto);
       expect(result).toBe(mockProfile);
       expect(usersService.updateProfile).toHaveBeenCalledWith('u1', updateDto);
+    });
+  });
+
+  describe('deleteAccount', () => {
+    it('should delete the current user account', async () => {
+      usersService.deleteAccount.mockResolvedValue({ deleted: true });
+
+      const result = await controller.deleteAccount('u1');
+
+      expect(result).toEqual({ deleted: true });
+      expect(usersService.deleteAccount).toHaveBeenCalledWith('u1');
     });
   });
 });
