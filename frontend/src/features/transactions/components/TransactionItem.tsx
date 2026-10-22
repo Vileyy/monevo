@@ -1,5 +1,12 @@
 import React, { memo } from "react";
-import { Pressable, StyleSheet, Text, View, ViewStyle } from "react-native";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+  ViewStyle,
+} from "react-native";
 import { colors, radius, spacing, typography } from "@/theme";
 import { categoryDisplayName, formatCurrency } from "@/lib/format";
 import { CategoryIcon } from "@/components/ui";
@@ -18,6 +25,10 @@ export const TransactionItem = memo(function TransactionItem({
   style,
 }: TransactionItemProps) {
   const isIncome = transaction.type === "INCOME";
+  const { width } = useWindowDimensions();
+  const compact = width < 360;
+  const amountFontSize = compact ? 14 : 16;
+  const amountLineHeight = compact ? 18 : 22;
   const categoryName = categoryDisplayName(
     transaction.category?.name || "Other",
   );
@@ -76,11 +87,25 @@ export const TransactionItem = memo(function TransactionItem({
       </View>
 
       <View style={styles.amountCol}>
-        <Text style={[styles.amount, { color: amountColor }]}>
+        <Text
+          style={[
+            styles.amount,
+            {
+              color: amountColor,
+              fontSize: amountFontSize,
+              lineHeight: amountLineHeight,
+            },
+          ]}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.75}
+        >
           {sign}
           {formatCurrency(transaction.amount)}
         </Text>
-        <Text style={styles.dateSubtext}>{formattedDate}</Text>
+        <Text style={styles.dateSubtext} numberOfLines={1}>
+          {formattedDate}
+        </Text>
       </View>
     </Pressable>
   );
@@ -104,6 +129,7 @@ const styles = StyleSheet.create({
   },
   contentCol: {
     flex: 1,
+    minWidth: 0,
     marginLeft: spacing.md,
     marginRight: spacing.sm,
   },
@@ -129,6 +155,8 @@ const styles = StyleSheet.create({
   },
   amountCol: {
     alignItems: "flex-end",
+    flexShrink: 0,
+    maxWidth: "55%",
   },
   amount: {
     ...typography.headline,

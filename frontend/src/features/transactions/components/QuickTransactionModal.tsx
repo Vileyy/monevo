@@ -1,6 +1,7 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
+  Keyboard,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -59,6 +60,17 @@ export function QuickTransactionModal({
   const [walletId, setWalletId] = useState<string | null>(null);
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
+  const noteFocusedRef = useRef(false);
+
+  useEffect(() => {
+    const subscription = Keyboard.addListener("keyboardDidShow", () => {
+      if (visible && noteFocusedRef.current) {
+        scrollRef.current?.scrollToEnd({ animated: true });
+      }
+    });
+    return () => subscription.remove();
+  }, [visible]);
 
   useEffect(() => {
     if (!visible) return;
@@ -167,6 +179,7 @@ export function QuickTransactionModal({
       onClose={onClose}
       title={isIncome ? "Add money" : "Spend money"}
       subtitle="Saved to your account instantly"
+      scrollViewRef={scrollRef}
     >
       <SegmentedControl
         options={[
@@ -307,6 +320,12 @@ export function QuickTransactionModal({
             }
             value={note}
             onChangeText={setNote}
+            onFocus={() => {
+              noteFocusedRef.current = true;
+            }}
+            onBlur={() => {
+              noteFocusedRef.current = false;
+            }}
             maxLength={140}
             returnKeyType="done"
             leftIcon={

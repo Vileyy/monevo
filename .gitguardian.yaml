@@ -1,9 +1,0 @@
-version: 2
-
-secret:
-  # The old demo credential was intentionally public (it is the Play reviewer
-  # account) and has been removed from the code. It is now supplied through
-  # DEMO_PASSWORD and must be rotated in deploy/.env + Play Console.
-  ignored_matches:
-    - name: rotated Monevo demo seed password
-      match: Demo@Monevo123!

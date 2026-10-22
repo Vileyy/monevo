@@ -34,6 +34,8 @@ export function Input({
   clearable = false,
   value,
   onChangeText,
+  onFocus,
+  onBlur,
   ...rest
 }: InputProps) {
   const [isFocused, setIsFocused] = useState(false);
@@ -59,8 +61,14 @@ export function Input({
         <TextInput
           value={value}
           onChangeText={onChangeText}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
+          onFocus={(event) => {
+            setIsFocused(true);
+            onFocus?.(event);
+          }}
+          onBlur={(event) => {
+            setIsFocused(false);
+            onBlur?.(event);
+          }}
           placeholderTextColor={colors.textMuted}
           secureTextEntry={isPassword && !isPasswordVisible}
           style={[styles.input, inputStyle]}

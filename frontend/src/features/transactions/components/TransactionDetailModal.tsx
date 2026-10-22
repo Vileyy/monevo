@@ -79,7 +79,12 @@ export function TransactionDetailModal({
             type={isIncome ? "INCOME" : "EXPENSE"}
             size="lg"
           />
-          <Text style={[styles.heroAmount, { color: amountColor }]}>
+          <Text
+            style={[styles.heroAmount, { color: amountColor }]}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.6}
+          >
             {sign}
             {formatCurrency(transaction.amount)}
           </Text>
@@ -152,6 +157,7 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: "800",
     marginTop: spacing.sm,
+    flexShrink: 1,
     ...typography.tabular,
   },
   detailCard: {

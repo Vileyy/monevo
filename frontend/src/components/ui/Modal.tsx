@@ -20,6 +20,7 @@ export interface ModalProps {
   subtitle?: string;
   children: React.ReactNode;
   contentStyle?: ViewStyle;
+  scrollViewRef?: React.RefObject<ScrollView | null>;
 }
 
 export function Modal({
@@ -29,6 +30,7 @@ export function Modal({
   subtitle,
   children,
   contentStyle,
+  scrollViewRef,
 }: ModalProps) {
   return (
     <RNModal
@@ -38,7 +40,8 @@ export function Modal({
       onRequestClose={onClose}
     >
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={0}
         style={styles.overlay}
       >
         <Pressable
@@ -75,6 +78,7 @@ export function Modal({
           </View>
 
           <ScrollView
+            ref={scrollViewRef}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={styles.body}
