@@ -19,6 +19,7 @@ import {
 import { useReminderStore } from "@/store/reminder.store";
 import { REMINDER_PRESETS, ReminderCategoryMeta } from "@/lib/reminders";
 import { parseCurrencyInput } from "@/lib/format";
+import { captureEvent } from "@/lib/analytics";
 
 export interface ReminderModalProps {
   visible: boolean;
@@ -60,6 +61,9 @@ export function ReminderModal({ visible, onClose }: ReminderModalProps) {
         title: title.trim(),
         amount: numericAmount,
         dueDate: dueDay,
+        category: selectedPreset.category,
+      });
+      captureEvent("reminder_created", {
         category: selectedPreset.category,
       });
       setTitle(REMINDER_PRESETS[0].defaultTitle);

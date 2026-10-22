@@ -10,11 +10,13 @@ import {
 import * as SplashScreen from "expo-splash-screen";
 import * as WebBrowser from "expo-web-browser";
 import { ClerkLoaded, ClerkProvider } from "@clerk/clerk-expo";
+import { PostHogProvider } from "posthog-react-native";
 
 import { AnimatedSplashOverlay } from "@/components/animated-icon";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useAuthStore } from "@/store/auth.store";
 import { useSettingsStore } from "@/store/settings.store";
+import { analytics, identifyUser, resetAnalytics } from "@/lib/analytics";
 import { tokenCache } from "@/lib/token-cache";
 import { initNotifications } from "@/lib/notifications";
 
@@ -33,6 +35,7 @@ if (!clerkPublishableKey) {
 export default function RootLayout() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isHydrated = useAuthStore((state) => state.isHydrated);
+  const user = useAuthStore((state) => state.user);
   const restoreSession = useAuthStore((state) => state.restoreSession);
   const restoreSettings = useSettingsStore((state) => state.restoreSettings);
   const segments = useSegments();
@@ -44,6 +47,16 @@ export default function RootLayout() {
       void Promise.all([restoreSession(), restoreSettings()]);
     } catch {}
   }, [restoreSession, restoreSettings]);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+
+    if (isAuthenticated && user) {
+      identifyUser(user);
+    } else {
+      resetAnalytics();
+    }
+  }, [isAuthenticated, isHydrated, user]);
 
   useEffect(() => {
     if (!isHydrated) return;
@@ -63,27 +76,35 @@ export default function RootLayout() {
     }
   }, [isAuthenticated, isHydrated, segments, router]);
 
+  const app = (
+    <ThemeProvider value={DefaultTheme}>
+      <StatusBar barStyle="dark-content" />
+      <AnimatedSplashOverlay />
+      <ErrorBoundary>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="oauth-native-callback" />
+          <Stack.Screen name="onboarding" />
+          <Stack.Screen name="login" />
+          <Stack.Screen name="register" />
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen
+            name="add-transaction"
+            options={{ presentation: "modal" }}
+          />
+        </Stack>
+      </ErrorBoundary>
+    </ThemeProvider>
+  );
+
   return (
     <ClerkProvider publishableKey={clerkPublishableKey} tokenCache={tokenCache}>
       <ClerkLoaded>
-        <ThemeProvider value={DefaultTheme}>
-          <StatusBar barStyle="dark-content" />
-          <AnimatedSplashOverlay />
-          <ErrorBoundary>
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="index" />
-              <Stack.Screen name="oauth-native-callback" />
-              <Stack.Screen name="onboarding" />
-              <Stack.Screen name="login" />
-              <Stack.Screen name="register" />
-              <Stack.Screen name="(tabs)" />
-              <Stack.Screen
-                name="add-transaction"
-                options={{ presentation: "modal" }}
-              />
-            </Stack>
-          </ErrorBoundary>
-        </ThemeProvider>
+        {analytics ? (
+          <PostHogProvider client={analytics}>{app}</PostHogProvider>
+        ) : (
+          app
+        )}
       </ClerkLoaded>
     </ClerkProvider>
   );

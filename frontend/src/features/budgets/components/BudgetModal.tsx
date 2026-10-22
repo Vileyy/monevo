@@ -13,6 +13,7 @@ import { BudgetItem, useBudgetStore } from "@/store/budget.store";
 import { useCategoryStore } from "@/store/category.store";
 import { formatCurrencyInput, parseCurrencyInput } from "@/lib/format";
 import { apiErrorMessage } from "@/lib/api-error";
+import { captureEvent } from "@/lib/analytics";
 
 export interface BudgetModalProps {
   visible: boolean;
@@ -72,6 +73,11 @@ function BudgetForm({ budgetToEdit, month, year, onClose }: BudgetFormProps) {
         month,
         year,
       );
+      captureEvent("budget_set", {
+        is_update: Boolean(budgetToEdit),
+        month,
+        year,
+      });
       onClose();
     } catch (error) {
       Alert.alert("Error", apiErrorMessage(error, "Failed to save budget"));
