@@ -71,26 +71,93 @@ export class TransactionsService {
   }
 
   async findAll(userId: string, queryDto: QueryTransactionDto) {
-    const { walletId, categoryId, type, startDate, endDate } = queryDto;
+    const where = this.buildWhere(userId, queryDto);
+    const orderBy = this.buildOrderBy(queryDto);
+
+    if (queryDto.page !== undefined || queryDto.limit !== undefined) {
+      const page = queryDto.page ?? 1;
+      const limit = queryDto.limit ?? 20;
+      const [data, total] = await Promise.all([
+        this.prisma.transaction.findMany({
+          where,
+          orderBy,
+          skip: (page - 1) * limit,
+          take: limit,
+          include: {
+            wallet: { select: { id: true, name: true, type: true } },
+            category: { select: { id: true, name: true, icon: true } },
+          },
+        }),
+        this.prisma.transaction.count({ where }),
+      ]);
+      const totalPages = Math.ceil(total / limit);
+      return {
+        data,
+        meta: { page, limit, total, totalPages, hasMore: page < totalPages },
+      };
+    }
+
+    return this.prisma.transaction.findMany({
+      where,
+      orderBy,
+      include: {
+        wallet: { select: { id: true, name: true, type: true } },
+        category: { select: { id: true, name: true, icon: true } },
+      },
+    });
+  }
+
+  async getSummary(userId: string, queryDto: QueryTransactionDto) {
+    const where = this.buildWhere(userId, queryDto);
+
+    const [income, expense] = await Promise.all([
+      this.prisma.transaction.aggregate({
+        where: { ...where, type: 'INCOME' },
+        _sum: { amount: true },
+        _count: { _all: true },
+      }),
+      this.prisma.transaction.aggregate({
+        where: { ...where, type: 'EXPENSE' },
+        _sum: { amount: true },
+        _count: { _all: true },
+      }),
+    ]);
+
+    return {
+      totalIncome: income._sum.amount ?? 0,
+      totalExpense: expense._sum.amount ?? 0,
+      count: income._count._all + expense._count._all,
+    };
+  }
+
+  private buildWhere(
+    userId: string,
+    queryDto: QueryTransactionDto,
+  ): Prisma.TransactionWhereInput {
+    const { walletId, categoryId, type, startDate, endDate, search } = queryDto;
     const where: Prisma.TransactionWhereInput = { userId };
 
     if (walletId) where.walletId = walletId;
     if (categoryId) where.categoryId = categoryId;
     if (type) where.type = type;
+    if (search) where.note = { contains: search, mode: 'insensitive' };
     if (startDate || endDate) {
       where.date = {};
       if (startDate) where.date.gte = new Date(startDate);
       if (endDate) where.date.lte = new Date(endDate);
     }
 
-    return this.prisma.transaction.findMany({
-      where,
-      orderBy: { date: 'desc' },
-      include: {
-        wallet: { select: { id: true, name: true, type: true } },
-        category: { select: { id: true, name: true, icon: true } },
-      },
-    });
+    return where;
+  }
+
+  private buildOrderBy(
+    queryDto: QueryTransactionDto,
+  ): Prisma.TransactionOrderByWithRelationInput {
+    const order = queryDto.sortOrder ?? 'desc';
+    if (queryDto.sortBy === 'amount') {
+      return { amount: order };
+    }
+    return { date: order };
   }
 
   async findOne(userId: string, id: string) {

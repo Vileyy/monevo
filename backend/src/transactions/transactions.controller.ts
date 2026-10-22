@@ -40,6 +40,14 @@ export class TransactionsController {
     return this.transactionsService.findAll(userId, queryDto);
   }
 
+  @Get('summary')
+  getSummary(
+    @GetUser('id') userId: string,
+    @Query() queryDto: QueryTransactionDto,
+  ) {
+    return this.transactionsService.getSummary(userId, queryDto);
+  }
+
   @Get(':id')
   findOne(@GetUser('id') userId: string, @Param('id') id: string) {
     return this.transactionsService.findOne(userId, id);
