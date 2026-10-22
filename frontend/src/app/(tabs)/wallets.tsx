@@ -83,8 +83,8 @@ export default function WalletsScreen() {
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <Header
-        title="Accounts & Wallets"
-        subtitle={`${wallets.length} total accounts configured`}
+        title="Wallets"
+        subtitle={`${wallets.length} total ${wallets.length === 1 ? "wallet" : "wallets"} configured`}
         rightAction={
           <Pressable
             onPress={() => {
@@ -94,7 +94,7 @@ export default function WalletsScreen() {
             style={styles.addBtn}
             hitSlop={8}
             accessibilityRole="button"
-            accessibilityLabel="Add account"
+            accessibilityLabel="Add wallet"
           >
             <Ionicons name="add" size={22} color={colors.primary} />
           </Pressable>
@@ -201,13 +201,13 @@ export default function WalletsScreen() {
           ) : filteredWallets.length === 0 ? (
             <EmptyState
               icon="wallet-outline"
-              title="No Accounts Found"
+              title="No Wallets Found"
               description={
                 typeFilter === "ALL"
-                  ? "You don't have any wallets configured yet. Tap below to create your first account."
-                  : "No accounts found for this filter."
+                  ? "You don't have any wallets configured yet. Tap below to create your first wallet."
+                  : "No wallets found for this filter."
               }
-              actionTitle="Create Account"
+              actionTitle="Create Wallet"
               onAction={() => {
                 setSelectedWallet(null);
                 setShowModal(true);
@@ -257,10 +257,10 @@ export default function WalletsScreen() {
           )}
         </View>
 
-        {/* Add Account Button at Bottom */}
+        {/* Add Wallet Button at Bottom */}
         <View style={styles.bottomAction}>
           <Button
-            title="+ Add New Account"
+            title="+ Add New Wallet"
             onPress={() => {
               setSelectedWallet(null);
               setShowModal(true);

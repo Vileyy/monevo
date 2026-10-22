@@ -12,6 +12,7 @@ import * as WebBrowser from "expo-web-browser";
 import { ClerkLoaded, ClerkProvider } from "@clerk/clerk-expo";
 
 import { AnimatedSplashOverlay } from "@/components/animated-icon";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useAuthStore } from "@/store/auth.store";
 import { useSettingsStore } from "@/store/settings.store";
 import { tokenCache } from "@/lib/token-cache";
@@ -68,18 +69,20 @@ export default function RootLayout() {
         <ThemeProvider value={DefaultTheme}>
           <StatusBar barStyle="dark-content" />
           <AnimatedSplashOverlay />
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" />
-            <Stack.Screen name="oauth-native-callback" />
-            <Stack.Screen name="onboarding" />
-            <Stack.Screen name="login" />
-            <Stack.Screen name="register" />
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen
-              name="add-transaction"
-              options={{ presentation: "modal" }}
-            />
-          </Stack>
+          <ErrorBoundary>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" />
+              <Stack.Screen name="oauth-native-callback" />
+              <Stack.Screen name="onboarding" />
+              <Stack.Screen name="login" />
+              <Stack.Screen name="register" />
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen
+                name="add-transaction"
+                options={{ presentation: "modal" }}
+              />
+            </Stack>
+          </ErrorBoundary>
         </ThemeProvider>
       </ClerkLoaded>
     </ClerkProvider>

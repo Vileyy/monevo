@@ -208,4 +208,21 @@ export const authStyles = StyleSheet.create({
     fontWeight: "700",
     color: colors.primary,
   },
+  legalFooter: {
+    alignItems: "center",
+    marginTop: spacing.lg,
+    paddingHorizontal: spacing.base,
+    gap: spacing.xs,
+  },
+  legalText: {
+    ...typography.caption,
+    color: colors.textMuted,
+    textAlign: "center",
+    lineHeight: 18,
+  },
+  legalLink: {
+    ...typography.caption,
+    color: colors.primary,
+    fontWeight: "700",
+  },
 });

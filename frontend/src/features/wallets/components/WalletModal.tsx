@@ -38,7 +38,7 @@ function WalletForm({
 
   const handleSubmit = async () => {
     if (!name.trim()) {
-      Alert.alert("Required", "Please enter an account name.");
+      Alert.alert("Required", "Please enter a wallet name.");
       return;
     }
 
@@ -98,7 +98,7 @@ function WalletForm({
   return (
     <View style={styles.form}>
       <Input
-        label="Account Name"
+        label="Wallet Name"
         placeholder="e.g. Daily Cash, Techcombank"
         value={name}
         onChangeText={setName}
@@ -125,7 +125,7 @@ function WalletForm({
       />
 
       <View style={styles.typeGroup}>
-        <Text style={styles.typeLabel}>Account Type</Text>
+        <Text style={styles.typeLabel}>Wallet Type</Text>
         <View style={styles.typeRow}>
           {WALLET_TYPES.map((item) => {
             const isSelected = type === item.type;
@@ -156,7 +156,7 @@ function WalletForm({
       </View>
 
       <Button
-        title={walletToEdit ? "Save Changes" : "Create Account"}
+        title={walletToEdit ? "Save Changes" : "Create Wallet"}
         onPress={handleSubmit}
         isLoading={isSubmitting}
         size="lg"
@@ -165,7 +165,7 @@ function WalletForm({
 
       {walletToEdit && (
         <Button
-          title="Delete Account"
+          title="Delete Wallet"
           onPress={handleDelete}
           variant="danger"
           size="md"
@@ -188,7 +188,7 @@ export function WalletModal({
     <Modal
       visible={visible}
       onClose={onClose}
-      title={walletToEdit ? "Edit Account" : "New Account"}
+      title={walletToEdit ? "Edit Wallet" : "New Wallet"}
       subtitle={
         walletToEdit
           ? "Update details or balance"

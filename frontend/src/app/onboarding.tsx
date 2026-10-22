@@ -29,8 +29,8 @@ interface OnboardingSlide {
 const SLIDES: OnboardingSlide[] = [
   {
     id: "1",
-    badge: "ACCOUNT MANAGEMENT",
-    title: "All Your Accounts\nIn One Secure Place",
+    badge: "WALLET MANAGEMENT",
+    title: "All Your Wallets\nIn One Secure Place",
     subtitle:
       "Track cash, bank accounts, and credit cards in real-time with automatic balance calculations.",
     illustration: "wallets",

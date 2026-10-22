@@ -90,7 +90,7 @@ export const WalletSummaryCard = memo(function WalletSummaryCard({
             ]}
             hitSlop={6}
             accessibilityRole="button"
-            accessibilityLabel="Switch account view"
+            accessibilityLabel="Switch wallet view"
           >
             <Text
               style={[
@@ -101,7 +101,7 @@ export const WalletSummaryCard = memo(function WalletSummaryCard({
             >
               {isFiltered
                 ? selectedWalletName
-                : `${walletCount} ${walletCount === 1 ? "Account" : "Accounts"}`}
+                : `${walletCount} ${walletCount === 1 ? "Wallet" : "Wallets"}`}
             </Text>
             <Ionicons
               name="chevron-down"

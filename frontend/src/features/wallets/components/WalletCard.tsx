@@ -84,13 +84,13 @@ export const AddWalletCardButton = memo(function AddWalletCardButton({
         pressed && styles.pressed,
       ]}
       accessibilityRole="button"
-      accessibilityLabel="Add new wallet account"
+      accessibilityLabel="Add new wallet"
     >
       <View style={styles.addIconCircle}>
         <Ionicons name="add" size={24} color={colors.primary} />
       </View>
       <Text style={styles.addTitle}>New</Text>
-      <Text style={styles.addSubtitle}>Account</Text>
+      <Text style={styles.addSubtitle}>Wallet</Text>
     </Pressable>
   );
 });
