@@ -26,7 +26,6 @@ import { BudgetSummaryHero } from "@/features/budgets/components/BudgetSummaryHe
 import { BudgetCard } from "@/features/budgets/components/BudgetCard";
 import { BudgetModal } from "@/features/budgets/components/BudgetModal";
 import { CategoryPieChart } from "@/features/insights/components/CategoryPieChart";
-import { CashflowBarChart } from "@/features/insights/components/CashflowBarChart";
 import {
   DateRange,
   DateRangePickerModal,
@@ -303,14 +302,6 @@ export default function ExploreScreen() {
                 type="expense"
               />
             </View>
-
-            {/* Animated Daily Cashflow Bar Chart */}
-            <CashflowBarChart
-              transactions={filteredTransactions}
-              startDate={customRange.startDate}
-              endDate={customRange.endDate}
-              hideBalance={hideBalance}
-            />
 
             {/* Animated Donut Chart for Category Spending */}
             {analytics.expenseBreakdown.length > 0 ? (

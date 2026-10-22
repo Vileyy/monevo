@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -140,17 +139,13 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 15,
+    lineHeight: 20,
     fontWeight: "400",
     color: colors.text,
     paddingVertical: 0,
     paddingHorizontal: 0,
     margin: 0,
     textAlignVertical: "center",
-    ...Platform.select({
-      android: {
-        includeFontPadding: false,
-      },
-    }),
   },
   iconSlot: {
     marginRight: spacing.md,

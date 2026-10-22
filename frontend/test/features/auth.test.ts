@@ -1,10 +1,13 @@
 import {
+  buildMissingProfileUpdate,
   extractClerkErrorMessage,
+  getGoogleFallbackUser,
   isRateLimitError,
   isSessionExistsError,
   isUserExistsError,
   isUserNotFoundError,
   isValidEmailFormat,
+  resolveGoogleSessionId,
 } from "../../src/features/auth/utils/auth-helpers";
 
 describe("auth feature validation", () => {
@@ -61,7 +64,9 @@ describe("auth feature validation", () => {
     };
     expect(isRateLimitError(clerkMessageOnly)).toBe(true);
 
-    const errorInstance = new Error("Too many requests. Please try again in a bit.");
+    const errorInstance = new Error(
+      "Too many requests. Please try again in a bit.",
+    );
     expect(isRateLimitError(errorInstance)).toBe(true);
 
     const normalError = new Error("Invalid password");
@@ -76,12 +81,10 @@ describe("auth feature validation", () => {
     expect(
       isUserNotFoundError({ errors: [{ code: "form_identifier_not_found" }] }),
     ).toBe(true);
-    expect(
-      isSessionExistsError({ errors: [{ code: "session_exists" }] }),
-    ).toBe(true);
-    expect(
-      isSessionExistsError(new Error("already signed in")),
-    ).toBe(true);
+    expect(isSessionExistsError({ errors: [{ code: "session_exists" }] })).toBe(
+      true,
+    );
+    expect(isSessionExistsError(new Error("already signed in"))).toBe(true);
   });
 
   it("should extract appropriate Clerk error messages", () => {
@@ -91,12 +94,74 @@ describe("auth feature validation", () => {
       }),
     ).toBe("Custom message");
 
+    expect(extractClerkErrorMessage(new Error("Plain error"))).toBe(
+      "Plain error",
+    );
+
+    expect(extractClerkErrorMessage({}, "Fallback message")).toBe(
+      "Fallback message",
+    );
+  });
+});
+
+describe("Google SSO helpers", () => {
+  it("resolves the session id from the SSO result", () => {
+    expect(resolveGoogleSessionId({ createdSessionId: "sess_1" })).toBe(
+      "sess_1",
+    );
     expect(
-      extractClerkErrorMessage(new Error("Plain error")),
-    ).toBe("Plain error");
+      resolveGoogleSessionId({
+        createdSessionId: null,
+        signIn: { createdSessionId: "sess_2" },
+      }),
+    ).toBe("sess_2");
+    expect(
+      resolveGoogleSessionId({
+        createdSessionId: null,
+        signIn: { createdSessionId: null },
+        signUp: { createdSessionId: "sess_3" },
+      }),
+    ).toBe("sess_3");
+    expect(resolveGoogleSessionId({ createdSessionId: null })).toBeNull();
+  });
+
+  it("builds a fallback user from the SSO result", () => {
+    expect(
+      getGoogleFallbackUser({
+        signIn: { identifier: "  User@Example.com " },
+        signUp: { firstName: "  An " },
+      }),
+    ).toEqual({ email: "user@example.com", name: "An" });
 
     expect(
-      extractClerkErrorMessage({}, "Fallback message"),
-    ).toBe("Fallback message");
+      getGoogleFallbackUser({
+        signIn: { identifier: null },
+        signUp: { emailAddress: "google@example.com", firstName: null },
+      }),
+    ).toEqual({ email: "google@example.com", name: "Google User" });
+
+    expect(getGoogleFallbackUser({})).toEqual({
+      email: "google.user@clerk.dev",
+      name: "Google User",
+    });
+  });
+
+  it("fills only the profile fields Clerk reports as missing", () => {
+    expect(buildMissingProfileUpdate(["username"], "123_abcd")).toEqual({
+      username: "user_123_abcd",
+    });
+
+    expect(
+      buildMissingProfileUpdate(
+        ["first_name", "last_name", "username"],
+        "123_abcd",
+      ),
+    ).toEqual({
+      username: "user_123_abcd",
+      firstName: "Monevo",
+      lastName: "User",
+    });
+
+    expect(buildMissingProfileUpdate([], "123_abcd")).toEqual({});
   });
 });

@@ -81,6 +81,7 @@ export function SettingsRow({
           onValueChange={onSwitchChange}
           trackColor={{ false: colors.border, true: colors.primary }}
           thumbColor={colors.surface}
+          ios_backgroundColor={colors.border}
           disabled={disabled}
         />
       ) : (
@@ -106,6 +107,8 @@ export function SettingsRow({
     <Pressable
       onPress={onPress}
       disabled={disabled}
+      accessibilityRole="button"
+      accessibilityLabel={title}
       style={({ pressed }) => [pressed && styles.pressed]}
     >
       {content}
@@ -117,16 +120,15 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: spacing.md,
+    paddingVertical: spacing.md + 2,
     paddingHorizontal: spacing.lg,
   },
   pressed: {
-    backgroundColor: colors.surfaceSecondary,
-    borderRadius: radius.md,
+    backgroundColor: colors.surfaceMuted,
   },
   iconBox: {
-    width: 38,
-    height: 38,
+    width: 40,
+    height: 40,
     borderRadius: radius.md,
     justifyContent: "center",
     alignItems: "center",
@@ -135,10 +137,11 @@ const styles = StyleSheet.create({
   textContainer: {
     flex: 1,
     justifyContent: "center",
+    marginRight: spacing.sm,
   },
   title: {
     ...typography.body,
-    fontWeight: "500",
+    fontWeight: "600",
     color: colors.text,
   },
   subtitle: {
@@ -149,11 +152,16 @@ const styles = StyleSheet.create({
   rightContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.xs,
+    gap: spacing.xs + 2,
   },
   valueText: {
-    ...typography.callout,
-    fontWeight: "500",
+    ...typography.footnote,
+    fontWeight: "600",
     color: colors.textSecondary,
+    backgroundColor: colors.surfaceSecondary,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: radius.full,
+    overflow: "hidden",
   },
 });

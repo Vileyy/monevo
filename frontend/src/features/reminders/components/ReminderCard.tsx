@@ -5,7 +5,7 @@ import { colors, radius, shadows, spacing, typography } from "@/theme";
 import { ReminderItem, useReminderStore } from "@/store/reminder.store";
 import { formatCurrency } from "@/lib/format";
 import { getReminderCategoryMeta } from "@/lib/reminders";
-import { Button } from "@/components/ui";
+import { Button, IconBadge } from "@/components/ui";
 import { hapticFeedback } from "@/lib/haptics";
 
 export interface ReminderCardProps {
@@ -115,9 +115,12 @@ export const ReminderCard = memo(function ReminderCard({
       {/* Top Row: Icon + Title + Delete button */}
       <View style={styles.headerRow}>
         <View style={styles.titleGroup}>
-          <View style={[styles.iconBox, { backgroundColor: meta.bgColor }]}>
-            <Ionicons name={meta.icon} size={22} color={meta.color} />
-          </View>
+          <IconBadge
+            icon={meta.icon}
+            color={meta.color}
+            backgroundColor={meta.bgColor}
+            style={styles.iconBox}
+          />
           <View style={styles.textCol}>
             <Text style={styles.title} numberOfLines={1}>
               {reminder.title}
@@ -190,11 +193,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   iconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: radius.lg,
-    justifyContent: "center",
-    alignItems: "center",
     marginRight: spacing.md,
   },
   textCol: {

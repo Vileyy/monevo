@@ -1,7 +1,13 @@
 import { create } from "zustand";
 import { apiClient } from "@/services/api/client";
 import { useAuthStore } from "@/store/auth.store";
-import type { CreateTransactionBody, UpdateTransactionBody } from "@/types/api";
+import type {
+  CreateTransactionBody,
+  Paginated,
+  TransactionPageMeta,
+  TransactionSummary,
+  UpdateTransactionBody,
+} from "@/types/api";
 
 export type Transaction = {
   id: string;
@@ -23,13 +29,28 @@ export type TransactionQueryParams = {
   type?: string;
   startDate?: string;
   endDate?: string;
+  search?: string;
+  sortBy?: "date" | "amount";
+  sortOrder?: "asc" | "desc";
 };
+
+export const TRANSACTION_PAGE_SIZE = 20;
 
 type TransactionState = {
   transactions: Transaction[];
   isLoading: boolean;
   hasFetched: boolean;
+  pageMeta: TransactionPageMeta | null;
+  summary: TransactionSummary | null;
+  isLoadingMore: boolean;
+  lastPageQuery: TransactionQueryParams | null;
   fetchTransactions: (query?: TransactionQueryParams) => Promise<void>;
+  fetchTransactionsPage: (
+    query?: TransactionQueryParams,
+    options?: { append?: boolean },
+  ) => Promise<void>;
+  loadMoreTransactions: () => Promise<void>;
+  fetchTransactionSummary: (query?: TransactionQueryParams) => Promise<void>;
   createTransaction: (payload: CreateTransactionBody) => Promise<Transaction>;
   updateTransaction: (
     id: string,
@@ -42,6 +63,10 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
   transactions: [],
   isLoading: false,
   hasFetched: false,
+  pageMeta: null,
+  summary: null,
+  isLoadingMore: false,
+  lastPageQuery: null,
 
   fetchTransactions: async (query) => {
     if (!useAuthStore.getState().token) return;
@@ -59,6 +84,55 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
       set({ hasFetched: true });
     } finally {
       set({ isLoading: false });
+    }
+  },
+
+  fetchTransactionsPage: async (query = {}, { append = false } = {}) => {
+    if (!useAuthStore.getState().token) return;
+
+    set({ isLoading: !append, isLoadingMore: append });
+    try {
+      const page = append ? (get().pageMeta?.page ?? 1) + 1 : 1;
+      const response = await apiClient.get<Paginated<Transaction>>(
+        "/transactions",
+        { params: { ...query, page, limit: TRANSACTION_PAGE_SIZE } },
+      );
+      const { data, meta } = response.data;
+      set({
+        transactions: append ? [...get().transactions, ...data] : data,
+        pageMeta: meta,
+        lastPageQuery: query,
+        hasFetched: true,
+      });
+    } catch (error: any) {
+      if (error?.response?.status !== 401) {
+        console.error("Failed to fetch transactions page:", error);
+      }
+      if (!append) set({ hasFetched: true });
+    } finally {
+      set({ isLoading: false, isLoadingMore: false });
+    }
+  },
+
+  loadMoreTransactions: async () => {
+    const { pageMeta, isLoading, isLoadingMore, lastPageQuery } = get();
+    if (!pageMeta?.hasMore || isLoading || isLoadingMore) return;
+    await get().fetchTransactionsPage(lastPageQuery ?? {}, { append: true });
+  },
+
+  fetchTransactionSummary: async (query = {}) => {
+    if (!useAuthStore.getState().token) return;
+
+    try {
+      const response = await apiClient.get<TransactionSummary>(
+        "/transactions/summary",
+        { params: query },
+      );
+      set({ summary: response.data });
+    } catch (error: any) {
+      if (error?.response?.status !== 401) {
+        console.error("Failed to fetch transaction summary:", error);
+      }
     }
   },
 

@@ -9,7 +9,13 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, radius, spacing, typography } from "@/theme";
-import { Button, CurrencyInput, Input, Modal } from "@/components/ui";
+import {
+  Button,
+  CurrencyInput,
+  IconBadge,
+  Input,
+  Modal,
+} from "@/components/ui";
 import { useReminderStore } from "@/store/reminder.store";
 import { REMINDER_PRESETS, ReminderCategoryMeta } from "@/lib/reminders";
 import { parseCurrencyInput } from "@/lib/format";
@@ -94,14 +100,12 @@ export function ReminderModal({ visible, onClose }: ReminderModalProps) {
                 accessibilityRole="button"
                 accessibilityLabel={preset.label}
               >
-                <View
-                  style={[
-                    styles.presetIconCircle,
-                    { backgroundColor: preset.bgColor },
-                  ]}
-                >
-                  <Ionicons name={preset.icon} size={18} color={preset.color} />
-                </View>
+                <IconBadge
+                  icon={preset.icon}
+                  color={preset.color}
+                  backgroundColor={preset.bgColor}
+                  size="xs"
+                />
                 <Text
                   style={[
                     styles.presetChipText,
@@ -211,13 +215,6 @@ const styles = StyleSheet.create({
   },
   presetChipPressed: {
     opacity: 0.8,
-  },
-  presetIconCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    justifyContent: "center",
-    alignItems: "center",
   },
   presetChipText: {
     ...typography.caption,

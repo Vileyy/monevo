@@ -14,22 +14,22 @@ export interface CategoryModalProps {
 }
 
 const AVAILABLE_ICONS: { icon: IconName; color: string; bgColor: string }[] = [
-  { icon: "restaurant-outline", color: "#EA580C", bgColor: "#FFEDD5" },
-  { icon: "cart-outline", color: "#DB2777", bgColor: "#FCE7F3" },
-  { icon: "car-outline", color: "#2563EB", bgColor: "#DBEAFE" },
-  { icon: "receipt-outline", color: "#CA8A04", bgColor: "#FEF08A" },
-  { icon: "cafe-outline", color: "#B45309", bgColor: "#FEF3C7" },
-  { icon: "home-outline", color: "#4F46E5", bgColor: "#EEF2FF" },
-  { icon: "fitness-outline", color: "#059669", bgColor: "#D1FAE5" },
-  { icon: "film-outline", color: "#7C3AED", bgColor: "#EDE9FE" },
-  { icon: "medkit-outline", color: "#DC2626", bgColor: "#FEE2E2" },
-  { icon: "school-outline", color: "#0284C7", bgColor: "#E0F2FE" },
-  { icon: "game-controller-outline", color: "#9333EA", bgColor: "#F3E8FF" },
-  { icon: "airplane-outline", color: "#0891B2", bgColor: "#CFFAFE" },
-  { icon: "gift-outline", color: "#0D9488", bgColor: "#CCFBF1" },
-  { icon: "cash-outline", color: "#10B981", bgColor: "#ECFDF5" },
-  { icon: "trending-up-outline", color: "#059669", bgColor: "#D1FAE5" },
-  { icon: "wallet-outline", color: "#0D9488", bgColor: "#E6F7F5" },
+  { icon: "restaurant", color: "#C2410C", bgColor: "#FFF7ED" },
+  { icon: "cart", color: "#BE185D", bgColor: "#FDF2F8" },
+  { icon: "car", color: "#1D4ED8", bgColor: "#EFF6FF" },
+  { icon: "receipt", color: "#A16207", bgColor: "#FEFCE8" },
+  { icon: "cafe", color: "#B45309", bgColor: "#FFFBEB" },
+  { icon: "home", color: "#4338CA", bgColor: "#EEF2FF" },
+  { icon: "fitness", color: "#047857", bgColor: "#ECFDF5" },
+  { icon: "film", color: "#6D28D9", bgColor: "#F5F3FF" },
+  { icon: "medkit", color: "#B91C1C", bgColor: "#FEF2F2" },
+  { icon: "school", color: "#0369A1", bgColor: "#F0F9FF" },
+  { icon: "game-controller", color: "#7E22CE", bgColor: "#FAF5FF" },
+  { icon: "airplane", color: "#0E7490", bgColor: "#ECFEFF" },
+  { icon: "gift", color: "#0F766E", bgColor: "#F0FDFA" },
+  { icon: "cash", color: "#047857", bgColor: "#ECFDF5" },
+  { icon: "trending-up", color: "#047857", bgColor: "#ECFDF5" },
+  { icon: "wallet", color: "#0F766E", bgColor: "#F0FDFA" },
 ];
 
 export function CategoryModal({
@@ -42,7 +42,7 @@ export function CategoryModal({
   const [name, setName] = useState("");
   const [type, setType] = useState<"EXPENSE" | "INCOME">(initialType);
   const [selectedIcon, setSelectedIcon] = useState<IconName>(
-    initialType === "INCOME" ? "cash-outline" : "restaurant-outline",
+    initialType === "INCOME" ? "cash" : "restaurant",
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -107,11 +107,12 @@ export function CategoryModal({
                   key={item.icon}
                   onPress={() => setSelectedIcon(item.icon)}
                   style={[
-                    styles.iconCircle,
+                    styles.iconTile,
                     { backgroundColor: item.bgColor },
-                    isSelected && styles.iconCircleSelected,
+                    isSelected && styles.iconTileSelected,
                   ]}
                   accessibilityRole="button"
+                  accessibilityState={{ selected: isSelected }}
                 >
                   <Ionicons name={item.icon} size={22} color={item.color} />
                 </Pressable>
@@ -154,18 +155,18 @@ const styles = StyleSheet.create({
     gap: spacing.sm + 2,
     justifyContent: "center",
   },
-  iconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: radius.full,
+  iconTile: {
+    width: 46,
+    height: 46,
+    borderRadius: radius.md + 2,
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: "transparent",
   },
-  iconCircleSelected: {
+  iconTileSelected: {
     borderColor: colors.primary,
-    transform: [{ scale: 1.1 }],
+    transform: [{ scale: 1.06 }],
   },
   submitBtn: {
     marginTop: spacing.sm,

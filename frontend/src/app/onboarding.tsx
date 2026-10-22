@@ -13,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, radius, shadows, spacing, typography } from "@/theme";
+import { IconBadge } from "@/components/ui";
 import { Button } from "@/components/ui";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -89,9 +90,12 @@ function SlideIllustration({
         <View style={styles.mockTxContainer}>
           {/* Mock Tx 1 */}
           <View style={styles.mockTxRow}>
-            <View style={[styles.mockIcon, { backgroundColor: "#FFEDD5" }]}>
-              <Ionicons name="restaurant-outline" size={18} color="#EA580C" />
-            </View>
+            <IconBadge
+              icon="restaurant"
+              color="#C2410C"
+              backgroundColor="#FFF7ED"
+              size="sm"
+            />
             <View style={{ flex: 1, marginLeft: 10 }}>
               <Text style={styles.mockTxTitle}>Dinner with Friends</Text>
               <Text style={styles.mockTxSub}>Food · Cash</Text>
@@ -103,9 +107,12 @@ function SlideIllustration({
 
           {/* Mock Tx 2 */}
           <View style={styles.mockTxRow}>
-            <View style={[styles.mockIcon, { backgroundColor: "#D1FAE5" }]}>
-              <Ionicons name="cash-outline" size={18} color="#059669" />
-            </View>
+            <IconBadge
+              icon="cash"
+              color="#047857"
+              backgroundColor="#ECFDF5"
+              size="sm"
+            />
             <View style={{ flex: 1, marginLeft: 10 }}>
               <Text style={styles.mockTxTitle}>Monthly Salary</Text>
               <Text style={styles.mockTxSub}>Salary · Bank</Text>
@@ -117,9 +124,12 @@ function SlideIllustration({
 
           {/* Mock Tx 3 */}
           <View style={styles.mockTxRow}>
-            <View style={[styles.mockIcon, { backgroundColor: "#DBEAFE" }]}>
-              <Ionicons name="car-outline" size={18} color="#2563EB" />
-            </View>
+            <IconBadge
+              icon="car"
+              color="#1D4ED8"
+              backgroundColor="#EFF6FF"
+              size="sm"
+            />
             <View style={{ flex: 1, marginLeft: 10 }}>
               <Text style={styles.mockTxTitle}>Grab Transport</Text>
               <Text style={styles.mockTxSub}>Transport · Card</Text>
@@ -428,13 +438,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceSecondary,
     padding: spacing.sm + 2,
     borderRadius: radius.lg,
-  },
-  mockIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: radius.full,
-    alignItems: "center",
-    justifyContent: "center",
   },
   mockTxTitle: {
     ...typography.footnote,

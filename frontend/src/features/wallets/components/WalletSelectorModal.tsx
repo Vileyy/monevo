@@ -2,7 +2,7 @@ import React from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, radius, spacing, typography } from "@/theme";
-import { Modal } from "@/components/ui";
+import { IconBadge, Modal, WalletIcon } from "@/components/ui";
 import { Wallet } from "@/store/wallet.store";
 import { formatCurrency } from "@/lib/format";
 import { getWalletMeta } from "@/lib/categories";
@@ -59,14 +59,11 @@ export function WalletSelectorModal({
             accessibilityState={{ selected: isAllSelected }}
             accessibilityLabel={`All Accounts, balance ${formatCurrency(totalBalance)}`}
           >
-            <View
-              style={[
-                styles.iconContainer,
-                { backgroundColor: colors.primaryLight },
-              ]}
-            >
-              <Ionicons name="grid-outline" size={20} color={colors.primary} />
-            </View>
+            <IconBadge
+              icon="grid"
+              color={colors.primary}
+              backgroundColor={colors.primaryLight}
+            />
 
             <View style={styles.infoContainer}>
               <Text style={styles.nameText}>All Accounts</Text>
@@ -114,14 +111,7 @@ export function WalletSelectorModal({
               accessibilityState={{ selected: isSelected }}
               accessibilityLabel={`${wallet.name}, ${meta.label}, balance ${formatCurrency(wallet.balance)}`}
             >
-              <View
-                style={[
-                  styles.iconContainer,
-                  { backgroundColor: meta.bgColor },
-                ]}
-              >
-                <Ionicons name={meta.icon} size={20} color={meta.color} />
-              </View>
+              <WalletIcon type={wallet.type} size="md" />
 
               <View style={styles.infoContainer}>
                 <Text style={styles.nameText} numberOfLines={1}>
@@ -169,6 +159,7 @@ const styles = StyleSheet.create({
   itemRow: {
     flexDirection: "row",
     alignItems: "center",
+    gap: spacing.md,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.md,
     borderRadius: radius.lg,
@@ -183,14 +174,6 @@ const styles = StyleSheet.create({
   },
   itemRowPressed: {
     opacity: 0.8,
-  },
-  iconContainer: {
-    width: 42,
-    height: 42,
-    borderRadius: radius.md,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: spacing.md,
   },
   infoContainer: {
     flex: 1,

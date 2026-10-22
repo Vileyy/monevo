@@ -1,8 +1,8 @@
 import React from "react";
 import { StyleSheet, Text, View, ViewStyle } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { colors, radius, spacing, typography } from "@/theme";
 import { formatCurrency } from "@/lib/format";
+import { IconBadge } from "@/components/ui/IconBadge";
 
 export interface StatCardProps {
   label: string;
@@ -23,14 +23,14 @@ export function StatCard({
     switch (type) {
       case "income":
         return {
-          icon: "arrow-down-circle-outline" as const,
+          icon: "arrow-down-circle" as const,
           color: colors.income,
           bgColor: colors.incomeBg,
           sign: "+",
         };
       case "expense":
         return {
-          icon: "arrow-up-circle-outline" as const,
+          icon: "arrow-up-circle" as const,
           color: colors.expense,
           bgColor: colors.expenseBg,
           sign: "−",
@@ -38,7 +38,7 @@ export function StatCard({
       case "neutral":
       default:
         return {
-          icon: "wallet-outline" as const,
+          icon: "wallet" as const,
           color: colors.primary,
           bgColor: colors.primaryMuted,
           sign: "",
@@ -51,9 +51,12 @@ export function StatCard({
   return (
     <View style={[styles.card, style]}>
       <View style={styles.headerRow}>
-        <View style={[styles.iconBadge, { backgroundColor: bgColor }]}>
-          <Ionicons name={icon} size={16} color={color} />
-        </View>
+        <IconBadge
+          icon={icon}
+          color={color}
+          backgroundColor={bgColor}
+          size="xs"
+        />
         <Text style={styles.label}>{label}</Text>
       </View>
 
@@ -84,15 +87,8 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
+    gap: spacing.xs + 2,
     marginBottom: spacing.xs,
-  },
-  iconBadge: {
-    width: 28,
-    height: 28,
-    borderRadius: radius.full,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: spacing.xs + 2,
   },
   label: {
     ...typography.caption,

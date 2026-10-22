@@ -123,8 +123,22 @@ export const authStyles = StyleSheet.create({
     borderColor: "rgba(13, 148, 136, 0.22)",
     borderRadius: radius.full,
   },
-  googleButtonContainer: {
-    marginBottom: spacing.xs,
+  dividerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    marginTop: spacing.lg,
+    marginBottom: spacing.md,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.border,
+  },
+  dividerText: {
+    ...typography.caption,
+    fontWeight: "600",
+    color: colors.textMuted,
   },
   footerRow: {
     flexDirection: "row",

@@ -1,4 +1,5 @@
 import {
+  normalizeQuickNote,
   resolveCategoryId,
   resolveWalletId,
   validateQuickAmount,
@@ -28,7 +29,9 @@ describe("Quick transaction helpers", () => {
   });
 
   it("returns null when no category matches the type", () => {
-    expect(resolveCategoryId([{ id: "c1", type: "EXPENSE" }], null, "INCOME")).toBeNull();
+    expect(
+      resolveCategoryId([{ id: "c1", type: "EXPENSE" }], null, "INCOME"),
+    ).toBeNull();
   });
 
   it("rejects zero, negative, and non-finite amounts", () => {
@@ -36,5 +39,11 @@ describe("Quick transaction helpers", () => {
     expect(validateQuickAmount(-1000)).not.toBeNull();
     expect(validateQuickAmount(Number.NaN)).not.toBeNull();
     expect(validateQuickAmount(1000)).toBeNull();
+  });
+
+  it("trims the note and drops blank input", () => {
+    expect(normalizeQuickNote("  Lunch with team  ")).toBe("Lunch with team");
+    expect(normalizeQuickNote("")).toBeUndefined();
+    expect(normalizeQuickNote("   ")).toBeUndefined();
   });
 });

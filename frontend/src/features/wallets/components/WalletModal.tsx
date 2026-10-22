@@ -14,9 +14,9 @@ export interface WalletModalProps {
 }
 
 const WALLET_TYPES = [
-  { type: "CASH", label: "Cash", icon: "cash-outline" as const },
-  { type: "BANK", label: "Bank", icon: "business-outline" as const },
-  { type: "CREDIT_CARD", label: "Credit Card", icon: "card-outline" as const },
+  { type: "CASH", label: "Cash", icon: "cash" as const },
+  { type: "BANK", label: "Bank", icon: "business" as const },
+  { type: "CREDIT_CARD", label: "Credit Card", icon: "card" as const },
 ];
 
 function WalletForm({
