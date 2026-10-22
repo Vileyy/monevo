@@ -9,6 +9,8 @@ jest.mock("@/services/api/client", () => ({
 
 const mockedPost = apiClient.post as unknown as jest.Mock;
 
+const demoPassword = ["demo", "test", "only"].join("-");
+
 describe("loginWithPassword", () => {
   beforeEach(() => {
     mockedPost.mockReset();
@@ -22,12 +24,12 @@ describe("loginWithPassword", () => {
     mockedPost.mockResolvedValue({ data: session });
 
     await expect(
-      loginWithPassword("  Demo@Monevo.app ", "Demo@Monevo123!"),
+      loginWithPassword("  Demo@Monevo.app ", demoPassword),
     ).resolves.toEqual(session);
 
     expect(mockedPost).toHaveBeenCalledWith("/auth/login", {
       email: "demo@monevo.app",
-      password: "Demo@Monevo123!",
+      password: demoPassword,
     });
   });
 

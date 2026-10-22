@@ -4,7 +4,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../generated/prisma/client';
 
 const DEMO_EMAIL = (process.env.DEMO_EMAIL ?? 'demo@monevo.app').toLowerCase();
-const DEMO_PASSWORD = process.env.DEMO_PASSWORD ?? 'Demo@Monevo123!';
+const DEMO_PASSWORD = process.env.DEMO_PASSWORD;
 const DEMO_NAME = process.env.DEMO_NAME ?? 'Monevo Demo';
 
 function daysAgo(days: number): Date {
@@ -16,6 +16,11 @@ function daysAgo(days: number): Date {
 async function main() {
   if (!process.env.DATABASE_URL) {
     throw new Error('DATABASE_URL is required to seed the database.');
+  }
+  if (!DEMO_PASSWORD) {
+    throw new Error(
+      'DEMO_PASSWORD is required. Set it to a unique value in deploy/.env, then use the same value in Play Console.',
+    );
   }
 
   const adapter = new PrismaPg({
