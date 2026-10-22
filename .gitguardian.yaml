@@ -6,4 +6,4 @@ secret:
   # DEMO_PASSWORD and must be rotated in deploy/.env + Play Console.
   ignored_matches:
     - name: rotated Monevo demo seed password
-      match: Demo@Monevo123!
+      match: REDACTED
