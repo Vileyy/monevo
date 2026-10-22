@@ -53,7 +53,9 @@
         {
           "faceIDPermission": "Allow Monevo to use Face ID to sign you in securely."
         }
-      ]
+      ],
+      "expo-secure-store",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true
