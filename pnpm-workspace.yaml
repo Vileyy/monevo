@@ -53,3 +53,4 @@ minimumReleaseAgeExclude:
   - expo@57.0.31
   - '@expo/ui@57.0.26'
   - expo-router@57.0.29
+  - expo-notifications@57.0.24
