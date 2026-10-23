@@ -9,12 +9,12 @@ import {
 } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import * as WebBrowser from "expo-web-browser";
-import { ClerkLoaded, ClerkProvider } from "@clerk/clerk-expo";
+import { ClerkLoaded, ClerkProvider, useUser } from "@clerk/clerk-expo";
 import { PostHogProvider } from "posthog-react-native";
 
 import { AnimatedSplashOverlay } from "@/components/animated-icon";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { useAuthStore } from "@/store/auth.store";
+import { useAuthStore, User } from "@/store/auth.store";
 import { useSettingsStore } from "@/store/settings.store";
 import { analytics, identifyUser, resetAnalytics } from "@/lib/analytics";
 import { tokenCache } from "@/lib/token-cache";
@@ -30,6 +30,42 @@ if (!clerkPublishableKey) {
   throw new Error(
     "Missing EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY. Please set it in your .env file.",
   );
+}
+
+function ClerkUserSync() {
+  const { user: clerkUser, isLoaded } = useUser();
+  const updateUser = useAuthStore((state) => state.updateUser);
+  const currentUser = useAuthStore((state) => state.user);
+
+  useEffect(() => {
+    if (!isLoaded || !clerkUser || !currentUser) return;
+
+    const googleName =
+      clerkUser.fullName ||
+      [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ");
+    const googleAvatar = clerkUser.imageUrl;
+
+    const updates: Partial<User> = {};
+    if (
+      googleName &&
+      (!currentUser.name ||
+        currentUser.name === "Google User" ||
+        currentUser.name === "Member" ||
+        currentUser.name === "Monevo User" ||
+        currentUser.name === "Monevo Member")
+    ) {
+      updates.name = googleName;
+    }
+    if (googleAvatar && currentUser.avatarUrl !== googleAvatar) {
+      updates.avatarUrl = googleAvatar;
+    }
+
+    if (Object.keys(updates).length > 0) {
+      updateUser(updates);
+    }
+  }, [isLoaded, clerkUser, currentUser, updateUser]);
+
+  return null;
 }
 
 export default function RootLayout() {
@@ -100,6 +136,7 @@ export default function RootLayout() {
   return (
     <ClerkProvider publishableKey={clerkPublishableKey} tokenCache={tokenCache}>
       <ClerkLoaded>
+        <ClerkUserSync />
         {analytics ? (
           <PostHogProvider
             client={analytics}

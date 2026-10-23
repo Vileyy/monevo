@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "@/store/auth.store";
 import { useWalletStore, Wallet } from "@/store/wallet.store";
@@ -126,11 +127,20 @@ export default function HomeScreen() {
           accessibilityRole="button"
           accessibilityLabel="Go to Profile"
         >
-          <View style={styles.avatarCircle}>
-            <Text style={styles.avatarText}>
-              {(user?.name || user?.email || "U").charAt(0).toUpperCase()}
-            </Text>
-          </View>
+          {user?.avatarUrl ? (
+            <Image
+              source={{ uri: user.avatarUrl }}
+              style={styles.avatarImage}
+              contentFit="cover"
+              accessibilityLabel="User avatar"
+            />
+          ) : (
+            <View style={styles.avatarCircle}>
+              <Text style={styles.avatarText}>
+                {(user?.name || user?.email || "U").charAt(0).toUpperCase()}
+              </Text>
+            </View>
+          )}
           <View>
             <Text style={styles.welcomeText}>Hello,</Text>
             <Text style={styles.userName} numberOfLines={1}>
@@ -362,6 +372,14 @@ const styles = StyleSheet.create({
     borderColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
+    marginRight: spacing.md,
+  },
+  avatarImage: {
+    width: 42,
+    height: 42,
+    borderRadius: radius.full,
+    borderWidth: 1.5,
+    borderColor: colors.primary,
     marginRight: spacing.md,
   },
   avatarText: {

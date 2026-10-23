@@ -95,3 +95,52 @@ export async function setBiometricEnabled(enabled: boolean): Promise<void> {
     }
   } catch {}
 }
+
+const BIOMETRIC_SESSION_USER_KEY = "monevo_biometric_session_user";
+const BIOMETRIC_SESSION_TOKEN_KEY = "monevo_biometric_session_token";
+
+export async function saveBiometricSession(
+  user: { id: string; email: string; name?: string; avatarUrl?: string },
+  token: string,
+): Promise<void> {
+  if (Platform.OS === "web") return;
+  try {
+    await Promise.all([
+      SecureStore.setItemAsync(
+        BIOMETRIC_SESSION_USER_KEY,
+        JSON.stringify(user),
+      ),
+      SecureStore.setItemAsync(BIOMETRIC_SESSION_TOKEN_KEY, token),
+    ]);
+  } catch {}
+}
+
+export async function getBiometricSession(): Promise<{
+  user: { id: string; email: string; name?: string; avatarUrl?: string };
+  token: string;
+} | null> {
+  if (Platform.OS === "web") return null;
+  try {
+    const [userStr, token] = await Promise.all([
+      SecureStore.getItemAsync(BIOMETRIC_SESSION_USER_KEY),
+      SecureStore.getItemAsync(BIOMETRIC_SESSION_TOKEN_KEY),
+    ]);
+    if (!userStr || !token) return null;
+    return {
+      user: JSON.parse(userStr),
+      token,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function clearBiometricSession(): Promise<void> {
+  if (Platform.OS === "web") return;
+  try {
+    await Promise.all([
+      SecureStore.deleteItemAsync(BIOMETRIC_SESSION_USER_KEY),
+      SecureStore.deleteItemAsync(BIOMETRIC_SESSION_TOKEN_KEY),
+    ]);
+  } catch {}
+}

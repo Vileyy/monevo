@@ -76,22 +76,41 @@ export default function OAuthNativeCallback() {
           const token = await getToken();
           const email =
             user?.primaryEmailAddress?.emailAddress || `${userId}@clerk.user`;
-          const name = user?.fullName || user?.firstName || "Google User";
+          const name =
+            user?.fullName ||
+            [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
+            (email && !email.endsWith("@clerk.user")
+              ? email.split("@")[0]
+              : "Google User");
+          const avatarUrl = user?.imageUrl || undefined;
+
           if (token) {
             try {
               const res = await apiClient.post<{
                 user: { id: string; email: string; name?: string };
                 accessToken: string;
-              }>("/auth/clerk", { clerkToken: token });
+              }>("/auth/clerk", { clerkToken: token, name });
               if (res.data?.accessToken && isMounted) {
-                loginStore(res.data.user, res.data.accessToken);
+                loginStore(
+                  {
+                    ...res.data.user,
+                    name:
+                      res.data.user?.name &&
+                      res.data.user.name !== "Monevo Member" &&
+                      res.data.user.name !== "Google User"
+                        ? res.data.user.name
+                        : name,
+                    avatarUrl,
+                  },
+                  res.data.accessToken,
+                );
                 router.replace("/(tabs)");
                 return;
               }
             } catch {}
           }
           if (isMounted) {
-            loginStore({ id: userId, email, name }, token || userId);
+            loginStore({ id: userId, email, name, avatarUrl }, token || userId);
             router.replace("/(tabs)");
           }
         } catch {

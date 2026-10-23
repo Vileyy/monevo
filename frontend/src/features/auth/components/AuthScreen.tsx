@@ -20,6 +20,7 @@ import { colors } from "@/theme";
 import { Button, Input, OtpInput } from "@/components/ui";
 import { FaceIdIcon } from "@/components/FaceIdIcon";
 import { useAuthStore } from "@/store/auth.store";
+import { getBiometricSession } from "@/lib/biometrics";
 import { apiClient } from "@/services/api/client";
 import { hapticFeedback } from "@/lib/haptics";
 import { apiErrorMessage } from "@/lib/api-error";
@@ -90,6 +91,12 @@ export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState<string | undefined>();
   const [isPasswordLoading, setIsPasswordLoading] = useState(false);
+  const [savedBiometricUser, setSavedBiometricUser] = useState<{
+    id: string;
+    email: string;
+    name?: string;
+    avatarUrl?: string;
+  } | null>(null);
 
   // Sign out a stale Clerk session only once, on entry. A reactive check would
   // also fire right after a fresh sign-in and invalidate the new session.
@@ -107,7 +114,13 @@ export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
   }, [isAuthLoaded, isSignedIn, signOut]);
 
   useEffect(() => {
-    void refreshBiometricState();
+    void (async () => {
+      await refreshBiometricState();
+      const session = await getBiometricSession();
+      if (session?.user) {
+        setSavedBiometricUser(session.user);
+      }
+    })();
   }, [refreshBiometricState]);
 
   // 60-second countdown for OTP resend
@@ -153,15 +166,32 @@ export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
 
   const commitSession = async (
     clerkToken: string,
-    fallbackUser: { id: string; email: string; name: string },
+    fallbackUser: {
+      id: string;
+      email: string;
+      name: string;
+      avatarUrl?: string;
+    },
   ) => {
     try {
       const res = await apiClient.post<{
         user: { id: string; email: string; name?: string };
         accessToken: string;
-      }>("/auth/clerk", { clerkToken });
+      }>("/auth/clerk", { clerkToken, name: fallbackUser.name });
       if (res.data?.accessToken && res.data?.user) {
-        loginStore(res.data.user, res.data.accessToken);
+        loginStore(
+          {
+            ...res.data.user,
+            name:
+              res.data.user.name &&
+              res.data.user.name !== "Monevo Member" &&
+              res.data.user.name !== "Google User"
+                ? res.data.user.name
+                : fallbackUser.name,
+            avatarUrl: fallbackUser.avatarUrl,
+          },
+          res.data.accessToken,
+        );
         router.replace("/(tabs)");
         return;
       }
@@ -762,6 +792,66 @@ export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
             {step === "EMAIL" ? (
               /* ================= STEP 1: ENTER EMAIL ================= */
               <View style={authStyles.form}>
+                {biometricAvailable && savedBiometricUser && (
+                  <>
+                    <Pressable
+                      style={authStyles.biometricQuickCard}
+                      onPress={() => void handleBiometricLogin()}
+                      disabled={isBiometricLoading}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Sign in with ${biometricLabel}`}
+                    >
+                      <View style={authStyles.biometricQuickIcon}>
+                        {isBiometricLoading ? (
+                          <ActivityIndicator
+                            size="small"
+                            color={colors.primary}
+                          />
+                        ) : biometricIcon === "scan-outline" ? (
+                          <FaceIdIcon size={26} color={colors.primary} />
+                        ) : biometricIcon === "finger-print-outline" ? (
+                          <MaterialCommunityIcons
+                            name="fingerprint"
+                            size={26}
+                            color={colors.primary}
+                          />
+                        ) : (
+                          <Ionicons
+                            name={biometricIcon}
+                            size={24}
+                            color={colors.primary}
+                          />
+                        )}
+                      </View>
+                      <View style={authStyles.biometricQuickTextCol}>
+                        <Text style={authStyles.biometricQuickTitle}>
+                          Sign in with {biometricLabel}
+                        </Text>
+                        <Text
+                          style={authStyles.biometricQuickSubtitle}
+                          numberOfLines={1}
+                        >
+                          Continue as{" "}
+                          {savedBiometricUser.name || savedBiometricUser.email}
+                        </Text>
+                      </View>
+                      <Ionicons
+                        name="chevron-forward"
+                        size={18}
+                        color={colors.textMuted}
+                      />
+                    </Pressable>
+
+                    <View style={authStyles.biometricDividerRow}>
+                      <View style={authStyles.dividerLine} />
+                      <Text style={authStyles.dividerText}>
+                        OR SIGN IN WITH EMAIL
+                      </Text>
+                      <View style={authStyles.dividerLine} />
+                    </View>
+                  </>
+                )}
+
                 <View style={authStyles.emailRow}>
                   <View style={authStyles.emailField}>
                     <Input
@@ -776,7 +866,6 @@ export function AuthScreen({ initialEmail = "" }: AuthScreenProps) {
                       keyboardType="email-address"
                       autoCapitalize="none"
                       autoCorrect={false}
-                      autoFocus
                       clearable
                       returnKeyType={authMethod === "PASSWORD" ? "go" : "send"}
                       onSubmitEditing={() => {
