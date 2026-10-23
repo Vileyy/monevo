@@ -66,8 +66,7 @@
       ],
       "expo-secure-store",
       "expo-web-browser",
-      "expo-localization",
-      "posthog-react-native/expo"
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true
