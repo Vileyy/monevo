@@ -5,8 +5,10 @@ import type { BiometricIconName } from "@/lib/biometric-label";
 import {
   authenticateWithBiometrics,
   getBiometricCapability,
+  getBiometricSession,
   isBiometricEnabled,
   isBiometricEnrolled,
+  saveBiometricSession,
   setBiometricEnabled,
 } from "@/lib/biometrics";
 
@@ -14,6 +16,7 @@ export type User = {
   id: string;
   email: string;
   name?: string;
+  avatarUrl?: string;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -184,18 +187,33 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       isAuthenticated: true,
       isHydrated: true,
     });
+
+    void (async () => {
+      try {
+        const enrolled = await isBiometricEnrolled();
+        if (enrolled) {
+          await saveBiometricSession(user, token);
+          await setBiometricEnabled(true);
+          const capability = await getBiometricCapability();
+          set({
+            biometricEnabled: true,
+            biometricAvailable: capability.available,
+            biometricLabel: capability.label,
+            biometricIcon: capability.icon,
+          });
+        }
+      } catch {}
+    })();
   },
 
   logout: () => {
     void removeStorage(TOKEN_KEY);
     void removeStorage(USER_KEY);
-    void setBiometricEnabled(false);
     set({
       user: null,
       token: null,
       isAuthenticated: false,
       isHydrated: true,
-      biometricEnabled: false,
     });
   },
 
@@ -208,12 +226,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   refreshBiometricState: async () => {
-    const [capability, enabled] = await Promise.all([
+    const [capability, enabled, biometricSession] = await Promise.all([
       getBiometricCapability(),
       isBiometricEnabled(),
+      getBiometricSession(),
     ]);
+    const isReady = (enabled || !!biometricSession) && capability.available;
     set({
-      biometricEnabled: enabled && capability.available,
+      biometricEnabled: isReady,
       biometricAvailable: capability.available,
       biometricLabel: capability.label,
       biometricIcon: capability.icon,
@@ -236,6 +256,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     );
     if (!confirmed) return "cancelled";
 
+    const current = get();
+    if (current.user && current.token) {
+      await saveBiometricSession(current.user, current.token);
+    }
     await setBiometricEnabled(true);
     set({
       biometricEnabled: true,
@@ -264,8 +288,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (!authenticated) return "cancelled";
 
     try {
-      const session = await readStoredSession();
+      let session = await readStoredSession();
+      if (!session) {
+        session = await getBiometricSession();
+      }
       if (!session) return "no-session";
+
+      void saveStorage(TOKEN_KEY, session.token);
+      void saveStorage(USER_KEY, JSON.stringify(session.user));
 
       set({
         user: session.user,
