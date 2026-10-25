@@ -3,222 +3,729 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="The terms that govern your use of Monevo." />
     <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#f4f1ea" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#121311" media="(prefers-color-scheme: dark)" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'" />
+    <link rel="canonical" href="https://vileyy.github.io/monevo/legal/terms/" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231F6B4A'/%3E%3Cpath d='M18 46V18h6l8 11 8-11h6v28h-6V29l-8 11-8-11v17z' fill='%23F4F1EA'/%3E%3C/svg%3E" />
     <title>Terms of Service · Monevo</title>
     <style>
       :root {
-        color-scheme: light;
-        --bg: #f8fafc;
-        --surface: #ffffff;
-        --text: #0f172a;
-        --muted: #475569;
-        --border: #e2e8f0;
-        --accent: #0f766e;
+        color-scheme: light dark;
+        --bg: #f4f1ea;
+        --surface: #fbfaf6;
+        --surface-raised: #ffffff;
+        --ink: #1a1a17;
+        --muted: #5f5d56;
+        --line: #ded9cc;
+        --accent: #1f6b4a;
+        --accent-soft: #e4f0e9;
+        --code-bg: #efebe1;
+        --radius: 14px;
+        --measure: 68ch;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #121311;
+          --surface: #191a17;
+          --surface-raised: #20221e;
+          --ink: #eeebe4;
+          --muted: #a6a396;
+          --line: #2d2f2a;
+          --accent: #8fd3b2;
+          --accent-soft: #1d2a23;
+          --code-bg: #23251f;
+        }
       }
       * { box-sizing: border-box; }
+      html {
+        scroll-behavior: smooth;
+        -webkit-text-size-adjust: 100%;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+      }
       body {
         margin: 0;
         background: var(--bg);
-        color: var(--text);
+        color: var(--ink);
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
           "Helvetica Neue", Arial, sans-serif;
-        line-height: 1.65;
+        font-size: 16px;
+        line-height: 1.7;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
       }
-      main {
-        max-width: 760px;
+      ::selection { background: var(--accent-soft); color: var(--ink); }
+      a {
+        color: var(--accent);
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 2px;
+      }
+      a:hover { text-decoration-thickness: 2px; }
+      :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+        border-radius: 3px;
+      }
+      .skip-link {
+        position: absolute;
+        left: 16px;
+        top: -48px;
+        z-index: 10;
+        padding: 10px 14px;
+        background: var(--surface-raised);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        font-size: 14px;
+      }
+      .skip-link:focus { top: 12px; }
+      .site-header {
+        border-bottom: 1px solid var(--line);
+        background: var(--bg);
+        position: sticky;
+        top: 0;
+        z-index: 5;
+      }
+      .header-inner {
+        max-width: 1120px;
         margin: 0 auto;
-        padding: 40px 20px 72px;
-      }
-      header {
-        margin-bottom: 28px;
+        padding: 0 32px;
+        min-height: 68px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        flex-wrap: wrap;
       }
       .brand {
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--ink);
+        text-decoration: none;
+        font-weight: 650;
+        letter-spacing: -0.01em;
+      }
+      .brand-mark {
+        width: 26px;
+        height: 26px;
+        border-radius: 7px;
+        background: var(--accent);
+        color: var(--bg);
+        display: inline-grid;
+        place-items: center;
         font-size: 14px;
+        font-weight: 700;
+      }
+      .brand-sub {
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.02em;
+        padding-left: 10px;
+        border-left: 1px solid var(--line);
+      }
+      .page-nav {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .page-nav a {
+        color: var(--muted);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 550;
+        padding: 8px 12px;
+        border-radius: 8px;
+      }
+      .page-nav a:hover { color: var(--ink); background: var(--accent-soft); }
+      .page-nav a[aria-current="page"] {
+        color: var(--accent);
+        background: var(--accent-soft);
+      }
+      .layout {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 56px 32px 88px;
+        display: grid;
+        grid-template-columns: 232px minmax(0, 1fr);
+        gap: 72px;
+        align-items: start;
+      }
+      .toc {
+        position: sticky;
+        top: 96px;
+        max-height: calc(100vh - 128px);
+        overflow-y: auto;
+        font-size: 13.5px;
+        line-height: 1.45;
+      }
+      .toc-title {
+        margin: 0 0 12px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .toc ol {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        border-left: 1px solid var(--line);
+      }
+      .toc li { margin: 0; }
+      .toc a {
+        display: block;
+        padding: 6px 0 6px 14px;
+        color: var(--muted);
+        text-decoration: none;
+        border-left: 2px solid transparent;
+        margin-left: -1.5px;
+      }
+      .toc a:hover { color: var(--ink); border-left-color: var(--line); }
+      .toc a[aria-current="true"] {
+        color: var(--accent);
+        border-left-color: var(--accent);
+        font-weight: 600;
+      }
+      .toc-mobile { display: none; }
+      .document { min-width: 0; max-width: 760px; }
+      .doc-header { margin-bottom: 36px; }
+      .eyebrow {
+        margin: 0 0 14px;
+        font-size: 11.5px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+      h1 {
+        margin: 0 0 14px;
+        font-size: clamp(2.1rem, 4.4vw, 2.9rem);
+        line-height: 1.08;
+        letter-spacing: -0.03em;
+        font-weight: 680;
+      }
+      .lede {
+        margin: 0 0 18px;
+        font-size: 1.06rem;
+        color: var(--muted);
+        max-width: var(--measure);
+      }
+      .meta {
+        margin: 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 14px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .meta span {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .meta span::before {
+        content: "";
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--accent);
+      }
+      .meta span:first-child::before { display: none; }
+      .glance {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1px;
+        background: var(--line);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        overflow: hidden;
+        margin: 0 0 44px;
+      }
+      .glance-item {
+        background: var(--surface);
+        padding: 18px 20px;
+      }
+      .glance-label {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 11.5px;
         font-weight: 700;
         letter-spacing: 0.08em;
         text-transform: uppercase;
         color: var(--accent);
-        margin-bottom: 10px;
       }
-      h1 {
-        font-size: 30px;
-        line-height: 1.2;
-        margin: 0 0 8px;
+      .glance-text {
+        margin: 0;
+        font-size: 14.5px;
+        line-height: 1.55;
+        color: var(--ink);
       }
+      section {
+        scroll-margin-top: 92px;
+        padding-top: 30px;
+        margin-top: 30px;
+        border-top: 1px solid var(--line);
+      }
+      section:first-of-type { border-top: 0; margin-top: 0; padding-top: 0; }
       h2 {
-        font-size: 20px;
-        margin: 32px 0 10px;
+        position: relative;
+        margin: 0 0 14px;
+        font-size: 1.34rem;
+        line-height: 1.3;
+        letter-spacing: -0.015em;
+        font-weight: 650;
       }
+      h2 .anchor {
+        position: absolute;
+        left: -1.15em;
+        width: 1.15em;
+        color: var(--muted);
+        text-decoration: none;
+        opacity: 0;
+        font-weight: 500;
+      }
+      h2:hover .anchor,
+      h2 .anchor:focus-visible { opacity: 1; }
       h3 {
-        font-size: 16px;
-        margin: 22px 0 8px;
+        margin: 26px 0 8px;
+        font-size: 1.02rem;
+        font-weight: 650;
+        letter-spacing: -0.01em;
       }
-      p, li { color: var(--muted); }
-      a { color: var(--accent); font-weight: 600; }
-      article {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 16px;
-        padding: 28px;
+      p { margin: 0 0 14px; max-width: var(--measure); color: var(--ink); }
+      .muted { color: var(--muted); }
+      ul, ol {
+        margin: 0 0 16px;
+        padding-left: 22px;
+        max-width: var(--measure);
       }
-      ul, ol { padding-left: 22px; }
       li { margin: 6px 0; }
-      .meta {
+      li::marker { color: var(--muted); }
+      strong { font-weight: 650; }
+      .notice {
+        margin: 22px 0;
+        padding: 18px 20px;
+        background: var(--accent-soft);
+        border-left: 3px solid var(--accent);
+        border-radius: 0 10px 10px 0;
+        font-size: 15px;
+        max-width: var(--measure);
+      }
+      .notice p { margin: 0; }
+      .table-wrap {
+        margin: 20px 0 26px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--surface);
+        overflow-x: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14.5px;
+        line-height: 1.55;
+      }
+      th, td {
+        padding: 12px 16px;
+        text-align: left;
+        vertical-align: top;
+        border-bottom: 1px solid var(--line);
+      }
+      th {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        color: var(--muted);
+        background: var(--surface-raised);
+        white-space: nowrap;
+      }
+      tbody tr:last-child td { border-bottom: 0; }
+      td { color: var(--ink); }
+      .toc-mobile {
+        margin: 0 0 28px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--surface);
+        padding: 0 18px;
+      }
+      .toc-mobile summary {
+        cursor: pointer;
+        padding: 14px 0;
         font-size: 13px;
+        font-weight: 650;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
         color: var(--muted);
       }
-      .notice {
-        background: #ecfdf5;
-        border: 1px solid #a7f3d0;
-        border-radius: 12px;
-        padding: 14px 16px;
-        margin: 18px 0;
-        color: #065f46;
+      .toc-mobile ol { margin: 0 0 14px; font-size: 14px; }
+      .doc-footer {
+        margin-top: 56px;
+        padding-top: 24px;
+        border-top: 1px solid var(--line);
+        font-size: 14px;
+        color: var(--muted);
       }
-      nav {
-        margin-top: 24px;
+      .doc-footer p { color: var(--muted); margin: 0 0 6px; }
+      .fine { font-size: 13px; }
+      .site-footer {
+        border-top: 1px solid var(--line);
+        background: var(--surface);
+      }
+      .footer-inner {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 28px 32px 36px;
         display: flex;
         flex-wrap: wrap;
-        gap: 16px;
-        font-size: 14px;
-      }
-      footer {
-        margin-top: 24px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
         font-size: 13px;
         color: var(--muted);
       }
-      @media (max-width: 520px) {
-        article { padding: 20px; }
-        h1 { font-size: 25px; }
+      .footer-inner nav { display: flex; gap: 16px; flex-wrap: wrap; }
+      .footer-inner a { color: var(--muted); text-decoration: none; }
+      .footer-inner a:hover { color: var(--ink); text-decoration: underline; }
+      @media (max-width: 900px) {
+        .layout {
+          grid-template-columns: minmax(0, 1fr);
+          gap: 0;
+          padding: 32px 20px 64px;
+        }
+        .toc { display: none; }
+        .toc-mobile { display: block; }
+        .header-inner {
+          padding: 0 20px;
+          min-height: 56px;
+          gap: 8px;
+          flex-wrap: nowrap;
+        }
+        .page-nav { gap: 2px; }
+        .page-nav a { padding: 7px 9px; font-size: 13.5px; }
+        .brand-sub { display: none; }
+        .glance { grid-template-columns: minmax(0, 1fr); }
+        h2 .anchor { display: none; }
+        .footer-inner { padding: 24px 20px 32px; }
       }
-    </style>
+      @media (max-width: 620px) {
+        .brand-name { display: none; }
+        .header-inner { padding: 0 16px; }
+        .page-nav a { padding: 7px 8px; font-size: 13px; }
+        .meta { flex-direction: column; gap: 2px; }
+        .meta span::before { display: none; }
+      }
+      @media print {
+        :root {
+          --bg: #fff;
+          --surface: #fff;
+          --surface-raised: #fff;
+          --ink: #000;
+          --muted: #333;
+          --line: #ccc;
+          --accent: #000;
+          --accent-soft: #fff;
+        }
+        .site-header, .site-footer, .toc, .toc-mobile, .skip-link { display: none; }
+        .layout {
+          display: block;
+          max-width: none;
+          padding: 0;
+          margin: 0;
+        }
+        .document { max-width: none; }
+        a { color: #000; }
+        section { break-inside: avoid; }
+        .glance { break-inside: avoid; }
+      }
+</style>
   </head>
   <body>
-    <main>
-      <header>
-        <span class="brand">Monevo</span>
-        <h1>Terms of Service</h1>
-        <p class="meta">Last updated: 2026-10-25</p>
-      </header>
-      <article>
-      <p>
-        These Terms of Service ("Terms") govern your use of the Monevo
-        mobile application and API (the "Service"), operated by Doan Quoc Hieu
-        ("we", "us", "our"). By creating an account or using the Service, you
-        agree to these Terms.
-      </p>
-
-      <h2>1. The Service</h2>
-      <p>
-        Monevo is a personal bookkeeping tool that lets you record wallets,
-        transactions, budgets and bill reminders, and view summaries based on
-        the information you enter.
-      </p>
-
-      <div class="notice">
-        Monevo is not a bank, payment service or licensed financial adviser.
-        Balances and insights are calculated only from the information you
-        enter and may be incomplete or inaccurate. Nothing in the Service is
-        financial, tax, legal or investment advice.
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="/monevo/">
+          <span class="brand-mark" aria-hidden="true">M</span>
+          <span class="brand-name">Monevo</span>
+          <span class="brand-sub">Legal</span>
+        </a>
+        <nav class="page-nav" aria-label="Legal pages">
+          <a href="/monevo/legal/privacy">Privacy</a>
+          <a href="/monevo/legal/terms" aria-current="page">Terms</a>
+          <a href="/monevo/legal/account-deletion">Delete account</a>
+        </nav>
       </div>
+    </header>
+    <main id="main" class="layout">
+      <aside class="toc" aria-label="On this page">
+        <p class="toc-title">On this page</p>
+        <ol>
+            <li><a href="#the-service">1. The Service</a></li>
+            <li><a href="#accounts">2. Accounts</a></li>
+            <li><a href="#acceptable-use">3. Acceptable use</a></li>
+            <li><a href="#your-content">4. Your content</a></li>
+            <li><a href="#fees">5. Fees</a></li>
+            <li><a href="#third-party-services">6. Third-party services</a></li>
+            <li><a href="#availability">7. Availability and changes</a></li>
+            <li><a href="#limitation-of-liability">8. Limitation of liability</a></li>
+            <li><a href="#termination">9. Termination and deletion</a></li>
+            <li><a href="#privacy">10. Privacy</a></li>
+            <li><a href="#governing-law">11. Governing law</a></li>
+            <li><a href="#changes">12. Changes to these Terms</a></li>
+            <li><a href="#contact">13. Contact</a></li>
+        </ol>
+      </aside>
+      <article class="document">
+        <details class="toc-mobile">
+          <summary>On this page</summary>
+          <ol>
+            <li><a href="#the-service">1. The Service</a></li>
+            <li><a href="#accounts">2. Accounts</a></li>
+            <li><a href="#acceptable-use">3. Acceptable use</a></li>
+            <li><a href="#your-content">4. Your content</a></li>
+            <li><a href="#fees">5. Fees</a></li>
+            <li><a href="#third-party-services">6. Third-party services</a></li>
+            <li><a href="#availability">7. Availability and changes</a></li>
+            <li><a href="#limitation-of-liability">8. Limitation of liability</a></li>
+            <li><a href="#termination">9. Termination and deletion</a></li>
+            <li><a href="#privacy">10. Privacy</a></li>
+            <li><a href="#governing-law">11. Governing law</a></li>
+            <li><a href="#changes">12. Changes to these Terms</a></li>
+            <li><a href="#contact">13. Contact</a></li>
+          </ol>
+        </details>
+        <header class="doc-header">
+          <p class="eyebrow">Monevo · Legal</p>
+          <h1>Terms of Service</h1>
+          <p class="lede">The rules for using Monevo: what the Service does, what we
+        expect from you, and how disputes are handled.</p>
+          <p class="meta">
+            <span>Last updated 25 October 2026</span>
+            <span>Applies to the Monevo app and API</span>
+          </p>
+        </header>
+        <div class="glance">
+          <div class="glance-item">
+            <span class="glance-label">Cost</span>
+            <p class="glance-text">The core app is free to use.</p>
+          </div>
+          <div class="glance-item">
+            <span class="glance-label">Your data</span>
+            <p class="glance-text">You keep ownership of the records you enter.</p>
+          </div>
+          <div class="glance-item">
+            <span class="glance-label">Not a bank</span>
+            <p class="glance-text">No money movement and no financial advice.</p>
+          </div>
+          <div class="glance-item">
+            <span class="glance-label">Support</span>
+            <p class="glance-text">Email doanquochieu2104@gmail.com for questions about these Terms.</p>
+          </div>
+        </div>
+        
+        <section aria-labelledby="the-service">
+          <h2 id="the-service">
+            <a class="anchor" href="#the-service" aria-label="Permalink to 1. The Service">#</a>1. The Service
+          </h2>
+          <p>
+          These Terms of Service ("Terms") govern your use of the Monevo
+          mobile application and API (the "Service"), operated by
+          Doan Quoc Hieu ("we", "us", "our"). By creating an account or using
+          the Service, you agree to these Terms.
+        </p>
+        <p>
+          Monevo is a personal bookkeeping tool that lets you record wallets,
+          transactions, budgets and bill reminders, and view summaries based on
+          the information you enter.
+        </p>
+        <div class="notice">
+          <p>
+            Monevo is not a bank, payment service or licensed financial
+            adviser. Balances and insights are calculated only from the
+            information you enter and may be incomplete or inaccurate. Nothing in
+            the Service is financial, tax, legal or investment advice.
+          </p>
+        </div>
+        </section>
 
-      <h2>2. Accounts</h2>
-      <ul>
-        <li>You must provide accurate account information.</li>
-        <li>
-          You are responsible for keeping access to your email account and your
-          password secure; sign-in links and verification codes are sensitive.
-        </li>
-        <li>You must be at least 13 years old (or the minimum age in your country).</li>
-        <li>One person or organization per account; do not share your account.</li>
-      </ul>
+        <section aria-labelledby="accounts">
+          <h2 id="accounts">
+            <a class="anchor" href="#accounts" aria-label="Permalink to 2. Accounts">#</a>2. Accounts
+          </h2>
+          <ul>
+          <li>You must provide accurate account information.</li>
+          <li>
+            You are responsible for keeping access to your email account and
+            your Google account secure. Do not share your account or sign-in
+            credentials with anyone.
+          </li>
+          <li>
+            You must be at least 13 years old (or the minimum age in your
+            country).
+          </li>
+          <li>One person or organization per account.</li>
+        </ul>
+        </section>
 
-      <h2>3. Acceptable use</h2>
-      <p>You agree not to:</p>
-      <ul>
-        <li>Use the Service for unlawful, fraudulent or abusive activity.</li>
-        <li>Attempt to access other users' data or bypass authentication.</li>
-        <li>Probe, scan or disrupt the Service or its infrastructure.</li>
-        <li>
-          Reverse engineer or copy the Service except as permitted by law.
-        </li>
-      </ul>
+        <section aria-labelledby="acceptable-use">
+          <h2 id="acceptable-use">
+            <a class="anchor" href="#acceptable-use" aria-label="Permalink to 3. Acceptable use">#</a>3. Acceptable use
+          </h2>
+          <p>You agree not to:</p>
+        <ul>
+          <li>Use the Service for unlawful, fraudulent or abusive activity.</li>
+          <li>Attempt to access other users' data or bypass authentication.</li>
+          <li>Probe, scan or disrupt the Service or its infrastructure.</li>
+          <li>
+            Reverse engineer or copy the Service except as permitted by law.
+          </li>
+        </ul>
+        </section>
 
-      <h2>4. Your content</h2>
-      <p>
-        You keep ownership of the records you enter. You grant us a limited
-        license to store, process and display that content solely to operate
-        the Service for you.
-      </p>
+        <section aria-labelledby="your-content">
+          <h2 id="your-content">
+            <a class="anchor" href="#your-content" aria-label="Permalink to 4. Your content">#</a>4. Your content
+          </h2>
+          <p>
+          You keep ownership of the records you enter. You grant us a limited
+          license to store, process and display that content solely to operate
+          the Service for you. We do not use your financial records for
+          advertising or sell them.
+        </p>
+        </section>
 
-      <h2>5. Third-party services</h2>
-      <p>
-        Sign-in is provided by Clerk and, if you choose it, Google. Your use of
-        those services is also subject to their own terms. We are not responsible
-        for third-party services we do not control.
-      </p>
+        <section aria-labelledby="fees">
+          <h2 id="fees">
+            <a class="anchor" href="#fees" aria-label="Permalink to 5. Fees">#</a>5. Fees
+          </h2>
+          <p>
+          The core Service is currently free. If we introduce paid features, we
+          will show the price and terms before you are charged, and you will be
+          able to choose whether to use them. Store billing terms may also apply.
+        </p>
+        </section>
 
-      <h2>6. Availability and changes</h2>
-      <p>
-        We aim to keep the Service available, but it is provided on an "as is"
-        and "as available" basis. We may change, suspend or discontinue features
-        and will make reasonable efforts to give notice of material changes. Keep
-        your own records of anything you cannot afford to lose.
-      </p>
+        <section aria-labelledby="third-party-services">
+          <h2 id="third-party-services">
+            <a class="anchor" href="#third-party-services" aria-label="Permalink to 6. Third-party services">#</a>6. Third-party services
+          </h2>
+          <p>
+          Sign-in is provided by Clerk and, if you choose it, Google. App
+          distribution and updates may involve Expo and the Google Play Store.
+          Your use of those services is also subject to their own terms and
+          privacy policies. We are not responsible for third-party services we do
+          not control.
+        </p>
+        </section>
 
-      <h2>7. Limitation of liability</h2>
-      <p>
-        To the maximum extent permitted by law, Doan Quoc Hieu is not liable for
-        indirect, incidental or consequential losses, or for losses arising from
-        decisions you make based on information in the Service. Nothing in these
-        Terms excludes liability that cannot lawfully be excluded, including your
-        mandatory consumer rights.
-      </p>
+        <section aria-labelledby="availability">
+          <h2 id="availability">
+            <a class="anchor" href="#availability" aria-label="Permalink to 7. Availability and changes">#</a>7. Availability and changes
+          </h2>
+          <p>
+          We aim to keep the Service available, but it is provided on an "as is"
+          and "as available" basis. We may change, suspend or discontinue
+          features and will make reasonable efforts to give notice of material
+          changes. Keep your own records of anything you cannot afford to lose.
+        </p>
+        </section>
 
-      <h2>8. Termination and deletion</h2>
-      <p>
-        You can stop using the Service at any time and delete your account in
-        the app (Profile → Delete Account) or through our
-        <a href="/monevo/legal/account-deletion">account deletion page</a>. We may
-        suspend accounts that violate these Terms or create security risks.
-      </p>
+        <section aria-labelledby="limitation-of-liability">
+          <h2 id="limitation-of-liability">
+            <a class="anchor" href="#limitation-of-liability" aria-label="Permalink to 8. Limitation of liability">#</a>8. Limitation of liability
+          </h2>
+          <p>
+          To the maximum extent permitted by law, Doan Quoc Hieu is not liable
+          for indirect, incidental or consequential losses, or for losses arising
+          from decisions you make based on information in the Service. Nothing in
+          these Terms excludes liability that cannot lawfully be excluded,
+          including your mandatory consumer rights.
+        </p>
+        </section>
 
-      <h2>9. Privacy</h2>
-      <p>
-        Our <a href="/monevo/legal/privacy">Privacy Policy</a> explains how we
-        handle personal information and forms part of these Terms.
-      </p>
+        <section aria-labelledby="termination">
+          <h2 id="termination">
+            <a class="anchor" href="#termination" aria-label="Permalink to 9. Termination and deletion">#</a>9. Termination and deletion
+          </h2>
+          <p>
+          You can stop using the Service at any time and delete your account in
+          the app (Profile → Delete Account) or through our
+          <a href="/monevo/legal/account-deletion">account deletion page</a>. We
+          may suspend accounts that violate these Terms or create security risks.
+        </p>
+        </section>
 
-      <h2>10. Governing law</h2>
-      <p>
-        These Terms are governed by the laws of Vietnam, without regard to
-        conflict-of-law rules. Disputes will be handled by the competent courts
-        of Vietnam, except where mandatory consumer protection law in your
-        country of residence gives you the right to bring a claim locally.
-      </p>
+        <section aria-labelledby="privacy">
+          <h2 id="privacy">
+            <a class="anchor" href="#privacy" aria-label="Permalink to 10. Privacy">#</a>10. Privacy
+          </h2>
+          <p>
+          Our <a href="/monevo/legal/privacy">Privacy Policy</a> explains how we
+          handle personal information and forms part of these Terms.
+        </p>
+        </section>
 
-      <h2>11. Changes to these Terms</h2>
-      <p>
-        We may update these Terms. Continued use after an update means you
-        accept the revised Terms. The date at the top shows the latest version.
-      </p>
+        <section aria-labelledby="governing-law">
+          <h2 id="governing-law">
+            <a class="anchor" href="#governing-law" aria-label="Permalink to 11. Governing law">#</a>11. Governing law
+          </h2>
+          <p>
+          These Terms are governed by the laws of Vietnam, without regard to
+          conflict-of-law rules. Disputes will be handled by the competent courts
+          of Vietnam, except where mandatory consumer protection law in your
+          country of residence gives you the right to bring a claim locally.
+        </p>
+        </section>
 
-      <h2>12. Contact</h2>
-      <p>
-        Questions about these Terms:
-        <a href="mailto:doanquochieu2104@gmail.com">doanquochieu2104@gmail.com</a>.
-      </p>
-    </article>
-      <nav>
-        <a href="/monevo/legal/privacy">Privacy Policy</a>
-        <a href="/monevo/legal/terms">Terms of Service</a>
-        <a href="/monevo/legal/account-deletion">Delete Account</a>
-      </nav>
-      <footer>
-        Monevo is operated by Doan Quoc Hieu ·
-        <a href="mailto:doanquochieu2104@gmail.com">doanquochieu2104@gmail.com</a>
-      </footer>
+        <section aria-labelledby="changes">
+          <h2 id="changes">
+            <a class="anchor" href="#changes" aria-label="Permalink to 12. Changes to these Terms">#</a>12. Changes to these Terms
+          </h2>
+          <p>
+          We may update these Terms. Continued use after an update means you
+          accept the revised Terms. The date at the top of this page shows the
+          latest version.
+        </p>
+        </section>
+
+        <section aria-labelledby="contact">
+          <h2 id="contact">
+            <a class="anchor" href="#contact" aria-label="Permalink to 13. Contact">#</a>13. Contact
+          </h2>
+          <p>
+          Questions about these Terms:
+          <a href="mailto:doanquochieu2104@gmail.com">doanquochieu2104@gmail.com</a>.
+        </p>
+        </section>
+        <footer class="doc-footer">
+          <p>
+            Questions about this page? Email
+            <a href="mailto:doanquochieu2104@gmail.com">doanquochieu2104@gmail.com</a>.
+          </p>
+          <p class="fine">
+            Monevo is operated by Doan Quoc Hieu in Vietnam.
+          </p>
+        </footer>
+      </article>
     </main>
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <span>© 2026 Monevo. All rights reserved.</span>
+        <nav aria-label="Legal">
+          <a href="/monevo/legal/privacy">Privacy Policy</a>
+          <a href="/monevo/legal/terms">Terms of Service</a>
+          <a href="/monevo/legal/account-deletion">Delete account</a>
+        </nav>
+      </div>
+    </footer>
   </body>
 </html>
