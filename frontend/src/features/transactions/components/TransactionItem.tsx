@@ -8,10 +8,11 @@ import {
   ViewStyle,
 } from "react-native";
 import { colors, radius, spacing, typography } from "@/theme";
-import { categoryDisplayName, formatCurrency } from "@/lib/format";
+import { formatCurrency } from "@/lib/format";
 import { CategoryIcon } from "@/components/ui";
 import { Transaction } from "@/store/transaction.store";
 import { hapticFeedback } from "@/lib/haptics";
+import { useDisplayCurrency } from "@/hooks/use-display-currency";
 
 export interface TransactionItemProps {
   transaction: Transaction;
@@ -24,14 +25,13 @@ export const TransactionItem = memo(function TransactionItem({
   onPress,
   style,
 }: TransactionItemProps) {
+  useDisplayCurrency();
   const isIncome = transaction.type === "INCOME";
   const { width } = useWindowDimensions();
   const compact = width < 360;
   const amountFontSize = compact ? 14 : 16;
   const amountLineHeight = compact ? 18 : 22;
-  const categoryName = categoryDisplayName(
-    transaction.category?.name || "Other",
-  );
+  const categoryName = transaction.category?.name || "Other";
   const amountColor = isIncome ? colors.income : colors.expense;
   const sign = isIncome ? "+" : "−";
 
@@ -59,8 +59,8 @@ export const TransactionItem = memo(function TransactionItem({
       accessibilityLabel={`${categoryName}, ${transaction.note || ""}, ${sign}${formatCurrency(transaction.amount)}`}
     >
       <CategoryIcon
-        name={categoryName}
         type={isIncome ? "INCOME" : "EXPENSE"}
+        icon={transaction.category?.icon}
         size="md"
       />
 

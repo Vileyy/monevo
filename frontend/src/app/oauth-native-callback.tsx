@@ -74,14 +74,11 @@ export default function OAuthNativeCallback() {
       if (isSignedIn && userId) {
         try {
           const token = await getToken();
-          const email =
-            user?.primaryEmailAddress?.emailAddress || `${userId}@clerk.user`;
+          const email = user?.primaryEmailAddress?.emailAddress || "";
           const name =
             user?.fullName ||
             [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
-            (email && !email.endsWith("@clerk.user")
-              ? email.split("@")[0]
-              : "Google User");
+            (email ? email.split("@")[0] : "Google User");
           const avatarUrl = user?.imageUrl || undefined;
 
           if (token) {

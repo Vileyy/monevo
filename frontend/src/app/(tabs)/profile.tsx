@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTabBarSpace } from "@/components/FloatingTabBar";
 import { useRouter } from "expo-router";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
@@ -35,10 +36,13 @@ import { hapticFeedback } from "@/lib/haptics";
 import { deleteUserAccount } from "@/lib/account";
 import { openLegalPage } from "@/lib/legal-links";
 import { apiErrorMessage } from "@/lib/api-error";
+import { useDisplayCurrency } from "@/hooks/use-display-currency";
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const tabBarSpace = useTabBarSpace();
   const { signOut } = useClerk();
+  useDisplayCurrency();
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const { wallets, fetchWallets } = useWalletStore();
@@ -194,7 +198,10 @@ export default function ProfileScreen() {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: tabBarSpace },
+        ]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -399,7 +406,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.sm,
-    paddingBottom: spacing.xxl,
   },
   profileCard: {
     padding: spacing.lg,

@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { apiClient } from "@/services/api/client";
-import { categoryDisplayName } from "@/lib/format";
 import { useAuthStore } from "@/store/auth.store";
 import { CreateCategoryBody, UpdateCategoryBody } from "@/types/api";
 
@@ -27,26 +26,6 @@ type CategoryState = {
   deleteCategory: (id: string) => Promise<void>;
 };
 
-async function renameLegacyCategories(categories: Category[]) {
-  return Promise.all(
-    categories.map(async (category) => {
-      const englishName = categoryDisplayName(category.name);
-      if (englishName === category.name) return category;
-      try {
-        const response = await apiClient.patch<Category>(
-          `/categories/${category.id}`,
-          {
-            name: englishName,
-          },
-        );
-        return response.data;
-      } catch {
-        return { ...category, name: englishName };
-      }
-    }),
-  );
-}
-
 export const useCategoryStore = create<CategoryState>((set, get) => ({
   categories: [],
   isLoading: false,
@@ -58,8 +37,7 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
     set({ isLoading: true });
     try {
       const response = await apiClient.get<Category[]>("/categories");
-      const categories = await renameLegacyCategories(response.data);
-      set({ categories, hasFetched: true });
+      set({ categories: response.data, hasFetched: true });
     } catch (error) {
       console.error("Failed to fetch categories:", error);
       set({ hasFetched: true });

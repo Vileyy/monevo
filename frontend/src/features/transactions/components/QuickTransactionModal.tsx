@@ -15,19 +15,21 @@ import {
   Button,
   CategoryIcon,
   CurrencyInput,
+  IconBadge,
   Input,
   Modal,
   SegmentedControl,
   WalletIcon,
 } from "@/components/ui";
-import { categoryDisplayName, parseVndInput } from "@/lib/format";
+import { parseVndInput } from "@/lib/format";
 import { apiErrorMessage } from "@/lib/api-error";
 import { hapticFeedback } from "@/lib/haptics";
 import { calculateBudgetWarning } from "@/lib/budget-warning";
 import { useWalletStore } from "@/store/wallet.store";
-import { useCategoryStore } from "@/store/category.store";
+import { Category, useCategoryStore } from "@/store/category.store";
 import { useTransactionStore } from "@/store/transaction.store";
 import { useBudgetStore } from "@/store/budget.store";
+import { CategoryForm } from "@/features/categories/components/CategoryForm";
 import {
   normalizeQuickNote,
   resolveCategoryId,
@@ -59,9 +61,20 @@ export function QuickTransactionModal({
   const [note, setNote] = useState("");
   const [walletId, setWalletId] = useState<string | null>(null);
   const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [creatingCategory, setCreatingCategory] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
   const noteFocusedRef = useRef(false);
+  const [wasVisible, setWasVisible] = useState(visible);
+
+  if (wasVisible !== visible) {
+    setWasVisible(visible);
+    if (visible) {
+      setType(initialType);
+    } else if (creatingCategory) {
+      setCreatingCategory(false);
+    }
+  }
 
   useEffect(() => {
     const subscription = Keyboard.addListener("keyboardDidShow", () => {
@@ -165,6 +178,12 @@ export function QuickTransactionModal({
     void persist(validAmount);
   };
 
+  const handleCategoryCreated = (category: Category) => {
+    hapticFeedback.success();
+    setCategoryId(category.id);
+    setCreatingCategory(false);
+  };
+
   const openFullForm = () => {
     hapticFeedback.light();
     onClose();
@@ -176,221 +195,270 @@ export function QuickTransactionModal({
   return (
     <Modal
       visible={visible}
-      onClose={onClose}
-      title={isIncome ? "Add money" : "Spend money"}
-      subtitle="Saved to your account instantly"
+      onClose={creatingCategory ? () => setCreatingCategory(false) : onClose}
+      title={
+        creatingCategory
+          ? "New Category"
+          : isIncome
+            ? "Add money"
+            : "Spend money"
+      }
+      subtitle={
+        creatingCategory
+          ? "Create a custom spending or income category"
+          : "Saved to your account instantly"
+      }
       scrollViewRef={scrollRef}
     >
-      <SegmentedControl
-        options={[
-          {
-            value: "INCOME",
-            label: "Money in",
-            activeColor: colors.income,
-            activeBgColor: colors.incomeBg,
-          },
-          {
-            value: "EXPENSE",
-            label: "Money out",
-            activeColor: colors.expense,
-            activeBgColor: colors.expenseBg,
-          },
-        ]}
-        value={type}
-        onChange={(nextType) => {
-          hapticFeedback.selection();
-          setType(nextType);
-        }}
-        style={styles.segments}
-      />
-
-      <CurrencyInput
-        value={amount}
-        onChangeText={setAmount}
-        type={type}
-        autoFocus={visible}
-      />
-
-      {visibleCategories.length === 0 || wallets.length === 0 ? (
-        <View style={styles.setupCard}>
-          <Text style={styles.setupTitle}>
-            {wallets.length === 0
-              ? "No account yet"
-              : "No category for this type"}
-          </Text>
-          <Text style={styles.setupText}>
-            Open the full form to set up your account and categories.
-          </Text>
-          <Button
-            title="Open full form"
-            variant="outline"
-            size="sm"
-            onPress={openFullForm}
-            style={styles.setupButton}
-          />
-        </View>
+      {creatingCategory ? (
+        <CategoryForm
+          type={type}
+          onTypeChange={setType}
+          onCreated={handleCategoryCreated}
+        />
       ) : (
         <>
-          <Text style={styles.fieldLabel}>Category</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.chipRow}
-            keyboardShouldPersistTaps="handled"
-          >
-            {visibleCategories.map((category) => {
-              const isSelected = category.id === selectedCategoryId;
-              return (
+          <SegmentedControl
+            options={[
+              {
+                value: "INCOME",
+                label: "Money in",
+                activeColor: colors.income,
+                activeBgColor: colors.incomeBg,
+              },
+              {
+                value: "EXPENSE",
+                label: "Money out",
+                activeColor: colors.expense,
+                activeBgColor: colors.expenseBg,
+              },
+            ]}
+            value={type}
+            onChange={(nextType) => {
+              hapticFeedback.selection();
+              setType(nextType);
+            }}
+            style={styles.segments}
+          />
+
+          <CurrencyInput
+            value={amount}
+            onChangeText={setAmount}
+            type={type}
+            autoFocus={visible}
+          />
+
+          {wallets.length === 0 ? (
+            <View style={styles.setupCard}>
+              <Text style={styles.setupTitle}>No account yet</Text>
+              <Text style={styles.setupText}>
+                Open the full form to set up your account first.
+              </Text>
+              <Button
+                title="Open full form"
+                variant="outline"
+                size="sm"
+                onPress={openFullForm}
+                style={styles.setupButton}
+              />
+            </View>
+          ) : (
+            <>
+              <Text style={styles.fieldLabel}>Category</Text>
+              {visibleCategories.length === 0 && (
+                <Text style={styles.emptyHint}>
+                  No category yet. Tap New to name one and pick its icon.
+                </Text>
+              )}
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.chipRow}
+                keyboardShouldPersistTaps="handled"
+              >
+                {visibleCategories.map((category) => {
+                  const isSelected = category.id === selectedCategoryId;
+                  return (
+                    <Pressable
+                      key={category.id}
+                      onPress={() => {
+                        hapticFeedback.selection();
+                        setCategoryId(category.id);
+                      }}
+                      style={({ pressed }) => [
+                        styles.categoryChip,
+                        isSelected && styles.categoryChipSelected,
+                        pressed && styles.chipPressed,
+                      ]}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: isSelected }}
+                    >
+                      <CategoryIcon
+                        type={type}
+                        icon={category.icon}
+                        size="sm"
+                      />
+                      <Text
+                        style={[
+                          styles.chipText,
+                          isSelected && styles.chipTextSelected,
+                        ]}
+                        numberOfLines={1}
+                      >
+                        {category.name}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+
                 <Pressable
-                  key={category.id}
                   onPress={() => {
-                    hapticFeedback.selection();
-                    setCategoryId(category.id);
+                    hapticFeedback.light();
+                    setCreatingCategory(true);
                   }}
                   style={({ pressed }) => [
                     styles.categoryChip,
-                    isSelected && styles.categoryChipSelected,
+                    styles.addChip,
                     pressed && styles.chipPressed,
                   ]}
                   accessibilityRole="button"
-                  accessibilityState={{ selected: isSelected }}
+                  accessibilityLabel="New category"
                 >
-                  <CategoryIcon name={category.name} type={type} size="sm" />
-                  <Text
-                    style={[
-                      styles.chipText,
-                      isSelected && styles.chipTextSelected,
-                    ]}
-                    numberOfLines={1}
-                  >
-                    {categoryDisplayName(category.name)}
-                  </Text>
+                  <IconBadge
+                    icon="add"
+                    color={colors.textSecondary}
+                    backgroundColor={colors.surfaceSecondary}
+                    size="sm"
+                  />
+                  <Text style={styles.addChipText}>New</Text>
                 </Pressable>
-              );
-            })}
-          </ScrollView>
+              </ScrollView>
 
-          <Text style={styles.fieldLabel}>
-            {isIncome ? "Deposit to" : "Pay from"}
-          </Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.chipRow}
-            keyboardShouldPersistTaps="handled"
-          >
-            {wallets.map((wallet) => {
-              const isSelected = wallet.id === selectedWalletId;
-              return (
-                <Pressable
-                  key={wallet.id}
-                  onPress={() => {
-                    hapticFeedback.selection();
-                    setWalletId(wallet.id);
-                  }}
-                  style={({ pressed }) => [
-                    styles.walletChip,
-                    isSelected && styles.walletChipSelected,
-                    pressed && styles.chipPressed,
-                  ]}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: isSelected }}
-                >
-                  <WalletIcon type={wallet.type} size="xs" />
-                  <Text
-                    style={[
-                      styles.chipText,
-                      isSelected && styles.chipTextSelected,
-                    ]}
-                    numberOfLines={1}
-                  >
-                    {wallet.name}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </ScrollView>
-
-          <Text style={styles.fieldLabel}>Note (optional)</Text>
-          <Input
-            placeholder={
-              isIncome
-                ? "e.g. October salary, Freelance project"
-                : "e.g. Lunch with team, Grab ride"
-            }
-            value={note}
-            onChangeText={setNote}
-            onFocus={() => {
-              noteFocusedRef.current = true;
-            }}
-            onBlur={() => {
-              noteFocusedRef.current = false;
-            }}
-            maxLength={140}
-            returnKeyType="done"
-            leftIcon={
-              <Ionicons
-                name="chatbubble-ellipses"
-                size={18}
-                color={colors.textMuted}
-              />
-            }
-          />
-
-          {type === "EXPENSE" &&
-            budgetWarning &&
-            (budgetWarning.status === "WARNING" ||
-              budgetWarning.status === "EXCEEDED") && (
-              <View
-                style={[
-                  styles.warningRow,
-                  budgetWarning.status === "EXCEEDED" &&
-                    styles.warningRowDanger,
-                ]}
+              <Text style={styles.fieldLabel}>
+                {isIncome ? "Deposit to" : "Pay from"}
+              </Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.chipRow}
+                keyboardShouldPersistTaps="handled"
               >
-                <Ionicons
-                  name={
-                    budgetWarning.status === "EXCEEDED"
-                      ? "alert-circle"
-                      : "information-circle"
-                  }
-                  size={16}
-                  color={
-                    budgetWarning.status === "EXCEEDED"
-                      ? colors.danger
-                      : colors.warning
-                  }
-                />
-                <Text
-                  style={[
-                    styles.warningText,
-                    budgetWarning.status === "EXCEEDED" &&
-                      styles.warningTextDanger,
-                  ]}
-                  numberOfLines={2}
-                >
-                  {budgetWarning.message}
-                </Text>
-              </View>
-            )}
+                {wallets.map((wallet) => {
+                  const isSelected = wallet.id === selectedWalletId;
+                  return (
+                    <Pressable
+                      key={wallet.id}
+                      onPress={() => {
+                        hapticFeedback.selection();
+                        setWalletId(wallet.id);
+                      }}
+                      style={({ pressed }) => [
+                        styles.walletChip,
+                        isSelected && styles.walletChipSelected,
+                        pressed && styles.chipPressed,
+                      ]}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: isSelected }}
+                    >
+                      <WalletIcon type={wallet.type} size="xs" />
+                      <Text
+                        style={[
+                          styles.chipText,
+                          isSelected && styles.chipTextSelected,
+                        ]}
+                        numberOfLines={1}
+                      >
+                        {wallet.name}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
 
-          <Button
-            title={isIncome ? "Add money" : "Spend money"}
-            onPress={handleSave}
-            isLoading={isSubmitting}
-            disabled={!isReady}
-            size="lg"
-            style={
-              isIncome ? styles.saveIncomeButton : styles.saveExpenseButton
-            }
-          />
-          <Pressable
-            onPress={openFullForm}
-            style={styles.moreLink}
-            accessibilityRole="button"
-          >
-            <Text style={styles.moreLinkText}>Add a date or more details</Text>
-          </Pressable>
+              <Text style={styles.fieldLabel}>Note (optional)</Text>
+              <Input
+                placeholder={
+                  isIncome
+                    ? "e.g. October salary, Freelance project"
+                    : "e.g. Lunch with team, Grab ride"
+                }
+                value={note}
+                onChangeText={setNote}
+                onFocus={() => {
+                  noteFocusedRef.current = true;
+                }}
+                onBlur={() => {
+                  noteFocusedRef.current = false;
+                }}
+                maxLength={140}
+                returnKeyType="done"
+                leftIcon={
+                  <Ionicons
+                    name="chatbubble-ellipses"
+                    size={18}
+                    color={colors.textMuted}
+                  />
+                }
+              />
+
+              {type === "EXPENSE" &&
+                budgetWarning &&
+                (budgetWarning.status === "WARNING" ||
+                  budgetWarning.status === "EXCEEDED") && (
+                  <View
+                    style={[
+                      styles.warningRow,
+                      budgetWarning.status === "EXCEEDED" &&
+                        styles.warningRowDanger,
+                    ]}
+                  >
+                    <Ionicons
+                      name={
+                        budgetWarning.status === "EXCEEDED"
+                          ? "alert-circle"
+                          : "information-circle"
+                      }
+                      size={16}
+                      color={
+                        budgetWarning.status === "EXCEEDED"
+                          ? colors.danger
+                          : colors.warning
+                      }
+                    />
+                    <Text
+                      style={[
+                        styles.warningText,
+                        budgetWarning.status === "EXCEEDED" &&
+                          styles.warningTextDanger,
+                      ]}
+                      numberOfLines={2}
+                    >
+                      {budgetWarning.message}
+                    </Text>
+                  </View>
+                )}
+
+              <Button
+                title={isIncome ? "Add money" : "Spend money"}
+                onPress={handleSave}
+                isLoading={isSubmitting}
+                disabled={!isReady}
+                size="lg"
+                style={
+                  isIncome ? styles.saveIncomeButton : styles.saveExpenseButton
+                }
+              />
+              <Pressable
+                onPress={openFullForm}
+                style={styles.moreLink}
+                accessibilityRole="button"
+              >
+                <Text style={styles.moreLinkText}>
+                  Add a date or more details
+                </Text>
+              </Pressable>
+            </>
+          )}
         </>
       )}
     </Modal>
@@ -429,6 +497,21 @@ const styles = StyleSheet.create({
   categoryChipSelected: {
     borderColor: colors.primary,
     backgroundColor: colors.primaryMuted,
+  },
+  addChip: {
+    borderStyle: "dashed",
+  },
+  addChipText: {
+    ...typography.subhead,
+    color: colors.textSecondary,
+    fontWeight: "600",
+    fontSize: 13,
+  },
+  emptyHint: {
+    ...typography.caption,
+    color: colors.textMuted,
+    marginTop: -spacing.xs,
+    marginBottom: spacing.sm,
   },
   walletChip: {
     flexDirection: "row",

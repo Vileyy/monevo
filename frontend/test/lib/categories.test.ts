@@ -1,77 +1,65 @@
 import {
-  CATEGORY_PRESETS,
-  DEFAULT_CATEGORY_METAS,
-  getCategoryMeta,
+  CATEGORY_ICON_OPTIONS,
+  getCategoryFallback,
+  getCategoryIconMeta,
   getWalletMeta,
 } from "@/lib/categories";
 
 const isFilled = (icon: string) => !icon.endsWith("-outline");
 
-describe("category icon presets", () => {
-  it("uses filled glyphs for every preset", () => {
-    for (const [name, preset] of Object.entries(CATEGORY_PRESETS)) {
-      expect(isFilled(preset.icon)).toBe(true);
-      expect(preset.color).toMatch(/^#[0-9A-F]{6}$/i);
-      expect(preset.bgColor).toMatch(/^#[0-9A-F]{6}$/i);
-      expect(name.length).toBeGreaterThan(0);
+describe("category icon palette", () => {
+  it("offers filled glyphs with a palette for custom categories", () => {
+    expect(CATEGORY_ICON_OPTIONS.length).toBeGreaterThan(0);
+    for (const option of CATEGORY_ICON_OPTIONS) {
+      expect(isFilled(option.icon)).toBe(true);
+      expect(option.color).toMatch(/^#[0-9A-F]{6}$/i);
+      expect(option.bgColor).toMatch(/^#[0-9A-F]{6}$/i);
     }
   });
 
-  it("keeps English and Vietnamese aliases aligned", () => {
-    const aliases: [string, string][] = [
-      ["Food", "Ăn uống"],
-      ["Transport", "Di chuyển"],
-      ["Shopping", "Mua sắm"],
-      ["Bills", "Hóa đơn"],
-      ["Entertainment", "Giải trí"],
-      ["Health", "Y tế"],
-      ["Education", "Giáo dục"],
-      ["Salary", "Lương"],
-      ["Bonus", "Thưởng"],
-      ["Investment", "Đầu tư"],
-      ["Other income", "Thu khác"],
-      ["Other", "Khác"],
-    ];
-
-    for (const [english, vietnamese] of aliases) {
-      expect(CATEGORY_PRESETS[vietnamese]).toEqual(CATEGORY_PRESETS[english]);
-    }
-  });
-
-  it("keeps default categories in sync with presets", () => {
-    for (const meta of DEFAULT_CATEGORY_METAS) {
-      const preset = CATEGORY_PRESETS[meta.name];
-      expect(preset).toBeDefined();
-      expect(meta.icon).toBe(preset.icon);
-      expect(meta.color).toBe(preset.color);
-      expect(meta.bgColor).toBe(preset.bgColor);
-    }
+  it("has no duplicate icon ids", () => {
+    const icons = CATEGORY_ICON_OPTIONS.map((option) => option.icon);
+    expect(new Set(icons).size).toBe(icons.length);
   });
 });
 
-describe("getCategoryMeta", () => {
-  it("returns the matching preset", () => {
-    expect(getCategoryMeta("Food")).toEqual(CATEGORY_PRESETS.Food);
+describe("getCategoryIconMeta", () => {
+  it("resolves an icon id stored on a category", () => {
+    expect(getCategoryIconMeta("fitness")).toEqual({
+      icon: "fitness",
+      color: "#047857",
+      bgColor: "#ECFDF5",
+    });
   });
 
-  it("falls back by transaction type for blank names", () => {
-    expect(getCategoryMeta(null, "INCOME").icon).toBe("cash");
-    expect(getCategoryMeta(undefined, "EXPENSE").icon).toBe("cart");
+  it("uses the palette from the icon picker", () => {
+    for (const option of CATEGORY_ICON_OPTIONS) {
+      expect(getCategoryIconMeta(option.icon)).toEqual(option);
+    }
   });
 
-  it("falls back by transaction type for unknown names", () => {
-    expect(getCategoryMeta("Side project", "INCOME").icon).toBe(
-      "arrow-down-circle",
-    );
-    expect(getCategoryMeta("Side project", "EXPENSE").icon).toBe("pricetag");
+  it("returns null for missing or unknown icon ids", () => {
+    expect(getCategoryIconMeta(null)).toBeNull();
+    expect(getCategoryIconMeta(undefined)).toBeNull();
+    expect(getCategoryIconMeta("")).toBeNull();
+    expect(getCategoryIconMeta("not-a-real-icon")).toBeNull();
+  });
+});
+
+describe("getCategoryFallback", () => {
+  it("falls back by transaction type", () => {
+    expect(getCategoryFallback("INCOME").icon).toBe("cash");
+    expect(getCategoryFallback("EXPENSE").icon).toBe("cart");
   });
 
-  it("uses filled glyphs for fallbacks", () => {
+  it("defaults to the expense badge", () => {
+    expect(getCategoryFallback()).toEqual(getCategoryFallback("EXPENSE"));
+  });
+
+  it("uses filled glyphs", () => {
     const icons = [
-      getCategoryMeta(null, "INCOME").icon,
-      getCategoryMeta(null, "EXPENSE").icon,
-      getCategoryMeta("Unknown", "INCOME").icon,
-      getCategoryMeta("Unknown", "EXPENSE").icon,
+      getCategoryFallback("INCOME").icon,
+      getCategoryFallback("EXPENSE").icon,
     ];
     icons.forEach((icon) => expect(isFilled(icon)).toBe(true));
   });

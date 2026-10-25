@@ -3,9 +3,11 @@ import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, radius, spacing, typography } from "@/theme";
 import { Button, Input, Modal } from "@/components/ui";
-import { formatVndInput, parseVndInput } from "@/lib/format";
+import { formatAmountInput, formatVndInput, parseVndInput } from "@/lib/format";
+import { getCurrencyConfig } from "@/lib/currencies";
 import { apiErrorMessage } from "@/lib/api-error";
 import { useWalletStore, Wallet } from "@/store/wallet.store";
+import { useSettingsStore } from "@/store/settings.store";
 
 export interface WalletModalProps {
   visible: boolean;
@@ -27,11 +29,13 @@ function WalletForm({
   onClose: () => void;
 }) {
   const { createWallet, updateWallet, deleteWallet } = useWalletStore();
+  const currency = useSettingsStore((state) => state.currency);
+  const currencySymbol = getCurrencyConfig(currency).symbol;
 
   const [name, setName] = useState(walletToEdit?.name ?? "");
   const [type, setType] = useState(walletToEdit?.type ?? "CASH");
   const [balance, setBalance] = useState(
-    walletToEdit ? formatVndInput(walletToEdit.balance.toString()) : "",
+    walletToEdit ? formatAmountInput(walletToEdit.balance) : "",
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -119,7 +123,7 @@ function WalletForm({
               color: colors.textSecondary,
             }}
           >
-            ₫
+            {currencySymbol}
           </Text>
         }
       />

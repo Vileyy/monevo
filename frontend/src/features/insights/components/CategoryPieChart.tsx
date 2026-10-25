@@ -2,11 +2,12 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { PieChart } from "react-native-gifted-charts";
 import { colors, radius, shadows, spacing, typography } from "@/theme";
-import { categoryDisplayName, formatCurrency } from "@/lib/format";
+import { formatCurrency } from "@/lib/format";
 import { CategoryIcon } from "@/components/ui";
 
 export interface CategoryBreakdownItem {
   name: string;
+  icon?: string | null;
   amount: number;
   count: number;
 }
@@ -51,6 +52,7 @@ export function CategoryPieChart({
           ...top,
           {
             name: "Other",
+            icon: null,
             amount: rest.reduce((sum, item) => sum + item.amount, 0),
             count: rest.reduce((sum, item) => sum + item.count, 0),
           },
@@ -101,18 +103,16 @@ export function CategoryPieChart({
           const color = PALETTE[index % PALETTE.length];
           const percent =
             totalAmount > 0 ? Math.round((item.amount / totalAmount) * 100) : 0;
-          const displayName = categoryDisplayName(item.name);
-
           return (
             <View key={item.name} style={styles.legendRow}>
               <View style={styles.legendLeft}>
                 <View
                   style={[styles.colorIndicator, { backgroundColor: color }]}
                 />
-                <CategoryIcon name={item.name} type="EXPENSE" size="sm" />
+                <CategoryIcon icon={item.icon} type="EXPENSE" size="sm" />
                 <View style={styles.legendTextCol}>
                   <Text style={styles.legendName} numberOfLines={1}>
-                    {displayName}
+                    {item.name}
                   </Text>
                   <Text style={styles.legendTxCount}>
                     {item.count} {item.count === 1 ? "tx" : "txs"}

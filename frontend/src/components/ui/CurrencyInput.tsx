@@ -39,9 +39,7 @@ export function CurrencyInput({
 
   const activeQuickAmounts =
     quickAmounts ||
-    (currencyConfig.precision === 0
-      ? DEFAULT_VND_QUICK
-      : DEFAULT_DECIMAL_QUICK);
+    (currencyCode === "VND" ? DEFAULT_VND_QUICK : DEFAULT_DECIMAL_QUICK);
 
   const isIncome = type === "INCOME";
   const mainColor = isIncome ? colors.income : colors.expense;

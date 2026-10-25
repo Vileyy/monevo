@@ -4,6 +4,10 @@ import { createClerkClient } from '@clerk/backend';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 
+function isClerkPlaceholderEmail(email: string | null | undefined): boolean {
+  return Boolean(email?.endsWith('@clerk.user'));
+}
+
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
@@ -45,6 +49,22 @@ export class UsersService {
     let user = await this.prisma.user.findUnique({
       where: { clerkId },
     });
+
+    if (
+      user &&
+      email &&
+      user.email !== email &&
+      isClerkPlaceholderEmail(user.email)
+    ) {
+      try {
+        user = await this.prisma.user.update({
+          where: { id: user.id },
+          data: { email },
+        });
+      } catch {
+        // The address may already belong to another row; keep the stored one.
+      }
+    }
 
     if (!user && email) {
       user = await this.prisma.user.findUnique({

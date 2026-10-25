@@ -11,7 +11,7 @@ import { colors, radius, spacing, typography } from "@/theme";
 import { Button, CategoryIcon, CurrencyInput, Modal } from "@/components/ui";
 import { BudgetItem, useBudgetStore } from "@/store/budget.store";
 import { useCategoryStore } from "@/store/category.store";
-import { formatCurrencyInput, parseCurrencyInput } from "@/lib/format";
+import { formatAmountInput, parseVndInput } from "@/lib/format";
 import { apiErrorMessage } from "@/lib/api-error";
 import { captureEvent } from "@/lib/analytics";
 
@@ -42,7 +42,7 @@ function BudgetForm({ budgetToEdit, month, year, onClose }: BudgetFormProps) {
     budgetToEdit?.categoryId || expenseCategories[0]?.id || "",
   );
   const [amount, setAmount] = useState<string>(
-    budgetToEdit ? formatCurrencyInput(budgetToEdit.amount.toString()) : "",
+    budgetToEdit ? formatAmountInput(budgetToEdit.amount) : "",
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -53,7 +53,7 @@ function BudgetForm({ budgetToEdit, month, year, onClose }: BudgetFormProps) {
   }, [categories.length, fetchCategories]);
 
   const handleSave = async () => {
-    const numericAmount = parseCurrencyInput(amount);
+    const numericAmount = parseVndInput(amount);
 
     if (!selectedCategoryId) {
       Alert.alert("Required", "Please select a category.");
@@ -110,7 +110,7 @@ function BudgetForm({ budgetToEdit, month, year, onClose }: BudgetFormProps) {
               accessibilityRole="button"
               accessibilityLabel={`Select ${cat.name}`}
             >
-              <CategoryIcon name={cat.name} type="EXPENSE" size="sm" />
+              <CategoryIcon type="EXPENSE" icon={cat.icon} size="sm" />
               <Text
                 style={[
                   styles.categoryChipText,

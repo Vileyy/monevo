@@ -3,8 +3,9 @@ import { StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, radius, shadows, spacing, typography } from "@/theme";
 import { BudgetWarningDetails } from "@/lib/budget-warning";
-import { categoryDisplayName, formatCurrency } from "@/lib/format";
+import { formatCurrency } from "@/lib/format";
 import { BudgetProgressBar } from "./BudgetProgressBar";
+import { useDisplayCurrency } from "@/hooks/use-display-currency";
 
 export interface BudgetWarningBannerProps {
   warning: BudgetWarningDetails;
@@ -15,6 +16,8 @@ export const BudgetWarningBanner = memo(function BudgetWarningBanner({
   warning,
   categoryName,
 }: BudgetWarningBannerProps) {
+  useDisplayCurrency();
+
   if (warning.status === "NONE") {
     return null;
   }
@@ -22,9 +25,7 @@ export const BudgetWarningBanner = memo(function BudgetWarningBanner({
   const isExceeded = warning.status === "EXCEEDED";
   const isWarning = warning.status === "WARNING";
 
-  const displayName = categoryName
-    ? categoryDisplayName(categoryName)
-    : "Budget";
+  const displayName = categoryName || "Budget";
 
   const containerStyle = [
     styles.container,

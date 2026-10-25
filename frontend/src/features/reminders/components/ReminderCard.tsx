@@ -7,6 +7,7 @@ import { formatCurrency } from "@/lib/format";
 import { getReminderCategoryMeta } from "@/lib/reminders";
 import { Button, IconBadge } from "@/components/ui";
 import { hapticFeedback } from "@/lib/haptics";
+import { useDisplayCurrency } from "@/hooks/use-display-currency";
 
 export interface ReminderCardProps {
   reminder: ReminderItem;
@@ -17,6 +18,7 @@ export const ReminderCard = memo(function ReminderCard({
   reminder,
   onPaySuccess,
 }: ReminderCardProps) {
+  useDisplayCurrency();
   const { payReminder, deleteReminder } = useReminderStore();
   const meta = getReminderCategoryMeta(reminder.category);
 

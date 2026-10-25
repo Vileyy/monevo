@@ -15,8 +15,10 @@ describe('LegalController', () => {
             get: jest.fn((key: string) => {
               const values: Record<string, string> = {
                 LEGAL_APP_NAME: 'Monevo',
+                LEGAL_OPERATOR_NAME: 'Jane Doe',
                 LEGAL_CONTACT_EMAIL: 'privacy@example.com',
-                LEGAL_LAST_UPDATED: '2026-10-22',
+                LEGAL_COUNTRY: 'Vietnam',
+                LEGAL_LAST_UPDATED: '2026-10-25',
               };
               return values[key];
             }),
@@ -34,15 +36,32 @@ describe('LegalController', () => {
     expect(html).toContain('<!doctype html>');
     expect(html).toContain('Privacy Policy');
     expect(html).toContain('privacy@example.com');
-    expect(html).toContain('Clerk');
+    expect(html).toContain('Jane Doe');
     expect(html).toContain('/legal/account-deletion');
   });
 
-  it('renders the terms of service', () => {
+  it('discloses every third party required by the Play Data Safety form', () => {
+    const html = controller.privacy();
+
+    for (const provider of [
+      'Clerk',
+      'Google',
+      'PostHog',
+      'Sentry',
+      'Amazon Web Services',
+    ]) {
+      expect(html).toContain(provider);
+    }
+    expect(html).toContain('analytics');
+  });
+
+  it('renders the terms of service with a governing law', () => {
     const html = controller.terms();
 
     expect(html).toContain('Terms of Service');
     expect(html).toContain('not a bank');
+    expect(html).toContain('Governing law');
+    expect(html).toContain('laws of Vietnam');
     expect(html).toContain('/legal/privacy');
   });
 

@@ -1,16 +1,23 @@
 import currency from "currency.js";
 import {
   CurrencyCode,
+  CurrencyConfig,
   DEFAULT_CURRENCY,
   getCurrencyConfig,
 } from "./currencies";
+import {
+  convertFromBase,
+  convertToBase,
+  roundToPrecision,
+} from "./currency-conversion";
 import { useSettingsStore } from "@/store/settings.store";
+import { useCurrencyStore } from "@/store/currency.store";
 
-export function formatCurrency(val: number, customCode?: CurrencyCode) {
-  const code =
-    customCode || useSettingsStore.getState?.()?.currency || DEFAULT_CURRENCY;
-  const config = getCurrencyConfig(code);
+function displayCode(): CurrencyCode {
+  return useSettingsStore.getState?.()?.currency || DEFAULT_CURRENCY;
+}
 
+function formatWithConfig(val: number, config: CurrencyConfig) {
   return currency(val, {
     symbol: config.symbol,
     pattern: config.pattern,
@@ -21,9 +28,31 @@ export function formatCurrency(val: number, customCode?: CurrencyCode) {
   }).format();
 }
 
+/**
+ * Formats a stored (VND) amount in the user's display currency.
+ * Passing `customCode` formats the value as-is, without conversion.
+ */
+export function formatCurrency(val: number, customCode?: CurrencyCode) {
+  const code = customCode || displayCode();
+  const config = getCurrencyConfig(code);
+
+  if (customCode) return formatWithConfig(val, config);
+
+  const converted = convertFromBase(
+    val,
+    code,
+    useCurrencyStore.getState?.()?.rates ?? {},
+  );
+  // No rate yet: show the base amount instead of a wrong converted number.
+  if (converted === null) {
+    return formatWithConfig(val, getCurrencyConfig(DEFAULT_CURRENCY));
+  }
+  return formatWithConfig(converted, config);
+}
+
+/** Parses text typed in the display currency. No conversion. */
 export function parseCurrencyInput(text: string, customCode?: CurrencyCode) {
-  const code =
-    customCode || useSettingsStore.getState?.()?.currency || DEFAULT_CURRENCY;
+  const code = customCode || displayCode();
   const config = getCurrencyConfig(code);
 
   if (config.precision === 0) {
@@ -37,9 +66,9 @@ export function parseCurrencyInput(text: string, customCode?: CurrencyCode) {
   return isNaN(num) ? 0 : num;
 }
 
+/** Formats a display-currency amount for a text input. No conversion. */
 export function formatCurrencyInput(text: string, customCode?: CurrencyCode) {
-  const code =
-    customCode || useSettingsStore.getState?.()?.currency || DEFAULT_CURRENCY;
+  const code = customCode || displayCode();
   const config = getCurrencyConfig(code);
 
   if (config.precision === 0) {
@@ -58,7 +87,43 @@ export function formatCurrencyInput(text: string, customCode?: CurrencyCode) {
   return text.replace(/[^\d.]/g, "");
 }
 
-export const parseVndInput = parseCurrencyInput;
+/** Parses an amount typed in the display currency back into stored VND. */
+export function parseVndInput(text: string): number {
+  const code = displayCode();
+  const displayAmount = parseCurrencyInput(text, code);
+  if (displayAmount <= 0) return 0;
+
+  const base = convertToBase(
+    displayAmount,
+    code,
+    useCurrencyStore.getState?.()?.rates ?? {},
+  );
+  return base === null ? displayAmount : roundToPrecision(base, 2);
+}
+
+/**
+ * Prefills an input from a stored (VND) amount, converted to display currency.
+ */
+export function formatAmountInput(
+  baseAmount: number,
+  customCode?: CurrencyCode,
+) {
+  const code = customCode || displayCode();
+  const config = getCurrencyConfig(code);
+  const displayAmount = customCode
+    ? baseAmount
+    : (convertFromBase(
+        baseAmount,
+        code,
+        useCurrencyStore.getState?.()?.rates ?? {},
+      ) ?? baseAmount);
+
+  return formatCurrencyInput(
+    roundToPrecision(displayAmount, config.precision).toString(),
+    code,
+  );
+}
+
 export const formatVndInput = formatCurrencyInput;
 
 export function walletTypeLabel(type: string) {
@@ -72,18 +137,4 @@ export function walletTypeLabel(type: string) {
     default:
       return type;
   }
-}
-
-const CATEGORY_NAME_EN: Record<string, string> = {
-  "Ăn uống": "Food",
-  "Di chuyển": "Transport",
-  "Mua sắm": "Shopping",
-  "Hóa đơn": "Bills",
-  Lương: "Salary",
-  "Thu khác": "Other income",
-  Khác: "Other",
-};
-
-export function categoryDisplayName(name: string) {
-  return CATEGORY_NAME_EN[name] ?? name;
 }

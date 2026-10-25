@@ -3,7 +3,7 @@ import { Alert, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, radius, spacing, typography } from "@/theme";
 import { Badge, Button, CategoryIcon, Modal } from "@/components/ui";
-import { categoryDisplayName, formatCurrency } from "@/lib/format";
+import { formatCurrency } from "@/lib/format";
 import { apiErrorMessage } from "@/lib/api-error";
 import { Transaction, useTransactionStore } from "@/store/transaction.store";
 import { useWalletStore } from "@/store/wallet.store";
@@ -26,9 +26,7 @@ export function TransactionDetailModal({
   if (!transaction) return null;
 
   const isIncome = transaction.type === "INCOME";
-  const categoryName = categoryDisplayName(
-    transaction.category?.name || "Other",
-  );
+  const categoryName = transaction.category?.name || "Other";
   const amountColor = isIncome ? colors.income : colors.expense;
   const sign = isIncome ? "+" : "−";
 
@@ -75,8 +73,8 @@ export function TransactionDetailModal({
         {/* Hero Amount Section */}
         <View style={styles.heroSection}>
           <CategoryIcon
-            name={categoryName}
             type={isIncome ? "INCOME" : "EXPENSE"}
+            icon={transaction.category?.icon}
             size="lg"
           />
           <Text

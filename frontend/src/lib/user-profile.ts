@@ -1,5 +1,10 @@
 export function displayableEmail(email?: string | null): string | null {
-  if (!email || !email.includes("@") || email.endsWith("@clerk.user")) {
+  if (
+    !email ||
+    !email.includes("@") ||
+    email.endsWith("@clerk.user") ||
+    email.endsWith("@clerk.dev")
+  ) {
     return null;
   }
   return email;
