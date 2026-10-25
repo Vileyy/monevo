@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { StatusBar } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
   DefaultTheme,
   ThemeProvider,
@@ -14,11 +15,13 @@ import { PostHogProvider } from "posthog-react-native";
 
 import { AnimatedSplashOverlay } from "@/components/animated-icon";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { useAuthStore, User } from "@/store/auth.store";
+import { useAuthStore } from "@/store/auth.store";
 import { useSettingsStore } from "@/store/settings.store";
+import { useCurrencyStore } from "@/store/currency.store";
 import { analytics, identifyUser, resetAnalytics } from "@/lib/analytics";
 import { tokenCache } from "@/lib/token-cache";
 import { initNotifications } from "@/lib/notifications";
+import { buildClerkProfileUpdates } from "@/features/auth/utils/clerk-profile";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -40,26 +43,7 @@ function ClerkUserSync() {
   useEffect(() => {
     if (!isLoaded || !clerkUser || !currentUser) return;
 
-    const googleName =
-      clerkUser.fullName ||
-      [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ");
-    const googleAvatar = clerkUser.imageUrl;
-
-    const updates: Partial<User> = {};
-    if (
-      googleName &&
-      (!currentUser.name ||
-        currentUser.name === "Google User" ||
-        currentUser.name === "Member" ||
-        currentUser.name === "Monevo User" ||
-        currentUser.name === "Monevo Member")
-    ) {
-      updates.name = googleName;
-    }
-    if (googleAvatar && currentUser.avatarUrl !== googleAvatar) {
-      updates.avatarUrl = googleAvatar;
-    }
-
+    const updates = buildClerkProfileUpdates(currentUser, clerkUser);
     if (Object.keys(updates).length > 0) {
       updateUser(updates);
     }
@@ -74,6 +58,8 @@ export default function RootLayout() {
   const user = useAuthStore((state) => state.user);
   const restoreSession = useAuthStore((state) => state.restoreSession);
   const restoreSettings = useSettingsStore((state) => state.restoreSettings);
+  const restoreRates = useCurrencyStore((state) => state.restoreRates);
+  const refreshRates = useCurrencyStore((state) => state.refreshRates);
   const segments = useSegments();
   const router = useRouter();
 
@@ -83,6 +69,18 @@ export default function RootLayout() {
       void Promise.all([restoreSession(), restoreSettings()]);
     } catch {}
   }, [restoreSession, restoreSettings]);
+
+  // Restore the cache first so a slow network never regresses known rates.
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      await restoreRates();
+      if (!cancelled) void refreshRates();
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [restoreRates, refreshRates]);
 
   useEffect(() => {
     if (!isHydrated) return;
@@ -134,20 +132,25 @@ export default function RootLayout() {
   );
 
   return (
-    <ClerkProvider publishableKey={clerkPublishableKey} tokenCache={tokenCache}>
-      <ClerkLoaded>
-        <ClerkUserSync />
-        {analytics ? (
-          <PostHogProvider
-            client={analytics}
-            autocapture={{ captureTouches: true }}
-          >
-            {app}
-          </PostHogProvider>
-        ) : (
-          app
-        )}
-      </ClerkLoaded>
-    </ClerkProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ClerkProvider
+        publishableKey={clerkPublishableKey}
+        tokenCache={tokenCache}
+      >
+        <ClerkLoaded>
+          <ClerkUserSync />
+          {analytics ? (
+            <PostHogProvider
+              client={analytics}
+              autocapture={{ captureTouches: true }}
+            >
+              {app}
+            </PostHogProvider>
+          ) : (
+            app
+          )}
+        </ClerkLoaded>
+      </ClerkProvider>
+    </GestureHandlerRootView>
   );
 }

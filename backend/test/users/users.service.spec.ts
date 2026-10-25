@@ -153,6 +153,84 @@ describe('UsersService', () => {
     });
   });
 
+  describe('findOrCreateByClerk', () => {
+    it('replaces a placeholder email with the verified Clerk address', async () => {
+      const existing = {
+        id: 'user-1',
+        email: 'user_abc@clerk.user',
+        name: 'Monevo Member',
+        clerkId: 'user_abc',
+      };
+      prisma.user.findUnique.mockResolvedValue(existing);
+      prisma.user.update.mockResolvedValue({
+        ...existing,
+        email: 'hieu@example.com',
+      });
+
+      const result = await service.findOrCreateByClerk(
+        'user_abc',
+        'hieu@example.com',
+      );
+
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+        data: { email: 'hieu@example.com' },
+      });
+      expect(result.email).toBe('hieu@example.com');
+    });
+
+    it('keeps an existing real email', async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        id: 'user-1',
+        email: 'old@example.com',
+        clerkId: 'user_abc',
+      });
+
+      const result = await service.findOrCreateByClerk(
+        'user_abc',
+        'new@example.com',
+      );
+
+      expect(prisma.user.update).not.toHaveBeenCalled();
+      expect(result.email).toBe('old@example.com');
+    });
+
+    it('keeps the account when the address belongs to another user', async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        id: 'user-1',
+        email: 'user_abc@clerk.user',
+        clerkId: 'user_abc',
+      });
+      prisma.user.update.mockRejectedValue(new Error('Unique constraint'));
+
+      const result = await service.findOrCreateByClerk(
+        'user_abc',
+        'taken@example.com',
+      );
+
+      expect(result.email).toBe('user_abc@clerk.user');
+    });
+
+    it('creates a user with the verified email on first sign-in', async () => {
+      prisma.user.findUnique.mockResolvedValue(null);
+      prisma.user.create.mockResolvedValue({
+        id: 'user-1',
+        email: 'hieu@example.com',
+        clerkId: 'user_abc',
+      });
+
+      await service.findOrCreateByClerk('user_abc', 'hieu@example.com');
+
+      expect(prisma.user.create).toHaveBeenCalledWith({
+        data: {
+          clerkId: 'user_abc',
+          email: 'hieu@example.com',
+          name: 'Monevo Member',
+        },
+      });
+    });
+  });
+
   describe('deleteAccount', () => {
     it('should delete the user row (cascade removes finance data)', async () => {
       prisma.user.findUnique.mockResolvedValue({

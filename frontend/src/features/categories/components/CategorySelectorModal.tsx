@@ -4,8 +4,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { colors, radius, shadows, spacing, typography } from "@/theme";
 import { CategoryIcon, Modal, SegmentedControl } from "@/components/ui";
 import { Category } from "@/store/category.store";
-import { categoryDisplayName } from "@/lib/format";
 import { hapticFeedback } from "@/lib/haptics";
+import { CategoryForm } from "@/features/categories/components/CategoryForm";
 
 export interface CategorySelectorModalProps {
   visible: boolean;
@@ -13,7 +13,6 @@ export interface CategorySelectorModalProps {
   categories: Category[];
   selectedCategoryId: string | null;
   onSelectCategory: (category: Category) => void;
-  onAddNew: () => void;
   initialType?: "EXPENSE" | "INCOME";
 }
 
@@ -23,10 +22,17 @@ export function CategorySelectorModal({
   categories,
   selectedCategoryId,
   onSelectCategory,
-  onAddNew,
   initialType = "EXPENSE",
 }: CategorySelectorModalProps) {
   const [tabType, setTabType] = useState<"EXPENSE" | "INCOME">(initialType);
+  const [creating, setCreating] = useState(false);
+  const [wasVisible, setWasVisible] = useState(visible);
+
+  if (wasVisible !== visible) {
+    setWasVisible(visible);
+    if (visible) setTabType(initialType);
+    if (!visible && creating) setCreating(false);
+  }
 
   const filteredCategories = useMemo(
     () => categories.filter((c) => c.type === tabType),
@@ -41,125 +47,144 @@ export function CategorySelectorModal({
 
   const handleOpenAdd = () => {
     hapticFeedback.light();
+    setCreating(true);
+  };
+
+  const handleCreated = (cat: Category) => {
+    hapticFeedback.success();
+    onSelectCategory(cat);
     onClose();
-    onAddNew();
   };
 
   return (
-    <Modal visible={visible} onClose={onClose} title="Select Category">
-      <View style={styles.container}>
-        {/* Type Switcher: Expense vs Income */}
-        <View style={styles.segmentWrapper}>
-          <SegmentedControl
-            options={[
-              {
-                value: "EXPENSE",
-                label: "Expense",
-                icon: (
-                  <Ionicons
-                    name="arrow-up-circle-outline"
-                    size={17}
-                    color={
-                      tabType === "EXPENSE"
-                        ? colors.expense
-                        : colors.textSecondary
-                    }
-                  />
-                ),
-                activeColor: colors.expense,
-                activeBgColor: colors.surface,
-              },
-              {
-                value: "INCOME",
-                label: "Income",
-                icon: (
-                  <Ionicons
-                    name="arrow-down-circle-outline"
-                    size={17}
-                    color={
-                      tabType === "INCOME"
-                        ? colors.income
-                        : colors.textSecondary
-                    }
-                  />
-                ),
-                activeColor: colors.income,
-                activeBgColor: colors.surface,
-              },
-            ]}
-            value={tabType}
-            onChange={(val) => {
-              hapticFeedback.selection();
-              setTabType(val);
-            }}
-          />
-        </View>
-
-        {/* Categories Grid */}
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollList}
-        >
-          <View style={styles.grid}>
-            {filteredCategories.map((cat) => {
-              const isSelected = selectedCategoryId === cat.id;
-              const displayName = categoryDisplayName(cat.name);
-
-              return (
-                <Pressable
-                  key={cat.id}
-                  onPress={() => handleSelect(cat)}
-                  style={({ pressed }) => [
-                    styles.card,
-                    isSelected && styles.cardSelected,
-                    pressed && styles.cardPressed,
-                  ]}
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected: isSelected }}
-                  accessibilityLabel={displayName}
-                >
-                  {isSelected && (
-                    <View style={styles.checkBadge}>
-                      <Ionicons
-                        name="checkmark"
-                        size={12}
-                        color={colors.surface}
-                      />
-                    </View>
-                  )}
-                  <CategoryIcon name={displayName} type={tabType} size="md" />
-                  <Text
-                    style={[
-                      styles.catName,
-                      isSelected && styles.catNameSelected,
-                    ]}
-                    numberOfLines={1}
-                  >
-                    {displayName}
-                  </Text>
-                </Pressable>
-              );
-            })}
-
-            {/* Add Custom Category Card */}
-            <Pressable
-              onPress={handleOpenAdd}
-              style={({ pressed }) => [
-                styles.card,
-                styles.addCard,
-                pressed && styles.cardPressed,
+    <Modal
+      visible={visible}
+      onClose={onClose}
+      title={creating ? "New Category" : "Select Category"}
+      subtitle={
+        creating ? "Create a custom spending or income category" : undefined
+      }
+    >
+      {creating ? (
+        <CategoryForm
+          type={tabType}
+          onTypeChange={setTabType}
+          onCreated={handleCreated}
+        />
+      ) : (
+        <View style={styles.container}>
+          {/* Type Switcher: Expense vs Income */}
+          <View style={styles.segmentWrapper}>
+            <SegmentedControl
+              options={[
+                {
+                  value: "EXPENSE",
+                  label: "Expense",
+                  icon: (
+                    <Ionicons
+                      name="arrow-up-circle-outline"
+                      size={17}
+                      color={
+                        tabType === "EXPENSE"
+                          ? colors.expense
+                          : colors.textSecondary
+                      }
+                    />
+                  ),
+                  activeColor: colors.expense,
+                  activeBgColor: colors.surface,
+                },
+                {
+                  value: "INCOME",
+                  label: "Income",
+                  icon: (
+                    <Ionicons
+                      name="arrow-down-circle-outline"
+                      size={17}
+                      color={
+                        tabType === "INCOME"
+                          ? colors.income
+                          : colors.textSecondary
+                      }
+                    />
+                  ),
+                  activeColor: colors.income,
+                  activeBgColor: colors.surface,
+                },
               ]}
-              accessibilityRole="button"
-              accessibilityLabel="Add New Category"
-            >
-              <View style={styles.addCircle}>
-                <Ionicons name="add" size={22} color={colors.primary} />
-              </View>
-              <Text style={styles.addText}>Add New</Text>
-            </Pressable>
+              value={tabType}
+              onChange={(val) => {
+                hapticFeedback.selection();
+                setTabType(val);
+              }}
+            />
           </View>
-        </ScrollView>
-      </View>
+
+          {/* Categories Grid */}
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollList}
+          >
+            <View style={styles.grid}>
+              {filteredCategories.map((cat) => {
+                const isSelected = selectedCategoryId === cat.id;
+
+                return (
+                  <Pressable
+                    key={cat.id}
+                    onPress={() => handleSelect(cat)}
+                    style={({ pressed }) => [
+                      styles.card,
+                      isSelected && styles.cardSelected,
+                      pressed && styles.cardPressed,
+                    ]}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: isSelected }}
+                    accessibilityLabel={cat.name}
+                  >
+                    {isSelected && (
+                      <View style={styles.checkBadge}>
+                        <Ionicons
+                          name="checkmark"
+                          size={12}
+                          color={colors.surface}
+                        />
+                      </View>
+                    )}
+                    <CategoryIcon type={tabType} icon={cat.icon} size="md" />
+                    <Text
+                      style={[
+                        styles.catName,
+                        isSelected && styles.catNameSelected,
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {cat.name}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+
+              {/* Add Custom Category Card */}
+              <Pressable
+                onPress={handleOpenAdd}
+                style={({ pressed }) => [
+                  styles.card,
+                  styles.addCard,
+                  pressed && styles.cardPressed,
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel="Add New Category"
+              >
+                <View style={styles.addCircle}>
+                  <Ionicons name="add" size={22} color={colors.primary} />
+                </View>
+                <Text style={styles.addText}>Add New</Text>
+              </Pressable>
+            </View>
+          </ScrollView>
+        </View>
+      )}
     </Modal>
   );
 }

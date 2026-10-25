@@ -8,6 +8,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTabBarSpace } from "@/components/FloatingTabBar";
 import { Ionicons } from "@expo/vector-icons";
 import { useWalletStore, Wallet } from "@/store/wallet.store";
 import { useSettingsStore } from "@/store/settings.store";
@@ -23,10 +24,13 @@ import {
   WalletSkeletonCard,
 } from "@/components/ui";
 import { WalletModal } from "@/features/wallets/components/WalletModal";
+import { useDisplayCurrency } from "@/hooks/use-display-currency";
 
 export default function WalletsScreen() {
   const { wallets, isLoading, fetchWallets } = useWalletStore();
   const hideBalance = useSettingsStore((state) => state.hideBalance);
+  const tabBarSpace = useTabBarSpace();
+  useDisplayCurrency();
   const [refreshing, setRefreshing] = useState(false);
   const [typeFilter, setTypeFilter] = useState<
     "ALL" | "CASH" | "BANK" | "CREDIT_CARD"
@@ -102,7 +106,10 @@ export default function WalletsScreen() {
       />
 
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: tabBarSpace },
+        ]}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -296,7 +303,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: spacing.base,
-    paddingBottom: spacing.xl,
   },
   netWorthCard: {
     backgroundColor: colors.surfaceDark,

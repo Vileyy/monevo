@@ -18,14 +18,9 @@ import { Category, useCategoryStore } from "@/store/category.store";
 import { useTransactionStore } from "@/store/transaction.store";
 import { useBudgetStore } from "@/store/budget.store";
 import { colors, radius, shadows, spacing, typography } from "@/theme";
-import {
-  categoryDisplayName,
-  formatCurrency,
-  parseVndInput,
-} from "@/lib/format";
+import { formatCurrency, parseVndInput } from "@/lib/format";
 import { apiErrorMessage } from "@/lib/api-error";
 import { captureEvent } from "@/lib/analytics";
-import { DEFAULT_CATEGORY_METAS } from "@/lib/categories";
 import { hapticFeedback } from "@/lib/haptics";
 import { calculateBudgetWarning } from "@/lib/budget-warning";
 import {
@@ -36,10 +31,10 @@ import {
   Input,
   WalletIcon,
 } from "@/components/ui";
-import { CategoryModal } from "@/features/categories/components/CategoryModal";
 import { CategorySelectorModal } from "@/features/categories/components/CategorySelectorModal";
 import { WalletSelectorModal } from "@/features/wallets/components/WalletSelectorModal";
 import { BudgetWarningBanner } from "@/features/budgets/components/BudgetWarningBanner";
+import { selectCreatedCategory } from "@/features/transactions/utils/quick-transaction";
 
 export default function AddTransactionScreen() {
   const router = useRouter();
@@ -49,12 +44,7 @@ export default function AddTransactionScreen() {
     fetchWallets,
     createWallet,
   } = useWalletStore();
-  const {
-    categories,
-    hasFetched: categoriesFetched,
-    fetchCategories,
-    createCategory,
-  } = useCategoryStore();
+  const { categories, fetchCategories } = useCategoryStore();
   const { createTransaction, fetchTransactions } = useTransactionStore();
   const { budgets, fetchBudgets } = useBudgetStore();
 
@@ -65,7 +55,6 @@ export default function AddTransactionScreen() {
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [showCategorySelector, setShowCategorySelector] = useState(false);
   const [showWalletSelector, setShowWalletSelector] = useState(false);
-  const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const didSeed = useRef(false);
   const scrollRef = useRef<ScrollView>(null);
@@ -86,34 +75,15 @@ export default function AddTransactionScreen() {
     fetchBudgets();
   }, [fetchWallets, fetchCategories, fetchBudgets]);
 
-  // Seed defaults if fresh account
+  // A fresh account still needs somewhere to put money; categories are user-made.
   useEffect(() => {
-    if (didSeed.current || !categoriesFetched || !walletsFetched) return;
-    if (wallets.length > 0 && categories.length > 0) return;
+    if (didSeed.current || !walletsFetched || wallets.length > 0) return;
 
     didSeed.current = true;
-    void (async () => {
-      try {
-        if (wallets.length === 0) {
-          await createWallet("Cash", "CASH", 0);
-        }
-        if (categories.length === 0) {
-          for (const item of DEFAULT_CATEGORY_METAS) {
-            await createCategory(item.name, item.type, item.icon);
-          }
-        }
-      } catch {
-        didSeed.current = false;
-      }
-    })();
-  }, [
-    categories.length,
-    categoriesFetched,
-    createCategory,
-    createWallet,
-    wallets.length,
-    walletsFetched,
-  ]);
+    void createWallet("Cash", "CASH", 0).catch(() => {
+      didSeed.current = false;
+    });
+  }, [createWallet, wallets.length, walletsFetched]);
 
   const selectedWalletId =
     walletId && wallets.some((w) => w.id === walletId)
@@ -140,9 +110,7 @@ export default function AddTransactionScreen() {
   );
 
   const selectedCategoryName = useMemo(() => {
-    return selectedCategory
-      ? categoryDisplayName(selectedCategory.name)
-      : "Select Category";
+    return selectedCategory ? selectedCategory.name : "Select Category";
   }, [selectedCategory]);
 
   const matchingBudget = useMemo(() => {
@@ -158,8 +126,9 @@ export default function AddTransactionScreen() {
   }, [type, matchingBudget, parsedAmount]);
 
   const handleSelectCategoryFromModal = (cat: Category) => {
-    setCategoryId(cat.id);
-    setType(cat.type as "EXPENSE" | "INCOME");
+    const selection = selectCreatedCategory(cat);
+    setCategoryId(selection.categoryId);
+    setType(selection.type);
   };
 
   const handleSelectWalletFromModal = (id: string | null) => {
@@ -228,7 +197,7 @@ export default function AddTransactionScreen() {
     if (type === "EXPENSE" && budgetWarning?.status === "EXCEEDED") {
       hapticFeedback.warning();
       const catDisplayName = selectedCategory
-        ? categoryDisplayName(selectedCategory.name)
+        ? selectedCategory.name
         : "this category";
       Alert.alert(
         "Budget Limit Exceeded",
@@ -311,8 +280,8 @@ export default function AddTransactionScreen() {
             >
               <View style={styles.rowLeft}>
                 <CategoryIcon
-                  name={selectedCategoryName}
                   type={type}
+                  icon={selectedCategory?.icon}
                   size="md"
                 />
                 <View style={styles.rowTextCol}>
@@ -432,7 +401,6 @@ export default function AddTransactionScreen() {
         categories={categories}
         selectedCategoryId={selectedCategoryId}
         onSelectCategory={handleSelectCategoryFromModal}
-        onAddNew={() => setShowCategoryModal(true)}
         initialType={type}
       />
 
@@ -444,13 +412,6 @@ export default function AddTransactionScreen() {
         selectedWalletId={selectedWalletId}
         onSelectWallet={handleSelectWalletFromModal}
         allowAllAccounts={false}
-      />
-
-      {/* Custom Category Modal */}
-      <CategoryModal
-        visible={showCategoryModal}
-        onClose={() => setShowCategoryModal(false)}
-        initialType={type}
       />
     </SafeAreaView>
   );

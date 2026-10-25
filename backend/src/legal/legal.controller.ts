@@ -1,6 +1,7 @@
 import { Controller, Get, Header } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
+  DEFAULT_LEGAL_OPTIONS,
   LegalPageOptions,
   renderAccountDeletion,
   renderPrivacyPolicy,
@@ -15,12 +16,21 @@ export class LegalController {
 
   private getOptions(): LegalPageOptions {
     return {
-      appName: this.configService.get<string>('LEGAL_APP_NAME') || 'Monevo',
+      appName:
+        this.configService.get<string>('LEGAL_APP_NAME') ||
+        DEFAULT_LEGAL_OPTIONS.appName,
+      operatorName:
+        this.configService.get<string>('LEGAL_OPERATOR_NAME') ||
+        DEFAULT_LEGAL_OPTIONS.operatorName,
       contactEmail:
         this.configService.get<string>('LEGAL_CONTACT_EMAIL') ||
-        'support@monevo.app',
+        DEFAULT_LEGAL_OPTIONS.contactEmail,
+      country:
+        this.configService.get<string>('LEGAL_COUNTRY') ||
+        DEFAULT_LEGAL_OPTIONS.country,
       lastUpdated:
-        this.configService.get<string>('LEGAL_LAST_UPDATED') || '2026-10-22',
+        this.configService.get<string>('LEGAL_LAST_UPDATED') ||
+        DEFAULT_LEGAL_OPTIONS.lastUpdated,
     };
   }
 

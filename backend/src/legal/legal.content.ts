@@ -1,8 +1,20 @@
 export interface LegalPageOptions {
   appName: string;
+  operatorName: string;
   contactEmail: string;
+  country: string;
   lastUpdated: string;
+  /** Prefix for internal links, e.g. "/monevo" on GitHub Pages. */
+  basePath?: string;
 }
+
+export const DEFAULT_LEGAL_OPTIONS: Omit<LegalPageOptions, 'basePath'> = {
+  appName: 'Monevo',
+  operatorName: 'Doan Quoc Hieu',
+  contactEmail: 'doanquochieu2104@gmail.com',
+  country: 'Vietnam',
+  lastUpdated: '2026-10-25',
+};
 
 function escapeHtml(value: string): string {
   return value
@@ -19,8 +31,10 @@ function layout(
   body: string,
 ): string {
   const appName = escapeHtml(options.appName);
+  const operatorName = escapeHtml(options.operatorName);
   const contactEmail = escapeHtml(options.contactEmail);
   const lastUpdated = escapeHtml(options.lastUpdated);
+  const base = escapeHtml(options.basePath ?? '');
 
   return `<!doctype html>
 <html lang="en">
@@ -127,12 +141,13 @@ function layout(
       </header>
       <article>${body}</article>
       <nav>
-        <a href="/legal/privacy">Privacy Policy</a>
-        <a href="/legal/terms">Terms of Service</a>
-        <a href="/legal/account-deletion">Delete Account</a>
+        <a href="${base}/legal/privacy">Privacy Policy</a>
+        <a href="${base}/legal/terms">Terms of Service</a>
+        <a href="${base}/legal/account-deletion">Delete Account</a>
       </nav>
       <footer>
-        ${appName} · <a href="mailto:${contactEmail}">${contactEmail}</a>
+        ${appName} is operated by ${operatorName} ·
+        <a href="mailto:${contactEmail}">${contactEmail}</a>
       </footer>
     </main>
   </body>
@@ -141,23 +156,26 @@ function layout(
 
 export function renderPrivacyPolicy(options: LegalPageOptions): string {
   const appName = escapeHtml(options.appName);
+  const operatorName = escapeHtml(options.operatorName);
   const contactEmail = escapeHtml(options.contactEmail);
+  const country = escapeHtml(options.country);
+  const base = escapeHtml(options.basePath ?? '');
 
   return layout(
     'Privacy Policy',
     options,
     `
       <p>
-        This Privacy Policy explains how ${appName} ("we", "us", "our")
+        This Privacy Policy explains how ${operatorName} ("we", "us", "our")
         collects, uses, stores and deletes information when you use the
         ${appName} mobile application and API (the "Service").
       </p>
 
       <h2>1. Who we are</h2>
       <p>
-        ${appName} is a personal finance application that helps you record
-        wallets, transactions, budgets and bill reminders. For privacy
-        questions or requests, contact us at
+        ${appName} is operated by ${operatorName}, an individual developer
+        based in ${country}, and is distributed on Google Play under that
+        developer account. For privacy questions or requests, contact us at
         <a href="mailto:${contactEmail}">${contactEmail}</a>.
       </p>
 
@@ -166,11 +184,17 @@ export function renderPrivacyPolicy(options: LegalPageOptions): string {
       <ul>
         <li>Email address and display name.</li>
         <li>
-          Authentication identifiers issued by our identity provider (Clerk),
-          and — if you choose Google Sign-In — your Google account email and
-          basic profile.
+          If you choose Google Sign-In: the Google account email, name and
+          profile photo that Google shares with us through Clerk.
         </li>
-        <li>An internal user identifier used to link your records.</li>
+        <li>
+          Authentication identifiers issued by our identity provider (Clerk)
+          and an internal user identifier used to link your records.
+        </li>
+        <li>
+          If you set a password, it is stored only as a salted hash. We never
+          store your password in readable form.
+        </li>
       </ul>
 
       <h3>Financial information you enter</h3>
@@ -181,23 +205,52 @@ export function renderPrivacyPolicy(options: LegalPageOptions): string {
       </ul>
       <p>
         This information is stored so the Service can show it back to you. We
-        do not connect to your bank and we do not receive your bank
-        credentials.
+        do not connect to your bank, we never receive your bank credentials or
+        card numbers, and we do not move money.
       </p>
 
-      <h3>Technical information</h3>
+      <h3>Usage and analytics data</h3>
+      <p>
+        We use PostHog, a product analytics provider, to understand how the app
+        is used and to fix what is confusing. PostHog receives:
+      </p>
       <ul>
         <li>
-          Authentication logs and limited device/network information processed
-          by Clerk to protect your account and prevent abuse.
+          App events such as screens opened and buttons tapped. The app
+          automatically captures taps to record these events.
         </li>
         <li>
-          Notification permission status. Bill reminders are scheduled locally
-          on your device and are not sent to our servers.
+          A random installation identifier, app version, device model,
+          operating system version, language and an approximate region derived
+          from your IP address.
+        </li>
+        <li>
+          Your internal user identifier while you are signed in, so we can tell
+          a returning user from a new one. We do not send your email address,
+          your name, your transaction amounts, your notes or your budgets to
+          PostHog.
         </li>
       </ul>
+
+      <h3>Diagnostics and error data</h3>
       <p>
-        We do not use advertising SDKs and we do not sell personal data.
+        When the app or API fails, Sentry, our error monitoring provider,
+        receives the error message, a stack trace and technical request details
+        such as the route, status code, timing and app version. We do not
+        intentionally include your financial records in these reports.
+      </p>
+
+      <h3>Notifications</h3>
+      <p>
+        Bill reminders are scheduled locally on your device and their content is
+        not sent to our servers. We only learn whether you granted the
+        notification permission.
+      </p>
+
+      <p>
+        We do not collect precise location, contacts, photos, microphone, health
+        data or advertising identifiers. We do not use advertising SDKs and we do
+        not sell personal data.
       </p>
 
       <h2>3. How we use information</h2>
@@ -205,16 +258,18 @@ export function renderPrivacyPolicy(options: LegalPageOptions): string {
         <li>To create and secure your account and sign you in.</li>
         <li>To store and display the financial records you enter.</li>
         <li>To schedule bill reminder notifications you enable.</li>
-        <li>To maintain, troubleshoot and secure the Service.</li>
+        <li>To understand which features are used and improve the Service.</li>
+        <li>To detect, diagnose and fix errors and abuse.</li>
         <li>To respond to support and privacy requests.</li>
       </ul>
 
       <h2>4. Legal bases</h2>
       <p>
         Where applicable, we process information to perform our contract with
-        you, to comply with legal obligations, to protect the Service, and
-        based on your consent (for example, notification permission, which you
-        can revoke in your device settings).
+        you, to comply with legal obligations, to protect the Service, and based
+        on your consent (for example, notification permission, which you can
+        revoke in your device settings, and analytics, which you can opt out of
+        as described below).
       </p>
 
       <h2>5. Sharing and service providers</h2>
@@ -224,9 +279,17 @@ export function renderPrivacyPolicy(options: LegalPageOptions): string {
         <li><strong>Google</strong> — only if you choose Google Sign-In.</li>
         <li>
           <strong>Amazon Web Services</strong> — hosting for the API and
-          PostgreSQL database.
+          PostgreSQL database in the ap-southeast-2 (Sydney) region.
         </li>
         <li><strong>Expo</strong> — application build and distribution tooling.</li>
+        <li>
+          <strong>PostHog</strong> — product analytics, processing usage events
+          described above.
+        </li>
+        <li>
+          <strong>Sentry (Functional Software, Inc.)</strong> — error monitoring
+          and diagnostics.
+        </li>
       </ul>
       <p>
         These providers process data on our behalf and are not permitted to use
@@ -236,45 +299,55 @@ export function renderPrivacyPolicy(options: LegalPageOptions): string {
 
       <h2>6. Storage, security and retention</h2>
       <p>
-        Account and financial records are stored in our PostgreSQL database.
-        Production traffic is served over HTTPS/TLS, access is restricted to
-        authorized operators, and authentication tokens on the device are kept
-        in the platform secure store.
+        Account and financial records are stored in our PostgreSQL database on
+        AWS. Sign-in credentials are handled by Clerk over encrypted HTTPS
+        connections, passwords are stored only as salted hashes, server access is
+        restricted to authorized operators, and authentication tokens on your
+        device are kept in the platform secure store. Our legal pages are served
+        over HTTPS.
       </p>
       <p>
         We retain your information while your account exists. When you delete
         your account, we delete your account and associated financial records.
         Residual copies may remain in encrypted backups for a limited period
-        (normally no more than 30 days) before being overwritten.
+        (normally no more than 30 days) before being overwritten. Analytics
+        events are retained for up to 12 months, error diagnostics for up to 90
+        days, and records we must keep by law only for as long as the law
+        requires.
       </p>
 
-      <h2>7. Your rights</h2>
+      <h2>7. Your rights and choices</h2>
       <p>Depending on your location, you may have the right to:</p>
       <ul>
         <li>Access and receive a copy of your information.</li>
         <li>Correct inaccurate account information.</li>
         <li>Delete your account and associated data.</li>
         <li>Withdraw consent (for example, disable notifications).</li>
+        <li>Opt out of product analytics.</li>
         <li>Object to or restrict certain processing.</li>
+        <li>Complain to your local data protection authority.</li>
       </ul>
       <p>
         You can delete your account directly in the app: Profile → Delete
         Account. You can also use our
-        <a href="/legal/account-deletion">account deletion page</a> or email
-        <a href="mailto:${contactEmail}">${contactEmail}</a>. We respond to
+        <a href="${base}/legal/account-deletion">account deletion page</a> or
+        email <a href="mailto:${contactEmail}">${contactEmail}</a> to exercise any
+        of these rights, including opting out of analytics. We respond to
         verified requests within 30 days.
       </p>
 
       <h2>8. Children</h2>
       <p>
         The Service is not directed to children under 13 (or the minimum age in
-        your country). We do not knowingly collect data from children.
+        your country). We do not knowingly collect data from children. If you
+        believe a child has created an account, contact us and we will delete it.
       </p>
 
       <h2>9. International transfers</h2>
       <p>
-        Our providers may process information in countries other than yours.
-        Where required, we rely on appropriate safeguards for those transfers.
+        Our providers may process information in countries other than yours,
+        including the United States and Australia. Where required, we rely on
+        appropriate safeguards for those transfers.
       </p>
 
       <h2>10. Changes</h2>
@@ -285,7 +358,7 @@ export function renderPrivacyPolicy(options: LegalPageOptions): string {
 
       <h2>11. Contact</h2>
       <p>
-        Questions or requests:
+        ${operatorName} — questions or requests:
         <a href="mailto:${contactEmail}">${contactEmail}</a>.
       </p>
     `,
@@ -294,7 +367,10 @@ export function renderPrivacyPolicy(options: LegalPageOptions): string {
 
 export function renderTermsOfService(options: LegalPageOptions): string {
   const appName = escapeHtml(options.appName);
+  const operatorName = escapeHtml(options.operatorName);
   const contactEmail = escapeHtml(options.contactEmail);
+  const country = escapeHtml(options.country);
+  const base = escapeHtml(options.basePath ?? '');
 
   return layout(
     'Terms of Service',
@@ -302,8 +378,9 @@ export function renderTermsOfService(options: LegalPageOptions): string {
     `
       <p>
         These Terms of Service ("Terms") govern your use of the ${appName}
-        mobile application and API (the "Service"). By creating an account or
-        using the Service, you agree to these Terms.
+        mobile application and API (the "Service"), operated by ${operatorName}
+        ("we", "us", "our"). By creating an account or using the Service, you
+        agree to these Terms.
       </p>
 
       <h2>1. The Service</h2>
@@ -324,8 +401,8 @@ export function renderTermsOfService(options: LegalPageOptions): string {
       <ul>
         <li>You must provide accurate account information.</li>
         <li>
-          You are responsible for keeping access to your email account secure;
-          sign-in links and verification codes are sensitive.
+          You are responsible for keeping access to your email account and your
+          password secure; sign-in links and verification codes are sensitive.
         </li>
         <li>You must be at least 13 years old (or the minimum age in your country).</li>
         <li>One person or organization per account; do not share your account.</li>
@@ -349,42 +426,59 @@ export function renderTermsOfService(options: LegalPageOptions): string {
         the Service for you.
       </p>
 
-      <h2>5. Availability and changes</h2>
+      <h2>5. Third-party services</h2>
+      <p>
+        Sign-in is provided by Clerk and, if you choose it, Google. Your use of
+        those services is also subject to their own terms. We are not responsible
+        for third-party services we do not control.
+      </p>
+
+      <h2>6. Availability and changes</h2>
       <p>
         We aim to keep the Service available, but it is provided on an "as is"
         and "as available" basis. We may change, suspend or discontinue features
-        and will make reasonable efforts to give notice of material changes.
+        and will make reasonable efforts to give notice of material changes. Keep
+        your own records of anything you cannot afford to lose.
       </p>
 
-      <h2>6. Limitation of liability</h2>
+      <h2>7. Limitation of liability</h2>
       <p>
-        To the maximum extent permitted by law, ${appName} is not liable for
+        To the maximum extent permitted by law, ${operatorName} is not liable for
         indirect, incidental or consequential losses, or for losses arising from
         decisions you make based on information in the Service. Nothing in these
-        Terms excludes liability that cannot lawfully be excluded.
+        Terms excludes liability that cannot lawfully be excluded, including your
+        mandatory consumer rights.
       </p>
 
-      <h2>7. Termination and deletion</h2>
+      <h2>8. Termination and deletion</h2>
       <p>
         You can stop using the Service at any time and delete your account in
         the app (Profile → Delete Account) or through our
-        <a href="/legal/account-deletion">account deletion page</a>. We may
+        <a href="${base}/legal/account-deletion">account deletion page</a>. We may
         suspend accounts that violate these Terms or create security risks.
       </p>
 
-      <h2>8. Privacy</h2>
+      <h2>9. Privacy</h2>
       <p>
-        Our <a href="/legal/privacy">Privacy Policy</a> explains how we handle
-        personal information and forms part of these Terms.
+        Our <a href="${base}/legal/privacy">Privacy Policy</a> explains how we
+        handle personal information and forms part of these Terms.
       </p>
 
-      <h2>9. Changes to these Terms</h2>
+      <h2>10. Governing law</h2>
+      <p>
+        These Terms are governed by the laws of ${country}, without regard to
+        conflict-of-law rules. Disputes will be handled by the competent courts
+        of ${country}, except where mandatory consumer protection law in your
+        country of residence gives you the right to bring a claim locally.
+      </p>
+
+      <h2>11. Changes to these Terms</h2>
       <p>
         We may update these Terms. Continued use after an update means you
         accept the revised Terms. The date at the top shows the latest version.
       </p>
 
-      <h2>10. Contact</h2>
+      <h2>12. Contact</h2>
       <p>
         Questions about these Terms:
         <a href="mailto:${contactEmail}">${contactEmail}</a>.
@@ -395,6 +489,7 @@ export function renderTermsOfService(options: LegalPageOptions): string {
 
 export function renderAccountDeletion(options: LegalPageOptions): string {
   const appName = escapeHtml(options.appName);
+  const operatorName = escapeHtml(options.operatorName);
   const contactEmail = escapeHtml(options.contactEmail);
 
   return layout(
@@ -423,14 +518,15 @@ export function renderAccountDeletion(options: LegalPageOptions): string {
         with it through cascading deletes.
       </p>
 
-      <h2>Delete by email</h2>
+      <h2>Delete without the app</h2>
       <p>
         If you cannot sign in, email
         <a href="mailto:${contactEmail}?subject=Account%20deletion%20request">
           ${contactEmail}</a>
         from the email address registered to your account, with the subject
         "Account deletion request". We will verify ownership and complete the
-        deletion within 30 days.
+        deletion within 30 days. This is also the place to request deletion of
+        data you believe is still associated with you.
       </p>
 
       <h2>What is deleted</h2>
@@ -445,15 +541,19 @@ export function renderAccountDeletion(options: LegalPageOptions): string {
       <h2>What may be retained</h2>
       <p>
         Encrypted backup copies of the database may persist for up to 30 days
-        before being overwritten. We may also retain minimal records if
-        required by law (for example, fraud-prevention or tax obligations).
+        before being overwritten. Product analytics events are linked to a random
+        identifier rather than your identity and are retained for up to 12
+        months; after your account is deleted they can no longer be connected to
+        you. Error diagnostics are retained for up to 90 days. We may also retain
+        minimal records if required by law (for example, fraud-prevention or tax
+        obligations).
       </p>
 
       <h2>Questions</h2>
       <p>
-        Contact <a href="mailto:${contactEmail}">${contactEmail}</a> if you need
-        help with deletion or want to know what data is associated with your
-        account.
+        Contact ${operatorName} at
+        <a href="mailto:${contactEmail}">${contactEmail}</a> if you need help with
+        deletion or want to know what data is associated with your account.
       </p>
     `,
   );

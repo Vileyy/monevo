@@ -7,6 +7,7 @@ import { WalletIcon } from "@/components/ui";
 import { getWalletMeta } from "@/lib/categories";
 import { Wallet } from "@/store/wallet.store";
 import { hapticFeedback } from "@/lib/haptics";
+import { useDisplayCurrency } from "@/hooks/use-display-currency";
 
 export interface WalletCardProps {
   wallet: Wallet;
@@ -23,6 +24,7 @@ export const WalletCard = memo(function WalletCard({
   compact = false,
   isSelected = false,
 }: WalletCardProps) {
+  useDisplayCurrency();
   const meta = getWalletMeta(wallet.type);
 
   const handlePress = () => {

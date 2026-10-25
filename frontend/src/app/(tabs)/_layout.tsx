@@ -1,10 +1,10 @@
 import React from "react";
 import { Redirect, Tabs } from "expo-router";
-import { Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { colors, typography } from "@/theme";
+import { colors } from "@/theme";
 import { hapticFeedback } from "@/lib/haptics";
 import { useAuthStore } from "@/store/auth.store";
+import { FloatingTabBar } from "@/components/FloatingTabBar";
 
 export default function TabLayout() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -22,28 +22,11 @@ export default function TabLayout() {
 
   return (
     <Tabs
+      tabBar={(props) => <FloatingTabBar {...props} />}
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,
-        tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopColor: colors.border,
-          borderTopWidth: 1,
-          height: Platform.OS === "ios" ? 84 : 64,
-          paddingTop: 8,
-          paddingBottom: Platform.OS === "ios" ? 28 : 10,
-          elevation: 8,
-          shadowColor: "#0F172A",
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.06,
-          shadowRadius: 8,
-        },
-        tabBarLabelStyle: {
-          ...typography.caption,
-          fontWeight: "600",
-          marginTop: 2,
-        },
       }}
     >
       <Tabs.Screen

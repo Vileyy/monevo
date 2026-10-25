@@ -29,6 +29,17 @@ export function validateQuickAmount(amount: number): string | null {
   return null;
 }
 
+/** Selection to apply after a category is created from the quick form. */
+export function selectCreatedCategory(category: { id: string; type: string }): {
+  categoryId: string;
+  type: QuickTransactionType;
+} {
+  return {
+    categoryId: category.id,
+    type: category.type === "INCOME" ? "INCOME" : "EXPENSE",
+  };
+}
+
 export function normalizeQuickNote(note: string): string | undefined {
   const trimmed = note.trim();
   return trimmed.length > 0 ? trimmed : undefined;

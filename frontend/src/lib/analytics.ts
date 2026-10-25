@@ -21,10 +21,9 @@ void analytics?.register({
 });
 
 export function identifyUser(user: User) {
-  analytics?.identify(user.id, {
-    email: user.email,
-    ...(user.name ? { name: user.name } : {}),
-  });
+  // Only the internal id: the privacy policy states that email, name and
+  // financial data are never sent to the analytics provider.
+  analytics?.identify(user.id);
 }
 
 export function resetAnalytics() {

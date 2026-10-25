@@ -4,7 +4,6 @@ import {
   Platform,
   Pressable,
   RefreshControl,
-  ScrollView,
   SectionList,
   StyleSheet,
   Text,
@@ -12,6 +11,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTabBarSpace } from "@/components/FloatingTabBar";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -24,6 +24,7 @@ import { colors, radius, shadows, spacing, typography } from "@/theme";
 import { formatCurrency } from "@/lib/format";
 import { hapticFeedback } from "@/lib/haptics";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { useDisplayCurrency } from "@/hooks/use-display-currency";
 import {
   EmptyState,
   Header,
@@ -33,8 +34,14 @@ import {
 } from "@/components/ui";
 import { TransactionItem } from "@/features/transactions/components/TransactionItem";
 import { TransactionDetailModal } from "@/features/transactions/components/TransactionDetailModal";
-
-type SortOption = "DATE_DESC" | "AMOUNT_DESC" | "AMOUNT_ASC";
+import { FilterDropdown } from "@/features/transactions/components/FilterDropdown";
+import {
+  SORT_OPTIONS,
+  SortOption,
+  sortOptionFor,
+  walletFilterLabel,
+  walletFilterOptions,
+} from "@/features/transactions/utils/transaction-filters";
 
 const SORT_QUERY: Record<
   Exclude<SortOption, "DATE_DESC">,
@@ -46,6 +53,8 @@ const SORT_QUERY: Record<
 
 export default function TransactionsScreen() {
   const router = useRouter();
+  const tabBarSpace = useTabBarSpace();
+  useDisplayCurrency();
   const { width } = useWindowDimensions();
   const compact = width < 360;
   const {
@@ -243,133 +252,27 @@ export default function TransactionsScreen() {
           />
         </View>
 
-        {/* Compact Filters & Sort Row */}
+        {/* Account & Sort Dropdowns */}
         <View style={styles.filterRowSection}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.pillsScroll}
-          >
-            {/* Account Pills */}
-            <Pressable
-              onPress={() => handleWalletSelect("ALL")}
-              style={[
-                styles.pill,
-                selectedWalletId === "ALL" && styles.pillActive,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.pillText,
-                  selectedWalletId === "ALL" && styles.pillTextActive,
-                ]}
-              >
-                All Accounts
-              </Text>
-            </Pressable>
-
-            {wallets.map((w) => (
-              <Pressable
-                key={w.id}
-                onPress={() => handleWalletSelect(w.id)}
-                style={[
-                  styles.pill,
-                  selectedWalletId === w.id && styles.pillActive,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.pillText,
-                    selectedWalletId === w.id && styles.pillTextActive,
-                  ]}
-                >
-                  {w.name}
-                </Text>
-              </Pressable>
-            ))}
-
-            <View style={styles.pillDivider} />
-
-            {/* Sort Pills */}
-            <Pressable
-              onPress={() => handleSortSelect("DATE_DESC")}
-              style={[
-                styles.pill,
-                sortBy === "DATE_DESC" && styles.sortPillActive,
-              ]}
-            >
-              <Ionicons
-                name="time-outline"
-                size={14}
-                color={
-                  sortBy === "DATE_DESC" ? colors.primary : colors.textSecondary
-                }
-                style={{ marginRight: 4 }}
-              />
-              <Text
-                style={[
-                  styles.pillText,
-                  sortBy === "DATE_DESC" && styles.pillTextActive,
-                ]}
-              >
-                Latest
-              </Text>
-            </Pressable>
-
-            <Pressable
-              onPress={() => handleSortSelect("AMOUNT_DESC")}
-              style={[
-                styles.pill,
-                sortBy === "AMOUNT_DESC" && styles.sortPillActive,
-              ]}
-            >
-              <Ionicons
-                name="trending-down-outline"
-                size={14}
-                color={
-                  sortBy === "AMOUNT_DESC"
-                    ? colors.primary
-                    : colors.textSecondary
-                }
-                style={{ marginRight: 4 }}
-              />
-              <Text
-                style={[
-                  styles.pillText,
-                  sortBy === "AMOUNT_DESC" && styles.pillTextActive,
-                ]}
-              >
-                High → Low
-              </Text>
-            </Pressable>
-
-            <Pressable
-              onPress={() => handleSortSelect("AMOUNT_ASC")}
-              style={[
-                styles.pill,
-                sortBy === "AMOUNT_ASC" && styles.sortPillActive,
-              ]}
-            >
-              <Ionicons
-                name="trending-up-outline"
-                size={14}
-                color={
-                  sortBy === "AMOUNT_ASC"
-                    ? colors.primary
-                    : colors.textSecondary
-                }
-                style={{ marginRight: 4 }}
-              />
-              <Text
-                style={[
-                  styles.pillText,
-                  sortBy === "AMOUNT_ASC" && styles.pillTextActive,
-                ]}
-              >
-                Low → High
-              </Text>
-            </Pressable>
-          </ScrollView>
+          <FilterDropdown
+            icon="wallet-outline"
+            label={walletFilterLabel(wallets, selectedWalletId)}
+            active={selectedWalletId !== "ALL"}
+            options={walletFilterOptions(wallets)}
+            value={selectedWalletId}
+            onChange={handleWalletSelect}
+            accessibilityLabel="Filter by account"
+          />
+          <FilterDropdown
+            icon={sortOptionFor(sortBy).icon}
+            label={sortOptionFor(sortBy).label}
+            active={sortBy !== "DATE_DESC"}
+            options={SORT_OPTIONS}
+            value={sortBy}
+            onChange={handleSortSelect}
+            accessibilityLabel="Sort transactions"
+            style={styles.sortDropdown}
+          />
         </View>
 
         {/* Summary Card from Server */}
@@ -482,7 +385,10 @@ export default function TransactionsScreen() {
             />
           )
         }
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[
+          styles.listContent,
+          { paddingBottom: tabBarSpace },
+        ]}
         showsVerticalScrollIndicator={false}
         stickySectionHeadersEnabled={false}
         removeClippedSubviews={Platform.OS === "android"}
@@ -526,7 +432,6 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: spacing.base,
-    paddingBottom: spacing.xxl,
   },
   searchContainer: {
     marginTop: spacing.xs,
@@ -536,43 +441,12 @@ const styles = StyleSheet.create({
   },
   filterRowSection: {
     marginTop: spacing.md,
-  },
-  pillsScroll: {
-    gap: spacing.sm,
-    alignItems: "center",
-  },
-  pill: {
     flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs + 2,
-    borderRadius: radius.full,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
+    gap: spacing.sm,
   },
-  pillActive: {
-    backgroundColor: colors.primaryMuted,
-    borderColor: colors.primary,
-  },
-  sortPillActive: {
-    backgroundColor: colors.primaryMuted,
-    borderColor: colors.primary,
-  },
-  pillText: {
-    ...typography.footnote,
-    fontWeight: "600",
-    color: colors.textSecondary,
-  },
-  pillTextActive: {
-    color: colors.primary,
-    fontWeight: "700",
-  },
-  pillDivider: {
-    width: 1,
-    height: 20,
-    backgroundColor: colors.border,
-    marginHorizontal: 2,
+  sortDropdown: {
+    flex: 0,
+    minWidth: 142,
   },
   summaryBar: {
     flexDirection: "row",

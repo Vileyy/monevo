@@ -8,13 +8,14 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTabBarSpace } from "@/components/FloatingTabBar";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useTransactionStore } from "@/store/transaction.store";
 import { BudgetItem, useBudgetStore } from "@/store/budget.store";
 import { useSettingsStore } from "@/store/settings.store";
 import { colors, radius, shadows, spacing, typography } from "@/theme";
-import { categoryDisplayName, formatCurrency } from "@/lib/format";
+import { formatCurrency } from "@/lib/format";
 import {
   CategoryIcon,
   EmptyState,
@@ -30,10 +31,13 @@ import {
   DateRange,
   DateRangePickerModal,
 } from "@/features/insights/components/DateRangePickerModal";
+import { useDisplayCurrency } from "@/hooks/use-display-currency";
 
 export default function ExploreScreen() {
   const router = useRouter();
+  const tabBarSpace = useTabBarSpace();
   const hideBalance = useSettingsStore((state) => state.hideBalance);
+  useDisplayCurrency();
   const { transactions, fetchTransactions } = useTransactionStore();
   const {
     budgets,
@@ -123,20 +127,22 @@ export default function ExploreScreen() {
 
     const expenseCategoryMap: Record<
       string,
-      { name: string; amount: number; count: number }
+      { name: string; icon: string | null; amount: number; count: number }
     > = {};
 
     const incomeCategoryMap: Record<
       string,
-      { name: string; amount: number; count: number }
+      { name: string; icon: string | null; amount: number; count: number }
     > = {};
 
     for (const tx of filteredTransactions) {
-      const catName = categoryDisplayName(tx.category?.name || "Other");
+      const catName = tx.category?.name || "Other";
+      const catIcon = tx.category?.icon ?? null;
       if (tx.type === "INCOME") {
         totalIncome += tx.amount;
         incomeCategoryMap[catName] = incomeCategoryMap[catName] || {
           name: catName,
+          icon: catIcon,
           amount: 0,
           count: 0,
         };
@@ -146,6 +152,7 @@ export default function ExploreScreen() {
         totalExpense += tx.amount;
         expenseCategoryMap[catName] = expenseCategoryMap[catName] || {
           name: catName,
+          icon: catIcon,
           amount: 0,
           count: 0,
         };
@@ -191,7 +198,10 @@ export default function ExploreScreen() {
       />
 
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: tabBarSpace },
+        ]}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -335,7 +345,7 @@ export default function ExploreScreen() {
                       <View style={styles.breakdownHeader}>
                         <View style={styles.catInfoRow}>
                           <CategoryIcon
-                            name={item.name}
+                            icon={item.icon}
                             type="INCOME"
                             size="sm"
                           />
@@ -397,7 +407,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: spacing.base,
-    paddingBottom: spacing.xl,
   },
   segmentContainer: {
     marginBottom: spacing.sm,

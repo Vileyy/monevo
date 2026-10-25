@@ -1,12 +1,20 @@
 import {
-  categoryDisplayName,
+  formatAmountInput,
   formatCurrency,
   formatCurrencyInput,
   parseCurrencyInput,
+  parseVndInput,
   walletTypeLabel,
 } from "@/lib/format";
+import { useSettingsStore } from "@/store/settings.store";
+import { useCurrencyStore } from "@/store/currency.store";
 
 describe("format utilities", () => {
+  beforeEach(() => {
+    useSettingsStore.setState({ currency: "VND" });
+    useCurrencyStore.setState({ rates: {} });
+  });
+
   describe("formatCurrency", () => {
     it("should format VND correctly", () => {
       const formatted = formatCurrency(150000, "VND");
@@ -26,6 +34,61 @@ describe("format utilities", () => {
     it("should format JPY correctly", () => {
       const formatted = formatCurrency(2500, "JPY");
       expect(formatted).toBe("¥2,500");
+    });
+
+    it("should convert a stored VND amount into the display currency", () => {
+      useSettingsStore.setState({ currency: "USD" });
+      useCurrencyStore.setState({ rates: { USD: 0.00004 } });
+
+      expect(formatCurrency(1500000)).toBe("$60.00");
+    });
+
+    it("should fall back to VND when the display rate is missing", () => {
+      useSettingsStore.setState({ currency: "USD" });
+
+      expect(formatCurrency(1500000)).toBe("1.500.000 ₫");
+    });
+
+    it("should not convert when an explicit currency is passed", () => {
+      useSettingsStore.setState({ currency: "USD" });
+      useCurrencyStore.setState({ rates: { USD: 0.00004 } });
+
+      expect(formatCurrency(1500000, "VND")).toBe("1.500.000 ₫");
+    });
+  });
+
+  describe("parseVndInput", () => {
+    it("should convert a display-currency amount back into VND", () => {
+      useSettingsStore.setState({ currency: "USD" });
+      useCurrencyStore.setState({ rates: { USD: 0.00004 } });
+
+      expect(parseVndInput("10")).toBe(250000);
+      expect(parseVndInput("5.50")).toBe(137500);
+    });
+
+    it("should return zero for blank or invalid input", () => {
+      expect(parseVndInput("")).toBe(0);
+      expect(parseVndInput("abc")).toBe(0);
+    });
+
+    it("should keep raw input when no rate is available", () => {
+      useSettingsStore.setState({ currency: "USD" });
+
+      expect(parseVndInput("10")).toBe(10);
+    });
+  });
+
+  describe("formatAmountInput", () => {
+    it("should prefill a converted amount for the display currency", () => {
+      useSettingsStore.setState({ currency: "USD" });
+      useCurrencyStore.setState({ rates: { USD: 0.00004 } });
+
+      expect(formatAmountInput(250000)).toBe("10");
+      expect(formatAmountInput(251250)).toBe("10.05");
+    });
+
+    it("should prefill VND amounts unchanged", () => {
+      expect(formatAmountInput(150000)).toBe("150.000");
     });
   });
 
@@ -57,15 +120,6 @@ describe("format utilities", () => {
       expect(walletTypeLabel("BANK")).toBe("Bank");
       expect(walletTypeLabel("CREDIT_CARD")).toBe("Card");
       expect(walletTypeLabel("OTHER")).toBe("OTHER");
-    });
-  });
-
-  describe("categoryDisplayName", () => {
-    it("should translate known categories and fallback to original", () => {
-      expect(categoryDisplayName("Ăn uống")).toBe("Food");
-      expect(categoryDisplayName("Di chuyển")).toBe("Transport");
-      expect(categoryDisplayName("Lương")).toBe("Salary");
-      expect(categoryDisplayName("Custom Category")).toBe("Custom Category");
     });
   });
 });

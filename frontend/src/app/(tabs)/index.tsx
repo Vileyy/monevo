@@ -8,27 +8,22 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTabBarSpace } from "@/components/FloatingTabBar";
 import { useRouter } from "expo-router";
-import { Image } from "expo-image";
-import { Ionicons } from "@expo/vector-icons";
-import { useAuthStore } from "@/store/auth.store";
-import { useWalletStore, Wallet } from "@/store/wallet.store";
+import { useWalletStore } from "@/store/wallet.store";
 import { Transaction, useTransactionStore } from "@/store/transaction.store";
 import { useReminderStore } from "@/store/reminder.store";
-import { colors, radius, shadows, spacing, typography } from "@/theme";
+import { colors, spacing, typography } from "@/theme";
 import { hapticFeedback } from "@/lib/haptics";
+import { useDisplayCurrency } from "@/hooks/use-display-currency";
 import {
   EmptyState,
   TransactionSkeletonList,
   WalletSkeletonCard,
 } from "@/components/ui";
-import {
-  AddWalletCardButton,
-  WalletCard,
-} from "@/features/wallets/components/WalletCard";
-import { WalletSummaryCard } from "@/features/wallets/components/WalletSummaryCard";
-import { WalletModal } from "@/features/wallets/components/WalletModal";
-import { WalletSelectorModal } from "@/features/wallets/components/WalletSelectorModal";
+import { WalletCarousel } from "@/features/wallets/components/WalletCarousel";
+import { WalletQuickActions } from "@/features/wallets/components/WalletQuickActions";
+import { computeMonthlyFlows } from "@/features/wallets/utils/wallet-carousel";
 import { ReminderSection } from "@/features/reminders/components/ReminderSection";
 import { TransactionItem } from "@/features/transactions/components/TransactionItem";
 import { TransactionDetailModal } from "@/features/transactions/components/TransactionDetailModal";
@@ -36,7 +31,8 @@ import { QuickTransactionModal } from "@/features/transactions/components/QuickT
 
 export default function HomeScreen() {
   const router = useRouter();
-  const user = useAuthStore((state) => state.user);
+  const tabBarSpace = useTabBarSpace();
+  useDisplayCurrency();
 
   const {
     wallets,
@@ -53,10 +49,7 @@ export default function HomeScreen() {
   const { reminders, fetchReminders } = useReminderStore();
 
   const [refreshing, setRefreshing] = useState(false);
-  const [showWalletModal, setShowWalletModal] = useState(false);
-  const [showWalletSelector, setShowWalletSelector] = useState(false);
   const [activeWalletId, setActiveWalletId] = useState<string | null>(null);
-  const [selectedWallet, setSelectedWallet] = useState<Wallet | null>(null);
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
   const [quickType, setQuickType] = useState<"INCOME" | "EXPENSE" | null>(null);
 
@@ -79,29 +72,10 @@ export default function HomeScreen() {
     return wallets.find((w) => w.id === activeWalletId) || null;
   }, [wallets, activeWalletId]);
 
-  const totalBalance = wallets.reduce((sum, w) => sum + w.balance, 0);
-  const displayedBalance = activeWallet ? activeWallet.balance : totalBalance;
-
-  // Compute this month's in & out (filtered if activeWalletId is set)
-  const currentMonth = new Date().getMonth();
-  const currentYear = new Date().getFullYear();
-
-  let monthlyIncome = 0;
-  let monthlyExpense = 0;
-
-  for (const tx of transactions) {
-    if (activeWalletId && tx.walletId !== activeWalletId) {
-      continue;
-    }
-    const d = new Date(tx.date);
-    if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
-      if (tx.type === "INCOME") {
-        monthlyIncome += tx.amount;
-      } else {
-        monthlyExpense += tx.amount;
-      }
-    }
-  }
+  const monthlyFlows = useMemo(
+    () => computeMonthlyFlows(transactions),
+    [transactions],
+  );
 
   const displayedTransactions = useMemo(() => {
     if (!activeWalletId) return transactions;
@@ -112,66 +86,11 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      {/* Top App Header */}
-      <View style={styles.topHeader}>
-        <Pressable
-          style={({ pressed }) => [
-            styles.userInfo,
-            pressed && styles.userInfoPressed,
-          ]}
-          onPress={() => {
-            hapticFeedback.light();
-            router.push("/(tabs)/profile");
-          }}
-          hitSlop={6}
-          accessibilityRole="button"
-          accessibilityLabel="Go to Profile"
-        >
-          {user?.avatarUrl ? (
-            <Image
-              source={{ uri: user.avatarUrl }}
-              style={styles.avatarImage}
-              contentFit="cover"
-              accessibilityLabel="User avatar"
-            />
-          ) : (
-            <View style={styles.avatarCircle}>
-              <Text style={styles.avatarText}>
-                {(user?.name || user?.email || "U").charAt(0).toUpperCase()}
-              </Text>
-            </View>
-          )}
-          <View>
-            <Text style={styles.welcomeText}>Hello,</Text>
-            <Text style={styles.userName} numberOfLines={1}>
-              {user?.name || "Member"}
-            </Text>
-          </View>
-        </Pressable>
-
-        <Pressable
-          onPress={() => {
-            hapticFeedback.light();
-            router.push("/(tabs)/profile");
-          }}
-          style={({ pressed }) => [
-            styles.logoutBtn,
-            pressed && styles.logoutBtnPressed,
-          ]}
-          hitSlop={8}
-          accessibilityRole="button"
-          accessibilityLabel="Settings"
-        >
-          <Ionicons
-            name="settings-outline"
-            size={20}
-            color={colors.textSecondary}
-          />
-        </Pressable>
-      </View>
-
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: tabBarSpace },
+        ]}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -182,19 +101,7 @@ export default function HomeScreen() {
           />
         }
       >
-        {/* Total / Account Balance Hero Card */}
-        <WalletSummaryCard
-          totalBalance={displayedBalance}
-          monthlyIncome={monthlyIncome}
-          monthlyExpense={monthlyExpense}
-          walletCount={wallets.length}
-          selectedWalletName={activeWallet ? activeWallet.name : null}
-          onOpenAccountSelector={() => setShowWalletSelector(true)}
-          onAddIncome={() => setQuickType("INCOME")}
-          onAddExpense={() => setQuickType("EXPENSE")}
-        />
-
-        {/* My Accounts Carousel */}
+        {/* Wallet Accounts */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Accounts</Text>
@@ -210,59 +117,28 @@ export default function HomeScreen() {
           </View>
 
           {isWalletsLoading && wallets.length === 0 ? (
-            <View style={{ paddingHorizontal: spacing.base }}>
+            <View style={styles.walletSkeleton}>
               <WalletSkeletonCard />
             </View>
           ) : (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.walletsCarousel}
-            >
-              {wallets.map((wallet) => (
-                <WalletCard
-                  key={wallet.id}
-                  wallet={wallet}
-                  compact
-                  isSelected={activeWalletId === wallet.id}
-                  onPress={() => {
-                    setActiveWalletId((prev) =>
-                      prev === wallet.id ? null : wallet.id,
-                    );
-                  }}
-                />
-              ))}
-
-              <AddWalletCardButton
-                onPress={() => {
-                  setSelectedWallet(null);
-                  setShowWalletModal(true);
-                }}
-              />
-            </ScrollView>
+            <WalletCarousel
+              wallets={wallets}
+              monthlyFlows={monthlyFlows}
+              activeWalletId={activeWalletId}
+              onSelectWallet={setActiveWalletId}
+            />
           )}
+
+          <WalletQuickActions
+            onAddIncome={() => setQuickType("INCOME")}
+            onAddExpense={() => setQuickType("EXPENSE")}
+          />
         </View>
 
         {/* Recent Activity */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <View style={styles.sectionTitleRow}>
-              <Text style={styles.sectionTitle}>Recent Activity</Text>
-              {activeWallet && (
-                <Pressable
-                  onPress={() => {
-                    hapticFeedback.selection();
-                    setActiveWalletId(null);
-                  }}
-                  style={styles.activeFilterChip}
-                  hitSlop={6}
-                >
-                  <Text style={styles.activeFilterText}>
-                    {activeWallet.name} ✕
-                  </Text>
-                </Pressable>
-              )}
-            </View>
+            <Text style={styles.sectionTitle}>Recent Activity</Text>
             {displayedTransactions.length > 0 && (
               <Pressable
                 onPress={() => {
@@ -307,22 +183,6 @@ export default function HomeScreen() {
         <ReminderSection reminders={reminders} onChanged={loadData} />
       </ScrollView>
 
-      {/* Account Selector Modal */}
-      <WalletSelectorModal
-        visible={showWalletSelector}
-        onClose={() => setShowWalletSelector(false)}
-        wallets={wallets}
-        selectedWalletId={activeWalletId}
-        onSelectWallet={setActiveWalletId}
-      />
-
-      {/* Wallet Modal */}
-      <WalletModal
-        visible={showWalletModal}
-        onClose={() => setShowWalletModal(false)}
-        walletToEdit={selectedWallet}
-      />
-
       {/* Transaction Detail Modal */}
       <TransactionDetailModal
         visible={!!selectedTx}
@@ -347,72 +207,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  topHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: spacing.base,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.md,
-  },
-  userInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  userInfoPressed: {
-    opacity: 0.8,
-    transform: [{ scale: 0.95 }],
-  },
-  avatarCircle: {
-    width: 42,
-    height: 42,
-    borderRadius: radius.full,
-    backgroundColor: colors.primaryLight,
-    borderWidth: 1.5,
-    borderColor: colors.primary,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: spacing.md,
-  },
-  avatarImage: {
-    width: 42,
-    height: 42,
-    borderRadius: radius.full,
-    borderWidth: 1.5,
-    borderColor: colors.primary,
-    marginRight: spacing.md,
-  },
-  avatarText: {
-    ...typography.headline,
-    color: colors.primaryDark,
-    fontWeight: "700",
-  },
-  welcomeText: {
-    ...typography.caption,
-    color: colors.textSecondary,
-  },
-  userName: {
-    ...typography.headline,
-    color: colors.text,
-    fontWeight: "700",
-  },
-  logoutBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.full,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: "center",
-    justifyContent: "center",
-    ...shadows.sm,
-  },
-  logoutBtnPressed: {
-    opacity: 0.8,
-    transform: [{ scale: 0.9 }],
-  },
   scrollContent: {
-    paddingBottom: spacing.huge,
+    paddingTop: spacing.base,
   },
   section: {
     marginTop: spacing.md,
@@ -424,36 +220,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.base,
     marginBottom: spacing.md,
   },
-  sectionTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-  },
   sectionTitle: {
     ...typography.title3,
     color: colors.text,
-  },
-  activeFilterChip: {
-    backgroundColor: colors.primaryLight,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 3,
-    borderRadius: radius.full,
-    borderWidth: 1,
-    borderColor: colors.primary,
-  },
-  activeFilterText: {
-    ...typography.caption,
-    fontWeight: "700",
-    color: colors.primaryDark,
   },
   sectionLink: {
     ...typography.subhead,
     fontWeight: "700",
     color: colors.primary,
   },
-  walletsCarousel: {
+  walletSkeleton: {
     paddingHorizontal: spacing.base,
-    gap: spacing.md,
   },
   transactionsContainer: {
     paddingHorizontal: spacing.base,

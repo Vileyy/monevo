@@ -1,39 +1,10 @@
 import { create } from "zustand";
-import * as SecureStore from "expo-secure-store";
-import { Platform } from "react-native";
 import { CurrencyCode, DEFAULT_CURRENCY } from "@/lib/currencies";
+import { getStorage, saveStorage } from "@/lib/persistent-storage";
 
 const CURRENCY_KEY = "monevo_settings_currency";
 const HIDE_BALANCE_KEY = "monevo_settings_hide_balance";
 const NOTIFICATIONS_KEY = "monevo_settings_reminder_notifications";
-
-async function saveStorage(key: string, value: string) {
-  if (Platform.OS === "web") {
-    try {
-      localStorage.setItem(key, value);
-    } catch {}
-  } else {
-    try {
-      await SecureStore.setItemAsync(key, value);
-    } catch {}
-  }
-}
-
-async function getStorage(key: string): Promise<string | null> {
-  if (Platform.OS === "web") {
-    try {
-      return localStorage.getItem(key);
-    } catch {
-      return null;
-    }
-  } else {
-    try {
-      return await SecureStore.getItemAsync(key);
-    } catch {
-      return null;
-    }
-  }
-}
 
 interface SettingsState {
   currency: CurrencyCode;

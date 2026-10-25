@@ -10,6 +10,7 @@ describe("user-profile utilities", () => {
       expect(
         displayableEmail("user_3Irg6b5n0uuAWkOMrBSVg2ON0hE@clerk.user"),
       ).toBeNull();
+      expect(displayableEmail("google.user@clerk.dev")).toBeNull();
     });
 
     it("should hide missing or malformed values", () => {

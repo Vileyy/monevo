@@ -2,6 +2,7 @@
 import {
   ConflictException,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -9,7 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 import { OAuth2Client } from 'google-auth-library';
 import bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
-import { verifyToken } from '@clerk/backend';
+import { createClerkClient, verifyToken } from '@clerk/backend';
 import { UsersService } from '../users/users.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -18,6 +19,7 @@ import { GoogleLoginDto } from './dto/google-login.dto';
 @Injectable()
 export class AuthService {
   private readonly googleClient: OAuth2Client;
+  private readonly logger = new Logger(AuthService.name);
 
   constructor(
     private readonly usersService: UsersService,
@@ -170,7 +172,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid Clerk token payload');
     }
 
-    const email = verified.email || verified.email_address;
+    const tokenEmail = verified.email || verified.email_address;
+    const email = (
+      tokenEmail || (await this.fetchClerkPrimaryEmail(verified.sub, secretKey))
+    )?.toLowerCase();
     const user = await this.usersService.findOrCreateByClerk(
       verified.sub,
       email,
@@ -186,6 +191,25 @@ export class AuthService {
       },
       accessToken: token,
     };
+  }
+
+  // Clerk session tokens only carry `sub`, so the email has to be read separately.
+  private async fetchClerkPrimaryEmail(
+    clerkId: string,
+    secretKey: string,
+  ): Promise<string | undefined> {
+    try {
+      const clerk = createClerkClient({ secretKey });
+      const profile = await clerk.users.getUser(clerkId);
+      const primary = profile.emailAddresses.find(
+        (address) => address.id === profile.primaryEmailAddressId,
+      );
+      return primary?.emailAddress ?? profile.emailAddresses[0]?.emailAddress;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      this.logger.warn(`Could not read Clerk profile ${clerkId}: ${message}`);
+      return undefined;
+    }
   }
 
   private async generateToken(userId: string, email: string): Promise<string> {

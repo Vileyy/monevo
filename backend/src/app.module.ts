@@ -14,6 +14,7 @@ import { TransactionsModule } from './transactions/transactions.module';
 import { BudgetsModule } from './budgets/budgets.module';
 import { RemindersModule } from './reminders/reminders.module';
 import { LegalModule } from './legal/legal.module';
+import { CurrencyModule } from './currency/currency.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { LegalModule } from './legal/legal.module';
     BudgetsModule,
     RemindersModule,
     LegalModule,
+    CurrencyModule,
   ],
   controllers: [AppController],
   providers: [

@@ -3,10 +3,11 @@ import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, radius, shadows, spacing, typography } from "@/theme";
 import { BudgetItem } from "@/store/budget.store";
-import { categoryDisplayName, formatCurrency } from "@/lib/format";
+import { formatCurrency } from "@/lib/format";
 import { CategoryIcon } from "@/components/ui";
 import { BudgetProgressBar } from "./BudgetProgressBar";
 import { hapticFeedback } from "@/lib/haptics";
+import { useDisplayCurrency } from "@/hooks/use-display-currency";
 
 export interface BudgetCardProps {
   budget: BudgetItem;
@@ -19,7 +20,8 @@ export const BudgetCard = memo(function BudgetCard({
   onEdit,
   onDelete,
 }: BudgetCardProps) {
-  const displayName = categoryDisplayName(budget.category.name);
+  useDisplayCurrency();
+  const displayName = budget.category.name;
 
   const isOverBudget = budget.spent > budget.amount;
   const isNearLimit = budget.percentage >= 80 && !isOverBudget;
@@ -53,7 +55,7 @@ export const BudgetCard = memo(function BudgetCard({
       {/* Top Row: Category info & actions */}
       <View style={styles.topRow}>
         <View style={styles.categoryInfo}>
-          <CategoryIcon name={budget.category.name} type="EXPENSE" size="sm" />
+          <CategoryIcon type="EXPENSE" icon={budget.category.icon} size="sm" />
           <View style={styles.nameContainer}>
             <Text style={styles.categoryName} numberOfLines={1}>
               {displayName}

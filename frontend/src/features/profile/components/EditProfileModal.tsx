@@ -3,6 +3,7 @@ import { Alert, StyleSheet, Text, View } from "react-native";
 import { colors, radius, spacing, typography } from "@/theme";
 import { Button, Input, Modal } from "@/components/ui";
 import { useAuthStore } from "@/store/auth.store";
+import { displayableEmail } from "@/lib/user-profile";
 import { apiClient } from "@/services/api/client";
 
 export interface EditProfileModalProps {
@@ -100,7 +101,7 @@ export function EditProfileModal({ visible, onClose }: EditProfileModalProps) {
         <EditProfileForm
           key={user?.name || "unnamed"}
           initialName={user?.name || ""}
-          email={user?.email || ""}
+          email={displayableEmail(user?.email) ?? ""}
           onClose={onClose}
           onSuccess={(name) => updateUser({ name })}
         />

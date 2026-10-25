@@ -18,7 +18,7 @@ import {
 } from "@/components/ui";
 import { useReminderStore } from "@/store/reminder.store";
 import { REMINDER_PRESETS, ReminderCategoryMeta } from "@/lib/reminders";
-import { parseCurrencyInput } from "@/lib/format";
+import { parseVndInput } from "@/lib/format";
 import { captureEvent } from "@/lib/analytics";
 
 export interface ReminderModalProps {
@@ -43,7 +43,7 @@ export function ReminderModal({ visible, onClose }: ReminderModalProps) {
   };
 
   const handleSave = async () => {
-    const numericAmount = parseCurrencyInput(amount);
+    const numericAmount = parseVndInput(amount);
 
     if (!title.trim()) {
       Alert.alert("Missing Information", "Please enter a reminder title.");

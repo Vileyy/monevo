@@ -2,6 +2,7 @@ import {
   normalizeQuickNote,
   resolveCategoryId,
   resolveWalletId,
+  selectCreatedCategory,
   validateQuickAmount,
 } from "../../src/features/transactions/utils/quick-transaction";
 
@@ -45,5 +46,20 @@ describe("Quick transaction helpers", () => {
     expect(normalizeQuickNote("  Lunch with team  ")).toBe("Lunch with team");
     expect(normalizeQuickNote("")).toBeUndefined();
     expect(normalizeQuickNote("   ")).toBeUndefined();
+  });
+
+  it("selects a newly created category and switches the transaction type", () => {
+    expect(
+      selectCreatedCategory({ id: "c9", type: "INCOME" }),
+    ).toEqual({ categoryId: "c9", type: "INCOME" });
+    expect(
+      selectCreatedCategory({ id: "c8", type: "EXPENSE" }),
+    ).toEqual({ categoryId: "c8", type: "EXPENSE" });
+  });
+
+  it("treats unexpected category types as expenses", () => {
+    expect(
+      selectCreatedCategory({ id: "c7", type: "TRANSFER" }),
+    ).toEqual({ categoryId: "c7", type: "EXPENSE" });
   });
 });
