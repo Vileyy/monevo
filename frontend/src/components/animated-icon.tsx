@@ -3,11 +3,12 @@ import React, { useEffect, useState } from 'react';
 import { Animated, Easing, Image, StyleSheet, Text, View } from 'react-native';
 import { colors, shadows, spacing } from '@/theme';
 import { useAuthStore } from '@/store/auth.store';
+import { shouldDismissSplash } from '@/lib/startup';
 
 const INTRO_DURATION = 1600;
 const ZOOM_DURATION = 480;
 
-export function AnimatedSplashOverlay() {
+export function AnimatedSplashOverlay({ clerkReady }: { clerkReady: boolean }) {
   const isHydrated = useAuthStore((state) => state.isHydrated);
 
   const [visible, setVisible] = useState(true);
@@ -111,7 +112,7 @@ export function AnimatedSplashOverlay() {
   }, []);
 
   useEffect(() => {
-    if (!introDone || !isHydrated) return;
+    if (!shouldDismissSplash({ introDone, isHydrated, clerkReady })) return;
 
     const timer = setTimeout(() => {
       Animated.parallel([
@@ -131,7 +132,7 @@ export function AnimatedSplashOverlay() {
     }, 120);
 
     return () => clearTimeout(timer);
-  }, [introDone, isHydrated, opacityAnim, zoom]);
+  }, [introDone, isHydrated, clerkReady, opacityAnim, zoom]);
 
   if (!visible) return null;
 

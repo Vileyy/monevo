@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
@@ -10,7 +10,7 @@ import {
 } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import * as WebBrowser from 'expo-web-browser';
-import { ClerkLoaded, ClerkProvider, useUser } from '@clerk/clerk-expo';
+import { ClerkProvider, useAuth, useUser } from '@clerk/clerk-expo';
 import { PostHogProvider } from 'posthog-react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
@@ -21,6 +21,7 @@ import { useCurrencyStore } from '@/store/currency.store';
 import { analytics, identifyUser, resetAnalytics } from '@/lib/analytics';
 import { tokenCache } from '@/lib/token-cache';
 import { initNotifications } from '@/lib/notifications';
+import { CLERK_LOAD_TIMEOUT_MS, isClerkReady } from '@/lib/startup';
 import { buildClerkProfileUpdates } from '@/features/auth/utils/clerk-profile';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -50,6 +51,27 @@ function ClerkUserSync() {
   }, [isLoaded, clerkUser, currentUser, updateUser]);
 
   return null;
+}
+
+function StartupGate({ children }: { children: React.ReactNode }) {
+  const { isLoaded } = useAuth();
+  const [hasTimedOut, setHasTimedOut] = useState(false);
+
+  useEffect(() => {
+    if (isLoaded) return;
+
+    const timer = setTimeout(() => setHasTimedOut(true), CLERK_LOAD_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [isLoaded]);
+
+  const clerkReady = isClerkReady(isLoaded, hasTimedOut);
+
+  return (
+    <>
+      <AnimatedSplashOverlay clerkReady={clerkReady} />
+      {clerkReady ? children : null}
+    </>
+  );
 }
 
 export default function RootLayout() {
@@ -113,7 +135,6 @@ export default function RootLayout() {
   const app = (
     <ThemeProvider value={DefaultTheme}>
       <StatusBar barStyle="dark-content" />
-      <AnimatedSplashOverlay />
       <ErrorBoundary>
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" />
@@ -137,7 +158,7 @@ export default function RootLayout() {
         publishableKey={clerkPublishableKey}
         tokenCache={tokenCache}
       >
-        <ClerkLoaded>
+        <StartupGate>
           <ClerkUserSync />
           {analytics ? (
             <PostHogProvider
@@ -149,7 +170,7 @@ export default function RootLayout() {
           ) : (
             app
           )}
-        </ClerkLoaded>
+        </StartupGate>
       </ClerkProvider>
     </GestureHandlerRootView>
   );
