@@ -111,7 +111,10 @@ Health check: `GET /health` (`{"status":"ok"}`). Probe with `GET /health`, `POST
 2. App changes live in `frontend/src/` (screen → store → `apiClient`).
 3. **Unit Tests (Mandatory):** Whenever a feature is implemented or modified in frontend or backend, write/update corresponding unit tests (`*.spec.ts` / `*.test.ts`).
 4. **Pre-commit & Verification:** Pre-commit hook must run unit tests (`pnpm test` / lint-staged) and verification checks (typecheck/lint) to ensure no regressions before committing code.
-5. **Ship to AWS only when you need a real device / shared backend.** Do not rebuild on `t3.micro` for local-only work.
+5. **Formatting:** one style for the whole repo — root `.prettierrc` (single quotes, trailing commas, LF) + `.editorconfig`. `pnpm format` to fix, `pnpm format:check` to verify; lint-staged and CI both enforce it. Prettier skips `docs/` (generated), `deploy/`, `backend/generated`, native folders, and agent tooling.
+6. **Ship to AWS only when you need a real device / shared backend.** Do not rebuild on `t3.micro` for local-only work.
+
+**Commit messages:** Conventional Commits — `<type>(<scope>): <subject>`. Allowed types: `build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test`; scope lowercase; subject ≤ 100 chars, no trailing period, no Title Case. Enforced by `.husky/commit-msg` (commitlint) and the CI `commits` job, so `update`, `fix bug` or `wip` are rejected. Merge commits are ignored automatically.
 
 New features: one vertical slice (DTO + service + one screen + unit tests). No budgets/offline until the core loop is solid.
 

@@ -1,31 +1,30 @@
+const path = require('path');
+
+const quote = (file) => `"${file.replace(/(["\\$`])/g, '\\$1')}"`;
+
+const relativeTo = (dir, files) =>
+  files.map((file) => quote(path.relative(dir, file))).join(' ');
+
+const formatAll = (files) => `prettier --write ${files.map(quote).join(' ')}`;
+
 module.exports = {
-  "backend/src/**/*.{ts,js}": (filenames) => {
-    const relativeFiles = filenames.map((file) =>
-      file.replace(new RegExp("^.*backend/"), "")
-    );
+  'backend/{src,test,prisma,scripts}/**/*.ts': (files) => {
     const commands = [
-      `pnpm --filter backend exec eslint --fix ${relativeFiles.join(" ")}`,
-      `pnpm --filter backend exec prettier --write ${relativeFiles.join(" ")}`,
+      `pnpm --filter backend exec eslint --fix ${relativeTo('backend', files)}`,
     ];
-    if (filenames.some((file) => file.endsWith(".ts"))) {
-      commands.push("pnpm --filter backend exec tsc --noEmit");
+    if (files.some((file) => file.endsWith('.ts'))) {
+      commands.push(
+        'pnpm --filter backend exec tsc --noEmit -p tsconfig.build.json',
+      );
     }
     return commands;
   },
-  "frontend/src/**/*.{ts,tsx,js,jsx}": (filenames) => {
-    const relativeFiles = filenames.map((file) =>
-      file.replace(new RegExp("^.*frontend/"), "")
-    );
+  'frontend/{src,test,scripts}/**/*.{ts,tsx}': (files) => {
     const commands = [
-      `pnpm --filter frontend exec eslint --fix ${relativeFiles.join(" ")}`,
-      `pnpm --filter frontend exec prettier --write ${relativeFiles.join(" ")}`,
+      `pnpm --filter frontend exec eslint --fix ${relativeTo('frontend', files)}`,
+      'pnpm --filter frontend exec tsc --noEmit',
     ];
-    if (filenames.some((file) => file.endsWith(".ts") || file.endsWith(".tsx"))) {
-      commands.push("pnpm --filter frontend exec tsc --noEmit");
-    }
     return commands;
   },
-  "*.{json,md,yml}": (filenames) => {
-    return `prettier --write ${filenames.join(" ")}`;
-  },
+  '*.{ts,tsx,js,jsx,json,md,yml,yaml,css,scss}': formatAll,
 };
