@@ -14,6 +14,7 @@ import { useWalletStore } from '@/store/wallet.store';
 import { Transaction, useTransactionStore } from '@/store/transaction.store';
 import { useReminderStore } from '@/store/reminder.store';
 import { colors, spacing, typography } from '@/theme';
+import { formatDateLabel } from '@/lib/date-label';
 import { hapticFeedback } from '@/lib/haptics';
 import { useDisplayCurrency } from '@/hooks/use-display-currency';
 import {
@@ -103,6 +104,7 @@ export default function HomeScreen() {
       >
         {/* Wallet Accounts */}
         <View style={styles.section}>
+          <Text style={styles.todayText}>{formatDateLabel(new Date())}</Text>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Accounts</Text>
             <Pressable
@@ -223,6 +225,14 @@ const styles = StyleSheet.create({
   sectionTitle: {
     ...typography.title3,
     color: colors.text,
+  },
+  todayText: {
+    ...typography.caption,
+    color: colors.textMuted,
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    paddingHorizontal: spacing.base,
+    marginBottom: spacing.xxs,
   },
   sectionLink: {
     ...typography.subhead,
