@@ -1,13 +1,13 @@
-import React, { useState } from "react";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { colors, radius, spacing, typography } from "@/theme";
-import { Button, Input, Modal } from "@/components/ui";
-import { formatAmountInput, formatVndInput, parseVndInput } from "@/lib/format";
-import { getCurrencyConfig } from "@/lib/currencies";
-import { apiErrorMessage } from "@/lib/api-error";
-import { useWalletStore, Wallet } from "@/store/wallet.store";
-import { useSettingsStore } from "@/store/settings.store";
+import React, { useState } from 'react';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, radius, spacing, typography } from '@/theme';
+import { Button, Input, Modal } from '@/components/ui';
+import { formatAmountInput, formatVndInput, parseVndInput } from '@/lib/format';
+import { getCurrencyConfig } from '@/lib/currencies';
+import { apiErrorMessage } from '@/lib/api-error';
+import { useWalletStore, Wallet } from '@/store/wallet.store';
+import { useSettingsStore } from '@/store/settings.store';
 
 export interface WalletModalProps {
   visible: boolean;
@@ -16,9 +16,9 @@ export interface WalletModalProps {
 }
 
 const WALLET_TYPES = [
-  { type: "CASH", label: "Cash", icon: "cash" as const },
-  { type: "BANK", label: "Bank", icon: "business" as const },
-  { type: "CREDIT_CARD", label: "Credit Card", icon: "card" as const },
+  { type: 'CASH', label: 'Cash', icon: 'cash' as const },
+  { type: 'BANK', label: 'Bank', icon: 'business' as const },
+  { type: 'CREDIT_CARD', label: 'Credit Card', icon: 'card' as const },
 ];
 
 function WalletForm({
@@ -32,17 +32,17 @@ function WalletForm({
   const currency = useSettingsStore((state) => state.currency);
   const currencySymbol = getCurrencyConfig(currency).symbol;
 
-  const [name, setName] = useState(walletToEdit?.name ?? "");
-  const [type, setType] = useState(walletToEdit?.type ?? "CASH");
+  const [name, setName] = useState(walletToEdit?.name ?? '');
+  const [type, setType] = useState(walletToEdit?.type ?? 'CASH');
   const [balance, setBalance] = useState(
-    walletToEdit ? formatAmountInput(walletToEdit.balance) : "",
+    walletToEdit ? formatAmountInput(walletToEdit.balance) : '',
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleSubmit = async () => {
     if (!name.trim()) {
-      Alert.alert("Required", "Please enter a wallet name.");
+      Alert.alert('Required', 'Please enter a wallet name.');
       return;
     }
 
@@ -61,8 +61,8 @@ function WalletForm({
       onClose();
     } catch (error) {
       Alert.alert(
-        "Error",
-        apiErrorMessage(error, "Could not save wallet details."),
+        'Error',
+        apiErrorMessage(error, 'Could not save wallet details.'),
       );
     } finally {
       setIsSubmitting(false);
@@ -73,13 +73,13 @@ function WalletForm({
     if (!walletToEdit) return;
 
     Alert.alert(
-      "Delete Wallet",
+      'Delete Wallet',
       `Are you sure you want to delete "${walletToEdit.name}"? Transactions associated with this wallet will also be deleted.`,
       [
-        { text: "Cancel", style: "cancel" },
+        { text: 'Cancel', style: 'cancel' },
         {
-          text: "Delete",
-          style: "destructive",
+          text: 'Delete',
+          style: 'destructive',
           onPress: async () => {
             setIsDeleting(true);
             try {
@@ -87,8 +87,8 @@ function WalletForm({
               onClose();
             } catch (error) {
               Alert.alert(
-                "Error",
-                apiErrorMessage(error, "Could not delete this wallet."),
+                'Error',
+                apiErrorMessage(error, 'Could not delete this wallet.'),
               );
             } finally {
               setIsDeleting(false);
@@ -119,7 +119,7 @@ function WalletForm({
           <Text
             style={{
               fontSize: 16,
-              fontWeight: "700",
+              fontWeight: '700',
               color: colors.textSecondary,
             }}
           >
@@ -160,7 +160,7 @@ function WalletForm({
       </View>
 
       <Button
-        title={walletToEdit ? "Save Changes" : "Create Wallet"}
+        title={walletToEdit ? 'Save Changes' : 'Create Wallet'}
         onPress={handleSubmit}
         isLoading={isSubmitting}
         size="lg"
@@ -192,15 +192,15 @@ export function WalletModal({
     <Modal
       visible={visible}
       onClose={onClose}
-      title={walletToEdit ? "Edit Wallet" : "New Wallet"}
+      title={walletToEdit ? 'Edit Wallet' : 'New Wallet'}
       subtitle={
         walletToEdit
-          ? "Update details or balance"
-          : "Add cash, bank or credit card"
+          ? 'Update details or balance'
+          : 'Add cash, bank or credit card'
       }
     >
       <WalletForm
-        key={walletToEdit?.id ?? "new"}
+        key={walletToEdit?.id ?? 'new'}
         walletToEdit={walletToEdit}
         onClose={onClose}
       />
@@ -218,17 +218,17 @@ const styles = StyleSheet.create({
   typeLabel: {
     ...typography.subhead,
     color: colors.textSecondary,
-    fontWeight: "600",
+    fontWeight: '600',
     marginBottom: spacing.xs,
   },
   typeRow: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: spacing.sm,
   },
   typeBtn: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.xs,
     borderRadius: radius.md,
@@ -242,13 +242,13 @@ const styles = StyleSheet.create({
   },
   typeBtnText: {
     ...typography.caption,
-    fontWeight: "600",
+    fontWeight: '600',
     color: colors.textSecondary,
     marginTop: 4,
   },
   typeBtnTextSelected: {
     color: colors.primary,
-    fontWeight: "700",
+    fontWeight: '700',
   },
   submitBtn: {
     marginTop: spacing.sm,

@@ -1,6 +1,6 @@
-import { StyleSheet } from "react-native";
-import { colors } from "@/theme/colors";
-import { spacing } from "@/theme/spacing";
+import { StyleSheet } from 'react-native';
+import { colors } from '@/theme/colors';
+import { spacing } from '@/theme/spacing';
 
 export const styles = StyleSheet.create({
   container: {
@@ -11,19 +11,19 @@ export const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
     paddingBottom: spacing.md,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   welcomeText: {
     fontSize: 14,
     color: colors.textSecondary,
-    fontWeight: "500",
+    fontWeight: '500',
   },
   userName: {
     fontSize: 26,
     color: colors.text,
-    fontWeight: "700",
+    fontWeight: '700',
     marginTop: 4,
   },
   logoutButton: {
@@ -37,7 +37,7 @@ export const styles = StyleSheet.create({
   logoutText: {
     fontSize: 13,
     color: colors.text,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   scrollContainer: {
     paddingBottom: 48,
@@ -51,34 +51,34 @@ export const styles = StyleSheet.create({
   },
   balanceLabel: {
     fontSize: 12,
-    color: "rgba(255,255,255,0.72)",
-    fontWeight: "600",
+    color: 'rgba(255,255,255,0.72)',
+    fontWeight: '600',
     letterSpacing: 0.6,
-    textTransform: "uppercase",
+    textTransform: 'uppercase',
   },
   balanceValue: {
     fontSize: 34,
-    color: "#FFFFFF",
-    fontWeight: "700",
+    color: '#FFFFFF',
+    fontWeight: '700',
     marginTop: 8,
   },
   balanceCardFooter: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginTop: 18,
     paddingTop: 14,
     borderTopWidth: 1,
-    borderTopColor: "rgba(255,255,255,0.16)",
+    borderTopColor: 'rgba(255,255,255,0.16)',
   },
   footerLabel: {
     fontSize: 13,
-    color: "rgba(255,255,255,0.72)",
+    color: 'rgba(255,255,255,0.72)',
   },
   footerValue: {
     fontSize: 13,
-    color: "#FFFFFF",
-    fontWeight: "600",
+    color: '#FFFFFF',
+    fontWeight: '600',
   },
   primaryAction: {
     marginHorizontal: spacing.lg,
@@ -86,28 +86,28 @@ export const styles = StyleSheet.create({
     backgroundColor: colors.text,
     borderRadius: 14,
     paddingVertical: 16,
-    alignItems: "center",
+    alignItems: 'center',
   },
   primaryActionText: {
-    color: "#FFFFFF",
+    color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: "700",
+    fontWeight: '700',
   },
   sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: spacing.lg,
     marginBottom: 12,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.text,
   },
   sectionAction: {
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: '600',
     color: colors.primary,
   },
   walletList: {
@@ -121,13 +121,13 @@ export const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     borderColor: colors.border,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   walletName: {
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: '600',
     color: colors.text,
   },
   walletMeta: {
@@ -137,7 +137,7 @@ export const styles = StyleSheet.create({
   },
   walletBalance: {
     fontSize: 16,
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.text,
   },
   emptyHint: {
@@ -162,13 +162,13 @@ export const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   txTitle: {
     fontSize: 15,
-    fontWeight: "600",
+    fontWeight: '600',
     color: colors.text,
   },
   txMeta: {
@@ -178,12 +178,12 @@ export const styles = StyleSheet.create({
   },
   txAmountIncome: {
     fontSize: 15,
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.success,
   },
   txAmountExpense: {
     fontSize: 15,
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.danger,
   },
   formContainer: {
@@ -197,7 +197,7 @@ export const styles = StyleSheet.create({
   },
   formTitle: {
     fontSize: 18,
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.text,
     marginBottom: 16,
   },
@@ -207,7 +207,7 @@ export const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 13,
     color: colors.textSecondary,
-    fontWeight: "600",
+    fontWeight: '600',
     marginBottom: 8,
   },
   input: {
@@ -221,13 +221,13 @@ export const styles = StyleSheet.create({
     color: colors.text,
   },
   typeButtonsContainer: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 8,
   },
   typeButton: {
     flex: 1,
     paddingVertical: 10,
-    alignItems: "center",
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 12,
@@ -239,7 +239,7 @@ export const styles = StyleSheet.create({
   },
   typeButtonText: {
     fontSize: 12,
-    fontWeight: "600",
+    fontWeight: '600',
     color: colors.textSecondary,
   },
   typeButtonTextActive: {
@@ -249,21 +249,21 @@ export const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     paddingVertical: 14,
     borderRadius: 12,
-    alignItems: "center",
+    alignItems: 'center',
     marginTop: 8,
   },
   submitButtonText: {
     fontSize: 16,
-    fontWeight: "700",
-    color: "#FFFFFF",
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
   cancelButton: {
     paddingVertical: 12,
-    alignItems: "center",
+    alignItems: 'center',
   },
   cancelButtonText: {
     fontSize: 14,
     color: colors.textSecondary,
-    fontWeight: "500",
+    fontWeight: '500',
   },
 });

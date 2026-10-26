@@ -1,10 +1,10 @@
-import React, { useState } from "react";
-import { Modal } from "@/components/ui";
-import { Category } from "@/store/category.store";
+import React, { useState } from 'react';
+import { Modal } from '@/components/ui';
+import { Category } from '@/store/category.store';
 import {
   CategoryForm,
   CategoryType,
-} from "@/features/categories/components/CategoryForm";
+} from '@/features/categories/components/CategoryForm';
 
 export interface CategoryModalProps {
   visible: boolean;
@@ -16,7 +16,7 @@ export interface CategoryModalProps {
 export function CategoryModal({
   visible,
   onClose,
-  initialType = "EXPENSE",
+  initialType = 'EXPENSE',
   onCreated,
 }: CategoryModalProps) {
   const [type, setType] = useState<CategoryType>(initialType);

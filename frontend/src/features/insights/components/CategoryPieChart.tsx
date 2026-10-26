@@ -1,9 +1,9 @@
-import React from "react";
-import { StyleSheet, Text, View } from "react-native";
-import { PieChart } from "react-native-gifted-charts";
-import { colors, radius, shadows, spacing, typography } from "@/theme";
-import { formatCurrency } from "@/lib/format";
-import { CategoryIcon } from "@/components/ui";
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { PieChart } from 'react-native-gifted-charts';
+import { colors, radius, shadows, spacing, typography } from '@/theme';
+import { formatCurrency } from '@/lib/format';
+import { CategoryIcon } from '@/components/ui';
 
 export interface CategoryBreakdownItem {
   name: string;
@@ -19,16 +19,16 @@ export interface CategoryPieChartProps {
 }
 
 const PALETTE = [
-  "#0D9488",
-  "#F59E0B",
-  "#EC4899",
-  "#3B82F6",
-  "#8B5CF6",
-  "#10B981",
-  "#EF4444",
-  "#6366F1",
-  "#14B8A6",
-  "#F97316",
+  '#0D9488',
+  '#F59E0B',
+  '#EC4899',
+  '#3B82F6',
+  '#8B5CF6',
+  '#10B981',
+  '#EF4444',
+  '#6366F1',
+  '#14B8A6',
+  '#F97316',
 ];
 
 // Top categories keep their own slice; the rest are folded into "Other"
@@ -51,7 +51,7 @@ export function CategoryPieChart({
       ? [
           ...top,
           {
-            name: "Other",
+            name: 'Other',
             icon: null,
             amount: rest.reduce((sum, item) => sum + item.amount, 0),
             count: rest.reduce((sum, item) => sum + item.count, 0),
@@ -64,7 +64,7 @@ export function CategoryPieChart({
     return {
       value: item.amount,
       color: PALETTE[index % PALETTE.length],
-      text: percent >= 6 ? `${percent}%` : "",
+      text: percent >= 6 ? `${percent}%` : '',
       textColor: colors.surface,
       textSize: 11,
     };
@@ -89,7 +89,7 @@ export function CategoryPieChart({
               <View style={styles.centerLabel}>
                 <Text style={styles.centerSub}>Total</Text>
                 <Text style={styles.centerAmount} numberOfLines={1}>
-                  {hideBalance ? "••••" : formatCurrency(totalAmount)}
+                  {hideBalance ? '••••' : formatCurrency(totalAmount)}
                 </Text>
               </View>
             );
@@ -115,14 +115,14 @@ export function CategoryPieChart({
                     {item.name}
                   </Text>
                   <Text style={styles.legendTxCount}>
-                    {item.count} {item.count === 1 ? "tx" : "txs"}
+                    {item.count} {item.count === 1 ? 'tx' : 'txs'}
                   </Text>
                 </View>
               </View>
 
               <View style={styles.legendRight}>
                 <Text style={styles.legendAmount}>
-                  {hideBalance ? "••••" : formatCurrency(item.amount)}
+                  {hideBalance ? '••••' : formatCurrency(item.amount)}
                 </Text>
                 <Text style={styles.legendPercent}>{percent}%</Text>
               </View>
@@ -150,25 +150,25 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   chartWrapper: {
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingVertical: spacing.md,
   },
   centerLabel: {
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     maxWidth: 100,
   },
   centerSub: {
     ...typography.caption,
     color: colors.textMuted,
-    textTransform: "uppercase",
+    textTransform: 'uppercase',
     fontSize: 10,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   centerAmount: {
     ...typography.caption,
-    fontWeight: "800",
+    fontWeight: '800',
     color: colors.text,
     marginTop: 2,
     fontSize: 13,
@@ -181,14 +181,14 @@ const styles = StyleSheet.create({
     paddingTop: spacing.sm,
   },
   legendRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingVertical: spacing.xs + 2,
   },
   legendLeft: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     flex: 1,
     gap: spacing.xs,
   },
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
   legendName: {
     ...typography.subhead,
     color: colors.text,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   legendTxCount: {
     ...typography.caption,
@@ -212,18 +212,18 @@ const styles = StyleSheet.create({
     fontSize: 11,
   },
   legendRight: {
-    alignItems: "flex-end",
+    alignItems: 'flex-end',
   },
   legendAmount: {
     ...typography.subhead,
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.text,
     ...typography.tabular,
   },
   legendPercent: {
     ...typography.caption,
     color: colors.textSecondary,
-    fontWeight: "500",
+    fontWeight: '500',
     fontSize: 11,
   },
 });

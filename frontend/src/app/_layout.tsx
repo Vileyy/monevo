@@ -1,27 +1,27 @@
-import React, { useEffect } from "react";
-import { StatusBar } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import React, { useEffect } from 'react';
+import { StatusBar } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
   DefaultTheme,
   ThemeProvider,
   Stack,
   useRouter,
   useSegments,
-} from "expo-router";
-import * as SplashScreen from "expo-splash-screen";
-import * as WebBrowser from "expo-web-browser";
-import { ClerkLoaded, ClerkProvider, useUser } from "@clerk/clerk-expo";
-import { PostHogProvider } from "posthog-react-native";
+} from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
+import * as WebBrowser from 'expo-web-browser';
+import { ClerkLoaded, ClerkProvider, useUser } from '@clerk/clerk-expo';
+import { PostHogProvider } from 'posthog-react-native';
 
-import { AnimatedSplashOverlay } from "@/components/animated-icon";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { useAuthStore } from "@/store/auth.store";
-import { useSettingsStore } from "@/store/settings.store";
-import { useCurrencyStore } from "@/store/currency.store";
-import { analytics, identifyUser, resetAnalytics } from "@/lib/analytics";
-import { tokenCache } from "@/lib/token-cache";
-import { initNotifications } from "@/lib/notifications";
-import { buildClerkProfileUpdates } from "@/features/auth/utils/clerk-profile";
+import { AnimatedSplashOverlay } from '@/components/animated-icon';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { useAuthStore } from '@/store/auth.store';
+import { useSettingsStore } from '@/store/settings.store';
+import { useCurrencyStore } from '@/store/currency.store';
+import { analytics, identifyUser, resetAnalytics } from '@/lib/analytics';
+import { tokenCache } from '@/lib/token-cache';
+import { initNotifications } from '@/lib/notifications';
+import { buildClerkProfileUpdates } from '@/features/auth/utils/clerk-profile';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -31,7 +31,7 @@ const clerkPublishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 if (!clerkPublishableKey) {
   throw new Error(
-    "Missing EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY. Please set it in your .env file.",
+    'Missing EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY. Please set it in your .env file.',
   );
 }
 
@@ -96,17 +96,17 @@ export default function RootLayout() {
     if (!isHydrated) return;
 
     const inProtectedGroup =
-      segments[0] === "(tabs)" || segments[0] === "add-transaction";
+      segments[0] === '(tabs)' || segments[0] === 'add-transaction';
 
     if (!isAuthenticated && inProtectedGroup) {
-      router.replace("/login");
+      router.replace('/login');
     } else if (
       isAuthenticated &&
-      (segments[0] === "login" ||
-        segments[0] === "register" ||
-        segments[0] === "onboarding")
+      (segments[0] === 'login' ||
+        segments[0] === 'register' ||
+        segments[0] === 'onboarding')
     ) {
-      router.replace("/(tabs)");
+      router.replace('/(tabs)');
     }
   }, [isAuthenticated, isHydrated, segments, router]);
 
@@ -124,7 +124,7 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" />
           <Stack.Screen
             name="add-transaction"
-            options={{ presentation: "modal" }}
+            options={{ presentation: 'modal' }}
           />
         </Stack>
       </ErrorBoundary>

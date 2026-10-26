@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React, { memo } from 'react';
 import {
   Pressable,
   StyleSheet,
@@ -6,13 +6,13 @@ import {
   useWindowDimensions,
   View,
   ViewStyle,
-} from "react-native";
-import { colors, radius, spacing, typography } from "@/theme";
-import { formatCurrency } from "@/lib/format";
-import { CategoryIcon } from "@/components/ui";
-import { Transaction } from "@/store/transaction.store";
-import { hapticFeedback } from "@/lib/haptics";
-import { useDisplayCurrency } from "@/hooks/use-display-currency";
+} from 'react-native';
+import { colors, radius, spacing, typography } from '@/theme';
+import { formatCurrency } from '@/lib/format';
+import { CategoryIcon } from '@/components/ui';
+import { Transaction } from '@/store/transaction.store';
+import { hapticFeedback } from '@/lib/haptics';
+import { useDisplayCurrency } from '@/hooks/use-display-currency';
 
 export interface TransactionItemProps {
   transaction: Transaction;
@@ -26,25 +26,25 @@ export const TransactionItem = memo(function TransactionItem({
   style,
 }: TransactionItemProps) {
   useDisplayCurrency();
-  const isIncome = transaction.type === "INCOME";
+  const isIncome = transaction.type === 'INCOME';
   const { width } = useWindowDimensions();
   const compact = width < 360;
   const amountFontSize = compact ? 14 : 16;
   const amountLineHeight = compact ? 18 : 22;
-  const categoryName = transaction.category?.name || "Other";
+  const categoryName = transaction.category?.name || 'Other';
   const amountColor = isIncome ? colors.income : colors.expense;
-  const sign = isIncome ? "+" : "−";
+  const sign = isIncome ? '+' : '−';
 
   // Format date nicely
   const txDate = new Date(transaction.date);
   const isToday = new Date().toDateString() === txDate.toDateString();
   const formattedTime = txDate.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
+    hour: '2-digit',
+    minute: '2-digit',
   });
   const formattedDate = isToday
     ? `Today · ${formattedTime}`
-    : `${txDate.toLocaleDateString(undefined, { month: "short", day: "numeric" })} · ${formattedTime}`;
+    : `${txDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} · ${formattedTime}`;
 
   const handlePress = () => {
     hapticFeedback.light();
@@ -56,10 +56,10 @@ export const TransactionItem = memo(function TransactionItem({
       onPress={handlePress}
       style={({ pressed }) => [styles.row, pressed && styles.pressed, style]}
       accessibilityRole="button"
-      accessibilityLabel={`${categoryName}, ${transaction.note || ""}, ${sign}${formatCurrency(transaction.amount)}`}
+      accessibilityLabel={`${categoryName}, ${transaction.note || ''}, ${sign}${formatCurrency(transaction.amount)}`}
     >
       <CategoryIcon
-        type={isIncome ? "INCOME" : "EXPENSE"}
+        type={isIncome ? 'INCOME' : 'EXPENSE'}
         icon={transaction.category?.icon}
         size="md"
       />
@@ -113,8 +113,8 @@ export const TransactionItem = memo(function TransactionItem({
 
 const styles = StyleSheet.create({
   row: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: colors.surface,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.base,
@@ -138,13 +138,13 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   metaRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginTop: 2,
   },
   walletTag: {
     ...typography.caption,
-    fontWeight: "600",
+    fontWeight: '600',
     color: colors.primary,
   },
   note: {
@@ -154,13 +154,13 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   amountCol: {
-    alignItems: "flex-end",
+    alignItems: 'flex-end',
     flexShrink: 0,
-    maxWidth: "55%",
+    maxWidth: '55%',
   },
   amount: {
     ...typography.headline,
-    fontWeight: "700",
+    fontWeight: '700',
     ...typography.tabular,
   },
   dateSubtext: {

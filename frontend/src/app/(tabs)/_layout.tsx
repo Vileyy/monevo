@@ -1,10 +1,10 @@
-import React from "react";
-import { Redirect, Tabs } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import { colors } from "@/theme";
-import { hapticFeedback } from "@/lib/haptics";
-import { useAuthStore } from "@/store/auth.store";
-import { FloatingTabBar } from "@/components/FloatingTabBar";
+import React from 'react';
+import { Redirect, Tabs } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { colors } from '@/theme';
+import { hapticFeedback } from '@/lib/haptics';
+import { useAuthStore } from '@/store/auth.store';
+import { FloatingTabBar } from '@/components/FloatingTabBar';
 
 export default function TabLayout() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -33,10 +33,10 @@ export default function TabLayout() {
         name="index"
         listeners={tabPressListener}
         options={{
-          title: "Home",
+          title: 'Home',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
-              name={focused ? "home" : "home-outline"}
+              name={focused ? 'home' : 'home-outline'}
               size={22}
               color={color}
             />
@@ -47,10 +47,10 @@ export default function TabLayout() {
         name="transactions"
         listeners={tabPressListener}
         options={{
-          title: "History",
+          title: 'History',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
-              name={focused ? "receipt" : "receipt-outline"}
+              name={focused ? 'receipt' : 'receipt-outline'}
               size={22}
               color={color}
             />
@@ -61,10 +61,10 @@ export default function TabLayout() {
         name="explore"
         listeners={tabPressListener}
         options={{
-          title: "Insights",
+          title: 'Insights',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
-              name={focused ? "pie-chart" : "pie-chart-outline"}
+              name={focused ? 'pie-chart' : 'pie-chart-outline'}
               size={22}
               color={color}
             />
@@ -75,10 +75,10 @@ export default function TabLayout() {
         name="wallets"
         listeners={tabPressListener}
         options={{
-          title: "Wallets",
+          title: 'Wallets',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
-              name={focused ? "wallet" : "wallet-outline"}
+              name={focused ? 'wallet' : 'wallet-outline'}
               size={22}
               color={color}
             />
@@ -89,10 +89,10 @@ export default function TabLayout() {
         name="profile"
         listeners={tabPressListener}
         options={{
-          title: "Profile",
+          title: 'Profile',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
-              name={focused ? "person" : "person-outline"}
+              name={focused ? 'person' : 'person-outline'}
               size={22}
               color={color}
             />

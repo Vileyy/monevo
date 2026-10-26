@@ -22,7 +22,7 @@ export type RegisterBody = {
   name?: string;
 };
 
-export type WalletType = "CASH" | "BANK" | "CREDIT_CARD" | string;
+export type WalletType = 'CASH' | 'BANK' | 'CREDIT_CARD' | string;
 
 export type CreateWalletBody = {
   name: string;
@@ -32,7 +32,7 @@ export type CreateWalletBody = {
 
 export type UpdateWalletBody = Partial<CreateWalletBody>;
 
-export type TransactionType = "INCOME" | "EXPENSE";
+export type TransactionType = 'INCOME' | 'EXPENSE';
 
 export type CreateCategoryBody = {
   name: string;

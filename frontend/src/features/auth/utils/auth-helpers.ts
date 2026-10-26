@@ -1,6 +1,6 @@
 export function extractClerkErrorMessage(
   err: unknown,
-  fallback = "An unexpected authentication error occurred.",
+  fallback = 'An unexpected authentication error occurred.',
 ): string {
   const clerkError = (
     err as {
@@ -11,7 +11,7 @@ export function extractClerkErrorMessage(
   return (
     clerkError?.longMessage ||
     clerkError?.message ||
-    (err instanceof Error ? err.message : "") ||
+    (err instanceof Error ? err.message : '') ||
     fallback
   );
 }
@@ -49,8 +49,8 @@ export function getGoogleFallbackUser(result: GoogleSSOResultLike): {
   const rawEmail =
     result.signIn?.identifier ||
     result.signUp?.emailAddress ||
-    "google.user@clerk.dev";
-  const rawName = result.signUp?.firstName?.trim() || "Google User";
+    'google.user@clerk.dev';
+  const rawName = result.signUp?.firstName?.trim() || 'Google User';
 
   return {
     email: rawEmail.trim().toLowerCase(),
@@ -65,14 +65,14 @@ export function buildMissingProfileUpdate(
   const update: { username?: string; firstName?: string; lastName?: string } =
     {};
 
-  if (missingFields.includes("username")) {
+  if (missingFields.includes('username')) {
     update.username = `user_${uniqueId}`;
   }
-  if (missingFields.includes("first_name")) {
-    update.firstName = "Monevo";
+  if (missingFields.includes('first_name')) {
+    update.firstName = 'Monevo';
   }
-  if (missingFields.includes("last_name")) {
-    update.lastName = "User";
+  if (missingFields.includes('last_name')) {
+    update.lastName = 'User';
   }
 
   return update;

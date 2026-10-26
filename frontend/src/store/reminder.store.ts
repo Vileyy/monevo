@@ -1,23 +1,23 @@
-import { create } from "zustand";
-import { apiClient } from "@/services/api/client";
-import { Wallet, useWalletStore } from "./wallet.store";
-import { useTransactionStore } from "./transaction.store";
+import { create } from 'zustand';
+import { apiClient } from '@/services/api/client';
+import { Wallet, useWalletStore } from './wallet.store';
+import { useTransactionStore } from './transaction.store';
 import {
   cancelReminderNotification,
   syncReminderNotifications,
-} from "@/lib/notifications";
+} from '@/lib/notifications';
 
 export type ReminderCategory =
-  | "MEDICINE"
-  | "ELECTRICITY"
-  | "WATER"
-  | "RENT"
-  | "INTERNET"
-  | "PHONE"
-  | "OTHER";
+  | 'MEDICINE'
+  | 'ELECTRICITY'
+  | 'WATER'
+  | 'RENT'
+  | 'INTERNET'
+  | 'PHONE'
+  | 'OTHER';
 
 export type ReminderStatus =
-  "PAID" | "OVERDUE" | "DUE_TODAY" | "DUE_SOON" | "UPCOMING";
+  'PAID' | 'OVERDUE' | 'DUE_TODAY' | 'DUE_SOON' | 'UPCOMING';
 
 export interface ReminderItem {
   id: string;
@@ -60,13 +60,13 @@ export const useReminderStore = create<ReminderState>((set, get) => ({
   fetchReminders: async () => {
     set({ isLoading: true, error: null });
     try {
-      const response = await apiClient.get<ReminderItem[]>("/reminders");
+      const response = await apiClient.get<ReminderItem[]>('/reminders');
       set({ reminders: response.data, isLoading: false });
       void syncReminderNotifications(response.data);
     } catch (err: unknown) {
       set({
         isLoading: false,
-        error: err instanceof Error ? err.message : "Failed to load reminders",
+        error: err instanceof Error ? err.message : 'Failed to load reminders',
       });
     }
   },
@@ -74,7 +74,7 @@ export const useReminderStore = create<ReminderState>((set, get) => ({
   createReminder: async (data) => {
     set({ isLoading: true, error: null });
     try {
-      await apiClient.post("/reminders", data);
+      await apiClient.post('/reminders', data);
       await get().fetchReminders();
     } catch (err: unknown) {
       set({ isLoading: false });
@@ -91,7 +91,7 @@ export const useReminderStore = create<ReminderState>((set, get) => ({
           ? {
               ...r,
               isPaidThisMonth: true,
-              status: "PAID" as ReminderStatus,
+              status: 'PAID' as ReminderStatus,
               lastPaidAt: new Date().toISOString(),
             }
           : r,

@@ -1,8 +1,8 @@
-import React, { memo } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { colors, radius, shadows, spacing, typography } from "@/theme";
-import { hapticFeedback } from "@/lib/haptics";
+import React, { memo } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, radius, shadows, spacing, typography } from '@/theme';
+import { hapticFeedback } from '@/lib/haptics';
 
 export interface WalletQuickActionsProps {
   onAddIncome: () => void;
@@ -58,16 +58,16 @@ export const WalletQuickActions = memo(function WalletQuickActions({
 
 const styles = StyleSheet.create({
   actionBar: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: spacing.md,
     marginHorizontal: spacing.base,
     marginTop: spacing.md,
     marginBottom: spacing.md,
   },
   actionButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingVertical: 14,
     borderRadius: radius.lg,
   },
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
   },
   incomeActionText: {
     ...typography.headline,
-    color: "#FFFFFF",
+    color: '#FFFFFF',
     marginLeft: spacing.xs,
   },
   expenseAction: {
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
   },
   expenseActionText: {
     ...typography.headline,
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.expense,
     marginLeft: spacing.xs,
   },

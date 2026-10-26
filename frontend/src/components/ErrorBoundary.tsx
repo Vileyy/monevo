@@ -1,6 +1,6 @@
-import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { colors, radius, spacing, typography } from "@/theme";
+import React from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { colors, radius, spacing, typography } from '@/theme';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -26,7 +26,7 @@ export class ErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
-    console.error("[ErrorBoundary] Unhandled UI error:", error, info);
+    console.error('[ErrorBoundary] Unhandled UI error:', error, info);
   }
 
   private handleRetry = () => {
@@ -58,21 +58,21 @@ export class ErrorBoundary extends React.Component<
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     padding: spacing.xl,
     backgroundColor: colors.background,
   },
   title: {
     ...typography.title2,
     color: colors.text,
-    fontWeight: "800",
-    textAlign: "center",
+    fontWeight: '800',
+    textAlign: 'center',
   },
   message: {
     ...typography.body,
     color: colors.textSecondary,
-    textAlign: "center",
+    textAlign: 'center',
     marginTop: spacing.sm,
     marginBottom: spacing.lg,
   },
@@ -88,6 +88,6 @@ const styles = StyleSheet.create({
   buttonText: {
     ...typography.body,
     color: colors.textInverse,
-    fontWeight: "700",
+    fontWeight: '700',
   },
 });

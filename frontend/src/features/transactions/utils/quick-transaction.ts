@@ -1,4 +1,4 @@
-export type QuickTransactionType = "INCOME" | "EXPENSE";
+export type QuickTransactionType = 'INCOME' | 'EXPENSE';
 
 export function resolveWalletId<T extends { id: string }>(
   wallets: T[],
@@ -24,7 +24,7 @@ export function resolveCategoryId<T extends { id: string; type: string }>(
 
 export function validateQuickAmount(amount: number): string | null {
   if (!Number.isFinite(amount) || amount <= 0) {
-    return "Please enter an amount greater than 0.";
+    return 'Please enter an amount greater than 0.';
   }
   return null;
 }
@@ -36,7 +36,7 @@ export function selectCreatedCategory(category: { id: string; type: string }): {
 } {
   return {
     categoryId: category.id,
-    type: category.type === "INCOME" ? "INCOME" : "EXPENSE",
+    type: category.type === 'INCOME' ? 'INCOME' : 'EXPENSE',
   };
 }
 

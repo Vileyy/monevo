@@ -1,12 +1,12 @@
-import React from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { colors, radius, spacing, typography } from "@/theme";
-import { IconBadge, Modal, WalletIcon } from "@/components/ui";
-import { Wallet } from "@/store/wallet.store";
-import { formatCurrency } from "@/lib/format";
-import { getWalletMeta } from "@/lib/categories";
-import { useSettingsStore } from "@/store/settings.store";
+import React from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, radius, spacing, typography } from '@/theme';
+import { IconBadge, Modal, WalletIcon } from '@/components/ui';
+import { Wallet } from '@/store/wallet.store';
+import { formatCurrency } from '@/lib/format';
+import { getWalletMeta } from '@/lib/categories';
+import { useSettingsStore } from '@/store/settings.store';
 
 export interface WalletSelectorModalProps {
   visible: boolean;
@@ -68,13 +68,13 @@ export function WalletSelectorModal({
             <View style={styles.infoContainer}>
               <Text style={styles.nameText}>All Wallets</Text>
               <Text style={styles.subText}>
-                {wallets.length} {wallets.length === 1 ? "Wallet" : "Wallets"}
+                {wallets.length} {wallets.length === 1 ? 'Wallet' : 'Wallets'}
               </Text>
             </View>
 
             <View style={styles.rightContainer}>
               <Text style={styles.balanceText}>
-                {hideBalance ? "••••••••" : formatCurrency(totalBalance)}
+                {hideBalance ? '••••••••' : formatCurrency(totalBalance)}
               </Text>
               <View style={styles.radioContainer}>
                 {isAllSelected ? (
@@ -122,7 +122,7 @@ export function WalletSelectorModal({
 
               <View style={styles.rightContainer}>
                 <Text style={styles.balanceText}>
-                  {hideBalance ? "••••••••" : formatCurrency(wallet.balance)}
+                  {hideBalance ? '••••••••' : formatCurrency(wallet.balance)}
                 </Text>
                 <View style={styles.radioContainer}>
                   {isSelected ? (
@@ -157,8 +157,8 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   itemRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.md,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.md,
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
   },
   infoContainer: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: 'center',
   },
   nameText: {
     ...typography.bodyBold,
@@ -189,13 +189,13 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   rightContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.sm,
   },
   balanceText: {
     ...typography.headline,
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.text,
     ...typography.tabular,
   },
@@ -207,8 +207,8 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 11,
     backgroundColor: colors.primary,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   radioUnchecked: {
     width: 22,

@@ -5,18 +5,18 @@ export interface CalendarCell {
 }
 
 const SHORT_MONTHS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
 ];
 
 /**
@@ -56,7 +56,7 @@ export function buildCalendarWeeks(
 }
 
 export function formatRangeLabel(start: Date | null, end: Date | null): string {
-  if (!start) return "--";
+  if (!start) return '--';
 
   const effectiveEnd = end ?? start;
   const sameDay =

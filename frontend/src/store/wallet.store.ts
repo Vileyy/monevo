@@ -1,13 +1,13 @@
-import { create } from "zustand";
-import { apiClient } from "@/services/api/client";
-import { useAuthStore } from "@/store/auth.store";
-import { CreateWalletBody, UpdateWalletBody } from "@/types/api";
+import { create } from 'zustand';
+import { apiClient } from '@/services/api/client';
+import { useAuthStore } from '@/store/auth.store';
+import { CreateWalletBody, UpdateWalletBody } from '@/types/api';
 
 export type Wallet = {
   id: string;
   name: string;
   balance: number;
-  type: "CASH" | "BANK" | "CREDIT_CARD" | string;
+  type: 'CASH' | 'BANK' | 'CREDIT_CARD' | string;
   createdAt: string;
   updatedAt: string;
 };
@@ -36,11 +36,11 @@ export const useWalletStore = create<WalletState>((set, get) => ({
 
     set({ isLoading: true });
     try {
-      const response = await apiClient.get<Wallet[]>("/wallets");
+      const response = await apiClient.get<Wallet[]>('/wallets');
       set({ wallets: response.data, hasFetched: true });
     } catch (error: any) {
       if (error?.response?.status !== 401) {
-        console.error("Failed to fetch wallets:", error);
+        console.error('Failed to fetch wallets:', error);
       }
       set({ hasFetched: true });
     } finally {
@@ -50,7 +50,7 @@ export const useWalletStore = create<WalletState>((set, get) => ({
 
   createWallet: async (name, type, balance = 0) => {
     const payload: CreateWalletBody = { name, type, balance };
-    const response = await apiClient.post<Wallet>("/wallets", payload);
+    const response = await apiClient.post<Wallet>('/wallets', payload);
     set({ wallets: [response.data, ...get().wallets] });
     return response.data;
   },

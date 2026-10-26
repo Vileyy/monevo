@@ -1,8 +1,8 @@
-import * as SplashScreen from "expo-splash-screen";
-import React, { useEffect, useState } from "react";
-import { Animated, Easing, Image, StyleSheet, Text, View } from "react-native";
-import { colors, shadows, spacing } from "@/theme";
-import { useAuthStore } from "@/store/auth.store";
+import * as SplashScreen from 'expo-splash-screen';
+import React, { useEffect, useState } from 'react';
+import { Animated, Easing, Image, StyleSheet, Text, View } from 'react-native';
+import { colors, shadows, spacing } from '@/theme';
+import { useAuthStore } from '@/store/auth.store';
 
 const INTRO_DURATION = 1600;
 const ZOOM_DURATION = 480;
@@ -137,7 +137,7 @@ export function AnimatedSplashOverlay() {
 
   const ringRotate = spin.interpolate({
     inputRange: [0, 1],
-    outputRange: ["0deg", "360deg"],
+    outputRange: ['0deg', '360deg'],
   });
 
   return (
@@ -181,7 +181,7 @@ export function AnimatedSplashOverlay() {
             ]}
           >
             <Image
-              source={require("../../assets/images/icon.png")}
+              source={require('../../assets/images/icon.png')}
               style={styles.logoImage}
               resizeMode="contain"
             />
@@ -190,7 +190,7 @@ export function AnimatedSplashOverlay() {
 
         <Animated.View
           style={{
-            alignItems: "center",
+            alignItems: 'center',
             opacity: copyOpacity,
             transform: [{ translateY: copyTranslate }],
           }}
@@ -208,67 +208,67 @@ export function AnimatedSplashOverlay() {
 
 const styles = StyleSheet.create({
   splashOverlay: {
-    position: "absolute",
+    position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
     backgroundColor: colors.surface,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     zIndex: 1000,
   },
   auroraTop: {
-    position: "absolute",
+    position: 'absolute',
     top: -120,
     right: -90,
     width: 320,
     height: 320,
     borderRadius: 160,
-    backgroundColor: "rgba(13, 148, 136, 0.06)",
+    backgroundColor: 'rgba(13, 148, 136, 0.06)',
   },
   auroraBottom: {
-    position: "absolute",
+    position: 'absolute',
     bottom: -140,
     left: -110,
     width: 360,
     height: 360,
     borderRadius: 180,
-    backgroundColor: "rgba(16, 185, 129, 0.05)",
+    backgroundColor: 'rgba(16, 185, 129, 0.05)',
   },
   contentWrapper: {
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: spacing.xxl,
   },
   logoStage: {
     width: 168,
     height: 168,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: spacing.xl,
   },
   halo: {
-    position: "absolute",
+    position: 'absolute',
     width: 150,
     height: 150,
     borderRadius: 75,
     backgroundColor: colors.primaryLight,
   },
   ring: {
-    position: "absolute",
+    position: 'absolute',
     width: 164,
     height: 164,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   ringDash: {
     width: 164,
     height: 164,
     borderRadius: 82,
     borderWidth: 1,
-    borderStyle: "dashed",
-    borderColor: "rgba(13, 148, 136, 0.28)",
+    borderStyle: 'dashed',
+    borderColor: 'rgba(13, 148, 136, 0.28)',
   },
   logoFrame: {
     ...shadows.lg,
@@ -279,15 +279,15 @@ const styles = StyleSheet.create({
     borderRadius: 32,
   },
   wordmarkRow: {
-    flexDirection: "row",
-    alignItems: "flex-end",
+    flexDirection: 'row',
+    alignItems: 'flex-end',
   },
   appName: {
     fontSize: 40,
-    fontWeight: "900",
+    fontWeight: '900',
     letterSpacing: 0.6,
     color: colors.text,
-    textAlign: "center",
+    textAlign: 'center',
   },
   wordmarkDot: {
     width: 8,
@@ -299,11 +299,11 @@ const styles = StyleSheet.create({
   },
   appTagline: {
     fontSize: 10,
-    fontWeight: "700",
+    fontWeight: '700',
     letterSpacing: 4,
     color: colors.textMuted,
     marginTop: 8,
     marginLeft: 4,
-    textAlign: "center",
+    textAlign: 'center',
   },
 });

@@ -1,11 +1,11 @@
-import React, { useEffect } from "react";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useAuth, useSignIn, useSignUp, useUser } from "@clerk/clerk-expo";
-import * as WebBrowser from "expo-web-browser";
-import { useAuthStore } from "@/store/auth.store";
-import { apiClient } from "@/services/api/client";
-import { colors } from "@/theme";
+import React, { useEffect } from 'react';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useAuth, useSignIn, useSignUp, useUser } from '@clerk/clerk-expo';
+import * as WebBrowser from 'expo-web-browser';
+import { useAuthStore } from '@/store/auth.store';
+import { apiClient } from '@/services/api/client';
+import { colors } from '@/theme';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -35,7 +35,7 @@ export default function OAuthNativeCallback() {
 
     async function handleAuthFlow() {
       if (isAuthenticated) {
-        router.replace("/(tabs)");
+        router.replace('/(tabs)');
         return;
       }
 
@@ -46,27 +46,27 @@ export default function OAuthNativeCallback() {
             rotatingTokenNonce: params.rotating_token_nonce,
           });
 
-          let sessionId = "";
-          if (signIn.status === "complete") {
-            sessionId = signIn.createdSessionId || "";
+          let sessionId = '';
+          if (signIn.status === 'complete') {
+            sessionId = signIn.createdSessionId || '';
             if (sessionId && setSignInActive) {
               await setSignInActive({ session: sessionId });
             }
           } else if (
-            signIn.firstFactorVerification?.status === "transferable"
+            signIn.firstFactorVerification?.status === 'transferable'
           ) {
             const dynamicUsername = `user_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
             const res = await signUp.create({
               transfer: true,
               username: dynamicUsername,
             });
-            sessionId = res.createdSessionId || "";
+            sessionId = res.createdSessionId || '';
             if (sessionId && setSignUpActive) {
               await setSignUpActive({ session: sessionId });
             }
           }
         } catch (err) {
-          console.warn("Failed to process OAuth params:", err);
+          console.warn('Failed to process OAuth params:', err);
         }
       }
 
@@ -74,11 +74,11 @@ export default function OAuthNativeCallback() {
       if (isSignedIn && userId) {
         try {
           const token = await getToken();
-          const email = user?.primaryEmailAddress?.emailAddress || "";
+          const email = user?.primaryEmailAddress?.emailAddress || '';
           const name =
             user?.fullName ||
-            [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
-            (email ? email.split("@")[0] : "Google User");
+            [user?.firstName, user?.lastName].filter(Boolean).join(' ') ||
+            (email ? email.split('@')[0] : 'Google User');
           const avatarUrl = user?.imageUrl || undefined;
 
           if (token) {
@@ -86,33 +86,33 @@ export default function OAuthNativeCallback() {
               const res = await apiClient.post<{
                 user: { id: string; email: string; name?: string };
                 accessToken: string;
-              }>("/auth/clerk", { clerkToken: token, name });
+              }>('/auth/clerk', { clerkToken: token, name });
               if (res.data?.accessToken && isMounted) {
                 loginStore(
                   {
                     ...res.data.user,
                     name:
                       res.data.user?.name &&
-                      res.data.user.name !== "Monevo Member" &&
-                      res.data.user.name !== "Google User"
+                      res.data.user.name !== 'Monevo Member' &&
+                      res.data.user.name !== 'Google User'
                         ? res.data.user.name
                         : name,
                     avatarUrl,
                   },
                   res.data.accessToken,
                 );
-                router.replace("/(tabs)");
+                router.replace('/(tabs)');
                 return;
               }
             } catch {}
           }
           if (isMounted) {
             loginStore({ id: userId, email, name, avatarUrl }, token || userId);
-            router.replace("/(tabs)");
+            router.replace('/(tabs)');
           }
         } catch {
           if (isMounted) {
-            router.replace("/(tabs)");
+            router.replace('/(tabs)');
           }
         }
         return;
@@ -122,9 +122,9 @@ export default function OAuthNativeCallback() {
       const timer = setTimeout(() => {
         if (isMounted) {
           if (useAuthStore.getState().isAuthenticated) {
-            router.replace("/(tabs)");
+            router.replace('/(tabs)');
           } else {
-            router.replace("/login");
+            router.replace('/login');
           }
         }
       }, 5000);
@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

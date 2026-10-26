@@ -1,11 +1,11 @@
-import React from "react";
-import { Pressable, StyleSheet, View, ViewStyle } from "react-native";
-import { colors, radius, shadows, spacing } from "@/theme";
+import React from 'react';
+import { Pressable, StyleSheet, View, ViewStyle } from 'react-native';
+import { colors, radius, shadows, spacing } from '@/theme';
 
 export interface CardProps {
   children: React.ReactNode;
   style?: ViewStyle;
-  variant?: "elevated" | "outlined" | "flat" | "glass";
+  variant?: 'elevated' | 'outlined' | 'flat' | 'glass';
   onPress?: () => void;
   padding?: keyof typeof spacing;
 }
@@ -13,28 +13,28 @@ export interface CardProps {
 export function Card({
   children,
   style,
-  variant = "outlined",
+  variant = 'outlined',
   onPress,
-  padding = "base",
+  padding = 'base',
 }: CardProps) {
   const getVariantStyle = (): ViewStyle => {
     switch (variant) {
-      case "elevated":
+      case 'elevated':
         return {
           backgroundColor: colors.surface,
           ...shadows.sm,
         };
-      case "flat":
+      case 'flat':
         return {
           backgroundColor: colors.surfaceSecondary,
         };
-      case "glass":
+      case 'glass':
         return {
-          backgroundColor: "rgba(255, 255, 255, 0.85)",
+          backgroundColor: 'rgba(255, 255, 255, 0.85)',
           borderWidth: 1,
-          borderColor: "rgba(255, 255, 255, 0.5)",
+          borderColor: 'rgba(255, 255, 255, 0.5)',
         };
-      case "outlined":
+      case 'outlined':
       default:
         return {
           backgroundColor: colors.surface,
@@ -68,7 +68,7 @@ export function Card({
 const styles = StyleSheet.create({
   card: {
     borderRadius: radius.lg,
-    overflow: "hidden",
+    overflow: 'hidden',
   },
   pressed: {
     opacity: 0.9,

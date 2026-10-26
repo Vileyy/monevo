@@ -1,22 +1,22 @@
 /** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
-  preset: "ts-jest",
-  testEnvironment: "node",
-  testMatch: ["<rootDir>/test/**/*.test.ts", "<rootDir>/test/**/*.spec.ts"],
-  setupFiles: ["<rootDir>/jest.setup.js"],
+  preset: 'ts-jest',
+  testEnvironment: 'node',
+  testMatch: ['<rootDir>/test/**/*.test.ts', '<rootDir>/test/**/*.spec.ts'],
+  setupFiles: ['<rootDir>/jest.setup.js'],
   moduleNameMapper: {
-    "^@/(.*)$": "<rootDir>/src/$1",
+    '^@/(.*)$': '<rootDir>/src/$1',
   },
   transform: {
-    "^.+\\.tsx?$": [
-      "ts-jest",
+    '^.+\\.tsx?$': [
+      'ts-jest',
       {
         tsconfig: {
-          jsx: "react-jsx",
-          moduleResolution: "node",
+          jsx: 'react-jsx',
+          moduleResolution: 'node',
           esModuleInterop: true,
           allowSyntheticDefaultImports: true,
-          types: ["jest", "node"],
+          types: ['jest', 'node'],
         },
       },
     ],

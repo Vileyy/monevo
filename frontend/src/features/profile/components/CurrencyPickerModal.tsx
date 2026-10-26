@@ -1,10 +1,10 @@
-import React from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { colors, radius, spacing, typography } from "@/theme";
-import { Modal } from "@/components/ui";
-import { CurrencyCode, SUPPORTED_CURRENCIES } from "@/lib/currencies";
-import { useSettingsStore } from "@/store/settings.store";
+import React from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, radius, spacing, typography } from '@/theme';
+import { Modal } from '@/components/ui';
+import { CurrencyCode, SUPPORTED_CURRENCIES } from '@/lib/currencies';
+import { useSettingsStore } from '@/store/settings.store';
 
 export interface CurrencyPickerModalProps {
   visible: boolean;
@@ -92,8 +92,8 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   itemRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.md,
     borderRadius: radius.lg,
@@ -114,8 +114,8 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: radius.md,
     backgroundColor: colors.surfaceSecondary,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: spacing.md,
   },
   flagText: {
@@ -123,27 +123,27 @@ const styles = StyleSheet.create({
   },
   infoContainer: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: 'center',
   },
   titleRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.xs,
   },
   codeText: {
     ...typography.body,
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.text,
   },
   symbolBadge: {
     ...typography.caption,
-    fontWeight: "600",
+    fontWeight: '600',
     color: colors.primary,
     backgroundColor: colors.primaryLight,
     paddingHorizontal: 6,
     paddingVertical: 1,
     borderRadius: radius.sm,
-    overflow: "hidden",
+    overflow: 'hidden',
   },
   nameText: {
     ...typography.caption,
@@ -158,8 +158,8 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     backgroundColor: colors.primary,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   radioUnchecked: {
     width: 24,

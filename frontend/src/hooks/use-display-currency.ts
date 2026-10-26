@@ -1,7 +1,7 @@
-import { useEffect } from "react";
-import { useSettingsStore } from "@/store/settings.store";
-import { useCurrencyStore } from "@/store/currency.store";
-import { BASE_CURRENCY } from "@/lib/currency-conversion";
+import { useEffect } from 'react';
+import { useSettingsStore } from '@/store/settings.store';
+import { useCurrencyStore } from '@/store/currency.store';
+import { BASE_CURRENCY } from '@/lib/currency-conversion';
 
 /**
  * Re-renders a screen when the display currency or its rates change, so

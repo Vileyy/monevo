@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   KeyboardAvoidingView,
   Modal as RNModal,
@@ -9,9 +9,9 @@ import {
   Text,
   View,
   ViewStyle,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { colors, radius, shadows, spacing, typography } from "@/theme";
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, radius, shadows, spacing, typography } from '@/theme';
 
 export interface ModalProps {
   visible: boolean;
@@ -40,7 +40,7 @@ export function Modal({
       onRequestClose={onClose}
     >
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={0}
         style={styles.overlay}
       >
@@ -94,11 +94,11 @@ export function Modal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "transparent",
-    justifyContent: "flex-end",
+    backgroundColor: 'transparent',
+    justifyContent: 'flex-end',
   },
   backdrop: {
-    position: "absolute",
+    position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
@@ -113,12 +113,12 @@ const styles = StyleSheet.create({
     borderRightWidth: 1,
     borderColor: colors.border,
     paddingTop: spacing.xs,
-    paddingBottom: Platform.OS === "ios" ? spacing.xl : spacing.base,
-    maxHeight: "88%",
+    paddingBottom: Platform.OS === 'ios' ? spacing.xl : spacing.base,
+    maxHeight: '88%',
     ...shadows.lg,
   },
   handleWrapper: {
-    alignItems: "center",
+    alignItems: 'center',
     paddingVertical: spacing.xs + 2,
   },
   handleBar: {
@@ -128,9 +128,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
   },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: spacing.xl,
     paddingTop: spacing.xs,
     paddingBottom: spacing.md,
@@ -154,8 +154,8 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: radius.full,
     backgroundColor: colors.surfaceSecondary,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     marginLeft: spacing.md,
   },
   closeButtonPressed: {

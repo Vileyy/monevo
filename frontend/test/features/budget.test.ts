@@ -1,5 +1,5 @@
-describe("Budget progress calculations", () => {
-  it("should calculate remaining and percentages accurately", () => {
+describe('Budget progress calculations', () => {
+  it('should calculate remaining and percentages accurately', () => {
     const amount = 2000000;
     const spent = 1500000;
     const remaining = amount - spent;
@@ -9,7 +9,7 @@ describe("Budget progress calculations", () => {
     expect(percentage).toBe(75);
   });
 
-  it("should handle over budget calculations", () => {
+  it('should handle over budget calculations', () => {
     const amount = 1000000;
     const spent = 1200000;
     const remaining = amount - spent;
@@ -19,7 +19,7 @@ describe("Budget progress calculations", () => {
     expect(percentage).toBe(120);
   });
 
-  it("should identify overspending impact when adding a new transaction", () => {
+  it('should identify overspending impact when adding a new transaction', () => {
     const budgetAmount = 3000000;
     const currentSpent = 2500000;
     const newTransaction = 700000;
@@ -34,7 +34,7 @@ describe("Budget progress calculations", () => {
     expect(projectedPercentage).toBeCloseTo(106.67, 1);
   });
 
-  it("should detect when transaction keeps spending within safe limits", () => {
+  it('should detect when transaction keeps spending within safe limits', () => {
     const budgetAmount = 3000000;
     const currentSpent = 1000000;
     const newTransaction = 500000;

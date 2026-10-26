@@ -1,12 +1,12 @@
-import React, { useState } from "react";
-import { Alert, StyleSheet, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { colors, radius, spacing, typography } from "@/theme";
-import { Badge, Button, CategoryIcon, Modal } from "@/components/ui";
-import { formatCurrency } from "@/lib/format";
-import { apiErrorMessage } from "@/lib/api-error";
-import { Transaction, useTransactionStore } from "@/store/transaction.store";
-import { useWalletStore } from "@/store/wallet.store";
+import React, { useState } from 'react';
+import { Alert, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, radius, spacing, typography } from '@/theme';
+import { Badge, Button, CategoryIcon, Modal } from '@/components/ui';
+import { formatCurrency } from '@/lib/format';
+import { apiErrorMessage } from '@/lib/api-error';
+import { Transaction, useTransactionStore } from '@/store/transaction.store';
+import { useWalletStore } from '@/store/wallet.store';
 
 export interface TransactionDetailModalProps {
   visible: boolean;
@@ -25,28 +25,28 @@ export function TransactionDetailModal({
 
   if (!transaction) return null;
 
-  const isIncome = transaction.type === "INCOME";
-  const categoryName = transaction.category?.name || "Other";
+  const isIncome = transaction.type === 'INCOME';
+  const categoryName = transaction.category?.name || 'Other';
   const amountColor = isIncome ? colors.income : colors.expense;
-  const sign = isIncome ? "+" : "−";
+  const sign = isIncome ? '+' : '−';
 
   const txDate = new Date(transaction.date);
   const fullFormattedDate = `${txDate.toLocaleDateString(undefined, {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  })} at ${txDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })} at ${txDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
 
   const handleDelete = () => {
     Alert.alert(
-      "Delete Transaction",
-      "Are you sure you want to delete this record? Your wallet balance will be adjusted accordingly.",
+      'Delete Transaction',
+      'Are you sure you want to delete this record? Your wallet balance will be adjusted accordingly.',
       [
-        { text: "Cancel", style: "cancel" },
+        { text: 'Cancel', style: 'cancel' },
         {
-          text: "Delete",
-          style: "destructive",
+          text: 'Delete',
+          style: 'destructive',
           onPress: async () => {
             setIsDeleting(true);
             try {
@@ -55,8 +55,8 @@ export function TransactionDetailModal({
               onClose();
             } catch (error) {
               Alert.alert(
-                "Error",
-                apiErrorMessage(error, "Could not delete transaction."),
+                'Error',
+                apiErrorMessage(error, 'Could not delete transaction.'),
               );
             } finally {
               setIsDeleting(false);
@@ -73,7 +73,7 @@ export function TransactionDetailModal({
         {/* Hero Amount Section */}
         <View style={styles.heroSection}>
           <CategoryIcon
-            type={isIncome ? "INCOME" : "EXPENSE"}
+            type={isIncome ? 'INCOME' : 'EXPENSE'}
             icon={transaction.category?.icon}
             size="lg"
           />
@@ -87,8 +87,8 @@ export function TransactionDetailModal({
             {formatCurrency(transaction.amount)}
           </Text>
           <Badge
-            label={isIncome ? "Income" : "Expense"}
-            variant={isIncome ? "success" : "danger"}
+            label={isIncome ? 'Income' : 'Expense'}
+            variant={isIncome ? 'success' : 'danger'}
             size="md"
             style={{ marginTop: spacing.xs }}
           />
@@ -106,7 +106,7 @@ export function TransactionDetailModal({
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Account</Text>
             <Text style={styles.detailValue}>
-              {transaction.wallet?.name || "Account"}
+              {transaction.wallet?.name || 'Account'}
             </Text>
           </View>
 
@@ -148,12 +148,12 @@ const styles = StyleSheet.create({
     paddingTop: spacing.xs,
   },
   heroSection: {
-    alignItems: "center",
+    alignItems: 'center',
     paddingVertical: spacing.md,
   },
   heroAmount: {
     fontSize: 32,
-    fontWeight: "800",
+    fontWeight: '800',
     marginTop: spacing.sm,
     flexShrink: 1,
     ...typography.tabular,
@@ -170,8 +170,8 @@ const styles = StyleSheet.create({
   detailLabel: {
     ...typography.caption,
     color: colors.textSecondary,
-    fontWeight: "600",
-    textTransform: "uppercase",
+    fontWeight: '600',
+    textTransform: 'uppercase',
   },
   detailValue: {
     ...typography.headline,

@@ -1,6 +1,6 @@
-import { StyleSheet } from "react-native";
-import { colors } from "@/theme/colors";
-import { spacing } from "@/theme/spacing";
+import { StyleSheet } from 'react-native';
+import { colors } from '@/theme/colors';
+import { spacing } from '@/theme/spacing';
 
 export const styles = StyleSheet.create({
   container: {
@@ -11,8 +11,8 @@ export const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
     paddingBottom: spacing.md,
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   closeButton: {
     width: 36,
@@ -21,20 +21,20 @@ export const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   closeIcon: {
     fontSize: 13,
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.text,
     lineHeight: 16,
   },
   title: {
     flex: 1,
-    textAlign: "center",
+    textAlign: 'center',
     fontSize: 17,
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.text,
     letterSpacing: -0.2,
   },
@@ -50,7 +50,7 @@ export const styles = StyleSheet.create({
   },
   label: {
     fontSize: 13,
-    fontWeight: "600",
+    fontWeight: '600',
     color: colors.textSecondary,
     marginBottom: 8,
   },
@@ -65,8 +65,8 @@ export const styles = StyleSheet.create({
     color: colors.text,
   },
   chips: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
   },
   chip: {
@@ -83,7 +83,7 @@ export const styles = StyleSheet.create({
   },
   chipText: {
     fontSize: 13,
-    fontWeight: "600",
+    fontWeight: '600',
     color: colors.textSecondary,
   },
   chipTextActive: {
@@ -93,12 +93,12 @@ export const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     borderRadius: 14,
     paddingVertical: 16,
-    alignItems: "center",
+    alignItems: 'center',
     marginTop: 8,
   },
   submitText: {
-    color: "#FFFFFF",
+    color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: "700",
+    fontWeight: '700',
   },
 });

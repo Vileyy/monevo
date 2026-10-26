@@ -1,6 +1,6 @@
-import { StyleSheet } from "react-native";
-import { colors } from "@/theme/colors";
-import { spacing } from "@/theme/spacing";
+import { StyleSheet } from 'react-native';
+import { colors } from '@/theme/colors';
+import { spacing } from '@/theme/spacing';
 
 export const styles = StyleSheet.create({
   container: {
@@ -15,19 +15,19 @@ export const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 26,
     color: colors.text,
-    fontWeight: "700",
+    fontWeight: '700',
   },
   headerSubtitle: {
     fontSize: 14,
     color: colors.textSecondary,
-    fontWeight: "500",
+    fontWeight: '500',
     marginTop: 6,
   },
   scrollContainer: {
     paddingBottom: 48,
   },
   summaryRow: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 10,
     paddingHorizontal: spacing.lg,
     marginBottom: spacing.lg,
@@ -43,17 +43,17 @@ export const styles = StyleSheet.create({
   summaryLabel: {
     fontSize: 12,
     color: colors.textSecondary,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   summaryValue: {
     fontSize: 18,
-    fontWeight: "700",
+    fontWeight: '700',
     marginTop: 8,
     color: colors.text,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.text,
     paddingHorizontal: spacing.lg,
     marginBottom: 12,
@@ -68,29 +68,29 @@ export const styles = StyleSheet.create({
     marginBottom: 10,
   },
   categoryHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 10,
   },
   categoryName: {
     fontSize: 15,
-    fontWeight: "600",
+    fontWeight: '600',
     color: colors.text,
   },
   categoryValue: {
     fontSize: 15,
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.danger,
   },
   categoryBarContainer: {
     height: 6,
     backgroundColor: colors.overlay,
     borderRadius: 3,
-    overflow: "hidden",
+    overflow: 'hidden',
   },
   categoryBarFill: {
-    height: "100%",
+    height: '100%',
     borderRadius: 3,
     backgroundColor: colors.primary,
   },

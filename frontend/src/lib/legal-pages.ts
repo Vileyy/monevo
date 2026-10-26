@@ -1,16 +1,16 @@
-export type LegalPage = "privacy" | "terms" | "account-deletion";
+export type LegalPage = 'privacy' | 'terms' | 'account-deletion';
 
 /**
  * Public legal site, published by GitHub Pages from the repo's /docs folder.
  * Kept independent from EXPO_PUBLIC_API_URL so the links never break when the
  * API host or IP changes.
  */
-export const DEFAULT_LEGAL_BASE_URL = "https://vileyy.github.io/monevo";
+export const DEFAULT_LEGAL_BASE_URL = 'https://vileyy.github.io/monevo';
 
 export const LEGAL_PAGE_PATHS: Record<LegalPage, string> = {
-  privacy: "/legal/privacy",
-  terms: "/legal/terms",
-  "account-deletion": "/legal/account-deletion",
+  privacy: '/legal/privacy',
+  terms: '/legal/terms',
+  'account-deletion': '/legal/account-deletion',
 };
 
 /**
@@ -23,7 +23,7 @@ export function legalPageUrl(
   baseUrl: string | null = process.env.EXPO_PUBLIC_LEGAL_BASE_URL ??
     DEFAULT_LEGAL_BASE_URL,
 ): string | null {
-  const base = (baseUrl ?? "").trim().replace(/\/+$/, "");
+  const base = (baseUrl ?? '').trim().replace(/\/+$/, '');
   if (!base) return null;
   return `${base}${LEGAL_PAGE_PATHS[page]}`;
 }

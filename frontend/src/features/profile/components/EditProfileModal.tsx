@@ -1,10 +1,10 @@
-import React, { useState } from "react";
-import { Alert, StyleSheet, Text, View } from "react-native";
-import { colors, radius, spacing, typography } from "@/theme";
-import { Button, Input, Modal } from "@/components/ui";
-import { useAuthStore } from "@/store/auth.store";
-import { displayableEmail } from "@/lib/user-profile";
-import { apiClient } from "@/services/api/client";
+import React, { useState } from 'react';
+import { Alert, StyleSheet, Text, View } from 'react-native';
+import { colors, radius, spacing, typography } from '@/theme';
+import { Button, Input, Modal } from '@/components/ui';
+import { useAuthStore } from '@/store/auth.store';
+import { displayableEmail } from '@/lib/user-profile';
+import { apiClient } from '@/services/api/client';
 
 export interface EditProfileModalProps {
   visible: boolean;
@@ -29,7 +29,7 @@ function EditProfileForm({
 
   const handleSave = async () => {
     if (!name.trim()) {
-      Alert.alert("Required", "Please enter your name.");
+      Alert.alert('Required', 'Please enter your name.');
       return;
     }
 
@@ -39,7 +39,7 @@ function EditProfileForm({
         id: string;
         email: string;
         name: string;
-      }>("/users/me", {
+      }>('/users/me', {
         name: name.trim(),
       });
 
@@ -48,8 +48,8 @@ function EditProfileForm({
     } catch {
       // Fallback: If offline / network error, update store locally
       onSuccess(name.trim());
-      Alert.alert("Profile Updated", "Your profile has been saved locally.", [
-        { text: "OK", onPress: onClose },
+      Alert.alert('Profile Updated', 'Your profile has been saved locally.', [
+        { text: 'OK', onPress: onClose },
       ]);
     } finally {
       setIsSubmitting(false);
@@ -60,7 +60,7 @@ function EditProfileForm({
     <View style={styles.container}>
       <View style={styles.emailContainer}>
         <Text style={styles.emailLabel}>Email Address</Text>
-        <Text style={styles.emailValue}>{email || "—"}</Text>
+        <Text style={styles.emailValue}>{email || '—'}</Text>
         <Text style={styles.emailNote}>Email cannot be changed.</Text>
       </View>
 
@@ -99,9 +99,9 @@ export function EditProfileModal({ visible, onClose }: EditProfileModalProps) {
     <Modal visible={visible} onClose={onClose} title="Edit Profile">
       {visible ? (
         <EditProfileForm
-          key={user?.name || "unnamed"}
-          initialName={user?.name || ""}
-          email={displayableEmail(user?.email) ?? ""}
+          key={user?.name || 'unnamed'}
+          initialName={user?.name || ''}
+          email={displayableEmail(user?.email) ?? ''}
           onClose={onClose}
           onSuccess={(name) => updateUser({ name })}
         />
@@ -122,12 +122,12 @@ const styles = StyleSheet.create({
   },
   emailLabel: {
     ...typography.caption,
-    fontWeight: "600",
+    fontWeight: '600',
     color: colors.textSecondary,
   },
   emailValue: {
     ...typography.body,
-    fontWeight: "500",
+    fontWeight: '500',
     color: colors.text,
     marginTop: 2,
   },
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
   },
   buttonRow: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: spacing.md,
     marginTop: spacing.lg,
   },

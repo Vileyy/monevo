@@ -1,13 +1,13 @@
-import * as LocalAuthentication from "expo-local-authentication";
-import * as SecureStore from "expo-secure-store";
-import { Platform } from "react-native";
+import * as LocalAuthentication from 'expo-local-authentication';
+import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
 import {
   BiometricIconName,
   resolveBiometricIcon,
   resolveBiometricLabel,
-} from "./biometric-label";
+} from './biometric-label';
 
-const BIOMETRIC_ENABLED_KEY = "monevo_biometric_enabled";
+const BIOMETRIC_ENABLED_KEY = 'monevo_biometric_enabled';
 
 export interface BiometricCapability {
   available: boolean;
@@ -17,12 +17,12 @@ export interface BiometricCapability {
 
 const UNAVAILABLE: BiometricCapability = {
   available: false,
-  label: "Biometrics",
-  icon: "lock-closed-outline",
+  label: 'Biometrics',
+  icon: 'lock-closed-outline',
 };
 
 export async function getBiometricCapability(): Promise<BiometricCapability> {
-  if (Platform.OS === "web") return UNAVAILABLE;
+  if (Platform.OS === 'web') return UNAVAILABLE;
 
   try {
     const hasHardware = await LocalAuthentication.hasHardwareAsync();
@@ -36,14 +36,14 @@ export async function getBiometricCapability(): Promise<BiometricCapability> {
       available: hasHardware,
       label: isEnrolled
         ? resolveBiometricLabel(Platform.OS, numericTypes)
-        : Platform.OS === "ios"
-          ? "Face ID"
-          : "Biometrics",
+        : Platform.OS === 'ios'
+          ? 'Face ID'
+          : 'Biometrics',
       icon: isEnrolled
         ? resolveBiometricIcon(Platform.OS, numericTypes)
-        : Platform.OS === "ios"
-          ? "scan-outline"
-          : "finger-print-outline",
+        : Platform.OS === 'ios'
+          ? 'scan-outline'
+          : 'finger-print-outline',
     };
   } catch {
     return UNAVAILABLE;
@@ -51,7 +51,7 @@ export async function getBiometricCapability(): Promise<BiometricCapability> {
 }
 
 export async function isBiometricEnrolled(): Promise<boolean> {
-  if (Platform.OS === "web") return false;
+  if (Platform.OS === 'web') return false;
   try {
     return await LocalAuthentication.isEnrolledAsync();
   } catch {
@@ -62,12 +62,12 @@ export async function isBiometricEnrolled(): Promise<boolean> {
 export async function authenticateWithBiometrics(
   promptMessage: string,
 ): Promise<boolean> {
-  if (Platform.OS === "web") return false;
+  if (Platform.OS === 'web') return false;
 
   try {
     const result = await LocalAuthentication.authenticateAsync({
       promptMessage,
-      cancelLabel: "Cancel",
+      cancelLabel: 'Cancel',
       disableDeviceFallback: false,
     });
     return result.success;
@@ -77,33 +77,33 @@ export async function authenticateWithBiometrics(
 }
 
 export async function isBiometricEnabled(): Promise<boolean> {
-  if (Platform.OS === "web") return false;
+  if (Platform.OS === 'web') return false;
   try {
-    return (await SecureStore.getItemAsync(BIOMETRIC_ENABLED_KEY)) === "1";
+    return (await SecureStore.getItemAsync(BIOMETRIC_ENABLED_KEY)) === '1';
   } catch {
     return false;
   }
 }
 
 export async function setBiometricEnabled(enabled: boolean): Promise<void> {
-  if (Platform.OS === "web") return;
+  if (Platform.OS === 'web') return;
   try {
     if (enabled) {
-      await SecureStore.setItemAsync(BIOMETRIC_ENABLED_KEY, "1");
+      await SecureStore.setItemAsync(BIOMETRIC_ENABLED_KEY, '1');
     } else {
       await SecureStore.deleteItemAsync(BIOMETRIC_ENABLED_KEY);
     }
   } catch {}
 }
 
-const BIOMETRIC_SESSION_USER_KEY = "monevo_biometric_session_user";
-const BIOMETRIC_SESSION_TOKEN_KEY = "monevo_biometric_session_token";
+const BIOMETRIC_SESSION_USER_KEY = 'monevo_biometric_session_user';
+const BIOMETRIC_SESSION_TOKEN_KEY = 'monevo_biometric_session_token';
 
 export async function saveBiometricSession(
   user: { id: string; email: string; name?: string; avatarUrl?: string },
   token: string,
 ): Promise<void> {
-  if (Platform.OS === "web") return;
+  if (Platform.OS === 'web') return;
   try {
     await Promise.all([
       SecureStore.setItemAsync(
@@ -119,7 +119,7 @@ export async function getBiometricSession(): Promise<{
   user: { id: string; email: string; name?: string; avatarUrl?: string };
   token: string;
 } | null> {
-  if (Platform.OS === "web") return null;
+  if (Platform.OS === 'web') return null;
   try {
     const [userStr, token] = await Promise.all([
       SecureStore.getItemAsync(BIOMETRIC_SESSION_USER_KEY),
@@ -136,7 +136,7 @@ export async function getBiometricSession(): Promise<{
 }
 
 export async function clearBiometricSession(): Promise<void> {
-  if (Platform.OS === "web") return;
+  if (Platform.OS === 'web') return;
   try {
     await Promise.all([
       SecureStore.deleteItemAsync(BIOMETRIC_SESSION_USER_KEY),

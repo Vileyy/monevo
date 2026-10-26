@@ -1,1 +1,1 @@
-export { AuthScreen as ClerkAuthScreen } from "./AuthScreen";
+export { AuthScreen as ClerkAuthScreen } from './AuthScreen';

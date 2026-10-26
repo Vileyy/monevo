@@ -1,7 +1,7 @@
-import React, { ReactNode } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { colors, shadows, spacing, typography } from "@/theme";
+import React, { ReactNode } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { colors, shadows, spacing, typography } from '@/theme';
 
 const BAR_HEIGHT = 62;
 
@@ -34,7 +34,7 @@ export interface FloatingTabBarProps {
   descriptors: Record<string, { options: TabBarOptions }>;
   navigation: {
     emit: (event: {
-      type: "tabPress";
+      type: 'tabPress';
       target: string;
       canPreventDefault: true;
     }) => { defaultPrevented: boolean };
@@ -43,7 +43,7 @@ export interface FloatingTabBarProps {
   insets: { bottom: number };
 }
 
-const CENTER_ROUTE = "explore";
+const CENTER_ROUTE = 'explore';
 
 export function FloatingTabBar({
   state,
@@ -57,7 +57,7 @@ export function FloatingTabBar({
 
   const handlePress = (route: TabBarRoute, focused: boolean) => {
     const event = navigation.emit({
-      type: "tabPress",
+      type: 'tabPress',
       target: route.key,
       canPreventDefault: true,
     });
@@ -135,7 +135,7 @@ export function FloatingTabBar({
             accessibilityState={{ selected: state.index === centerIndex }}
             accessibilityLabel={
               descriptors[state.routes[centerIndex].key]?.options?.title ??
-              "Insights"
+              'Insights'
             }
             style={({ pressed }) => [
               styles.centerButton,
@@ -158,7 +158,7 @@ export function FloatingTabBar({
 
 const styles = StyleSheet.create({
   wrapper: {
-    position: "absolute",
+    position: 'absolute',
     left: 0,
     right: 0,
     bottom: 0,
@@ -166,8 +166,8 @@ const styles = StyleSheet.create({
     paddingTop: spacing.xl,
   },
   bar: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     height: BAR_HEIGHT,
     borderRadius: 31,
     backgroundColor: colors.surface,
@@ -179,8 +179,8 @@ const styles = StyleSheet.create({
   item: {
     flex: 1,
     height: 62,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     gap: 3,
   },
   itemPressed: {
@@ -188,12 +188,12 @@ const styles = StyleSheet.create({
   },
   iconWrap: {
     height: 24,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   label: {
     ...typography.caption,
-    fontWeight: "600",
+    fontWeight: '600',
     fontSize: 10.5,
     letterSpacing: 0.1,
   },
@@ -202,20 +202,20 @@ const styles = StyleSheet.create({
     height: 62,
   },
   centerLayer: {
-    position: "absolute",
+    position: 'absolute',
     left: 0,
     right: 0,
     top: 4,
-    alignItems: "center",
-    pointerEvents: "box-none",
+    alignItems: 'center',
+    pointerEvents: 'box-none',
   },
   centerButton: {
     width: 56,
     height: 56,
     borderRadius: 28,
     backgroundColor: colors.primary,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     ...shadows.lg,
   },
   centerButtonFocused: {

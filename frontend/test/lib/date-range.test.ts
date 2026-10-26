@@ -1,8 +1,8 @@
-import { buildCalendarWeeks, formatRangeLabel } from "@/lib/date-range";
+import { buildCalendarWeeks, formatRangeLabel } from '@/lib/date-range';
 
-describe("date-range utilities", () => {
-  describe("buildCalendarWeeks", () => {
-    it("should fill leading cells with previous month days", () => {
+describe('date-range utilities', () => {
+  describe('buildCalendarWeeks', () => {
+    it('should fill leading cells with previous month days', () => {
       const weeks = buildCalendarWeeks(2026, 9); // October 2026
       const firstWeek = weeks[0];
 
@@ -18,7 +18,7 @@ describe("date-range utilities", () => {
       });
     });
 
-    it("should contain every day of the month exactly once", () => {
+    it('should contain every day of the month exactly once', () => {
       const weeks = buildCalendarWeeks(2026, 9);
       const currentMonthDays = weeks
         .flat()
@@ -31,7 +31,7 @@ describe("date-range utilities", () => {
       expect(weeks.every((week) => week.length === 7)).toBe(true);
     });
 
-    it("should pad trailing cells with next month days", () => {
+    it('should pad trailing cells with next month days', () => {
       const weeks = buildCalendarWeeks(2026, 8); // September 2026
       const lastWeek = weeks[weeks.length - 1];
 
@@ -43,33 +43,33 @@ describe("date-range utilities", () => {
     });
   });
 
-  describe("formatRangeLabel", () => {
-    it("should return a placeholder without a start date", () => {
-      expect(formatRangeLabel(null, null)).toBe("--");
+  describe('formatRangeLabel', () => {
+    it('should return a placeholder without a start date', () => {
+      expect(formatRangeLabel(null, null)).toBe('--');
     });
 
-    it("should collapse to a single date when start equals end", () => {
+    it('should collapse to a single date when start equals end', () => {
       expect(formatRangeLabel(new Date(2026, 9, 5), new Date(2026, 9, 5))).toBe(
-        "Oct 5, 2026",
+        'Oct 5, 2026',
       );
     });
 
-    it("should omit the repeated month and year within a month", () => {
+    it('should omit the repeated month and year within a month', () => {
       expect(
         formatRangeLabel(new Date(2026, 9, 1), new Date(2026, 9, 31)),
-      ).toBe("Oct 1 – 31, 2026");
+      ).toBe('Oct 1 – 31, 2026');
     });
 
-    it("should show both months within the same year", () => {
+    it('should show both months within the same year', () => {
       expect(
         formatRangeLabel(new Date(2026, 8, 23), new Date(2026, 9, 22)),
-      ).toBe("Sep 23 – Oct 22, 2026");
+      ).toBe('Sep 23 – Oct 22, 2026');
     });
 
-    it("should show both years when the range crosses a year boundary", () => {
+    it('should show both years when the range crosses a year boundary', () => {
       expect(
         formatRangeLabel(new Date(2026, 11, 20), new Date(2027, 0, 5)),
-      ).toBe("Dec 20, 2026 – Jan 5, 2027");
+      ).toBe('Dec 20, 2026 – Jan 5, 2027');
     });
   });
 });

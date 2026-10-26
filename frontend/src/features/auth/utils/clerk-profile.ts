@@ -1,5 +1,5 @@
-import { displayableEmail } from "@/lib/user-profile";
-import type { User } from "@/store/auth.store";
+import { displayableEmail } from '@/lib/user-profile';
+import type { User } from '@/store/auth.store';
 
 export interface ClerkProfileLike {
   fullName?: string | null;
@@ -10,21 +10,21 @@ export interface ClerkProfileLike {
 }
 
 const PLACEHOLDER_NAMES = new Set([
-  "Google User",
-  "Member",
-  "Monevo User",
-  "Monevo Member",
+  'Google User',
+  'Member',
+  'Monevo User',
+  'Monevo Member',
 ]);
 
 export function buildClerkProfileUpdates(
-  current: Pick<User, "email" | "name" | "avatarUrl">,
+  current: Pick<User, 'email' | 'name' | 'avatarUrl'>,
   clerkUser: ClerkProfileLike,
 ): Partial<User> {
   const updates: Partial<User> = {};
 
   const name =
     clerkUser.fullName ||
-    [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ");
+    [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(' ');
   if (name && (!current.name || PLACEHOLDER_NAMES.has(current.name))) {
     updates.name = name;
   }

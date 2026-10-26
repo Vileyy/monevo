@@ -1,6 +1,6 @@
-import React from "react";
-import { StyleSheet, View } from "react-native";
-import { colors, radius } from "@/theme";
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
+import { colors, radius } from '@/theme';
 
 export interface BudgetProgressBarProps {
   percentage: number;
@@ -38,10 +38,10 @@ export function BudgetProgressBar({
 
 const styles = StyleSheet.create({
   track: {
-    width: "100%",
+    width: '100%',
     backgroundColor: colors.surfaceSecondary,
     borderRadius: radius.full,
-    overflow: "hidden",
+    overflow: 'hidden',
   },
   fill: {
     borderRadius: radius.full,

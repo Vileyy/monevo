@@ -1,11 +1,11 @@
-import React, { useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { colors, radius, shadows, spacing, typography } from "@/theme";
-import { CategoryIcon, Modal, SegmentedControl } from "@/components/ui";
-import { Category } from "@/store/category.store";
-import { hapticFeedback } from "@/lib/haptics";
-import { CategoryForm } from "@/features/categories/components/CategoryForm";
+import React, { useMemo, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, radius, shadows, spacing, typography } from '@/theme';
+import { CategoryIcon, Modal, SegmentedControl } from '@/components/ui';
+import { Category } from '@/store/category.store';
+import { hapticFeedback } from '@/lib/haptics';
+import { CategoryForm } from '@/features/categories/components/CategoryForm';
 
 export interface CategorySelectorModalProps {
   visible: boolean;
@@ -13,7 +13,7 @@ export interface CategorySelectorModalProps {
   categories: Category[];
   selectedCategoryId: string | null;
   onSelectCategory: (category: Category) => void;
-  initialType?: "EXPENSE" | "INCOME";
+  initialType?: 'EXPENSE' | 'INCOME';
 }
 
 export function CategorySelectorModal({
@@ -22,9 +22,9 @@ export function CategorySelectorModal({
   categories,
   selectedCategoryId,
   onSelectCategory,
-  initialType = "EXPENSE",
+  initialType = 'EXPENSE',
 }: CategorySelectorModalProps) {
-  const [tabType, setTabType] = useState<"EXPENSE" | "INCOME">(initialType);
+  const [tabType, setTabType] = useState<'EXPENSE' | 'INCOME'>(initialType);
   const [creating, setCreating] = useState(false);
   const [wasVisible, setWasVisible] = useState(visible);
 
@@ -60,9 +60,9 @@ export function CategorySelectorModal({
     <Modal
       visible={visible}
       onClose={onClose}
-      title={creating ? "New Category" : "Select Category"}
+      title={creating ? 'New Category' : 'Select Category'}
       subtitle={
-        creating ? "Create a custom spending or income category" : undefined
+        creating ? 'Create a custom spending or income category' : undefined
       }
     >
       {creating ? (
@@ -78,14 +78,14 @@ export function CategorySelectorModal({
             <SegmentedControl
               options={[
                 {
-                  value: "EXPENSE",
-                  label: "Expense",
+                  value: 'EXPENSE',
+                  label: 'Expense',
                   icon: (
                     <Ionicons
                       name="arrow-up-circle-outline"
                       size={17}
                       color={
-                        tabType === "EXPENSE"
+                        tabType === 'EXPENSE'
                           ? colors.expense
                           : colors.textSecondary
                       }
@@ -95,14 +95,14 @@ export function CategorySelectorModal({
                   activeBgColor: colors.surface,
                 },
                 {
-                  value: "INCOME",
-                  label: "Income",
+                  value: 'INCOME',
+                  label: 'Income',
                   icon: (
                     <Ionicons
                       name="arrow-down-circle-outline"
                       size={17}
                       color={
-                        tabType === "INCOME"
+                        tabType === 'INCOME'
                           ? colors.income
                           : colors.textSecondary
                       }
@@ -200,21 +200,21 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.lg,
   },
   grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: spacing.sm,
   },
   card: {
-    width: "31%",
+    width: '31%',
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.xs,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1.5,
     borderColor: colors.border,
-    position: "relative",
+    position: 'relative',
     ...shadows.sm,
   },
   cardSelected: {
@@ -225,29 +225,29 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.96 }],
   },
   checkBadge: {
-    position: "absolute",
+    position: 'absolute',
     top: 6,
     right: 6,
     width: 18,
     height: 18,
     borderRadius: radius.full,
     backgroundColor: colors.primary,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   catName: {
     ...typography.footnote,
-    fontWeight: "600",
+    fontWeight: '600',
     color: colors.text,
     marginTop: spacing.xs,
-    textAlign: "center",
+    textAlign: 'center',
   },
   catNameSelected: {
     color: colors.primary,
-    fontWeight: "700",
+    fontWeight: '700',
   },
   addCard: {
-    borderStyle: "dashed",
+    borderStyle: 'dashed',
     borderColor: colors.primary,
     backgroundColor: colors.primaryMuted,
   },
@@ -256,12 +256,12 @@ const styles = StyleSheet.create({
     height: 38,
     borderRadius: radius.full,
     backgroundColor: colors.surface,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   addText: {
     ...typography.footnote,
-    fontWeight: "600",
+    fontWeight: '600',
     color: colors.primary,
     marginTop: spacing.xs,
   },

@@ -1,17 +1,17 @@
-import currency from "currency.js";
+import currency from 'currency.js';
 import {
   CurrencyCode,
   CurrencyConfig,
   DEFAULT_CURRENCY,
   getCurrencyConfig,
-} from "./currencies";
+} from './currencies';
 import {
   convertFromBase,
   convertToBase,
   roundToPrecision,
-} from "./currency-conversion";
-import { useSettingsStore } from "@/store/settings.store";
-import { useCurrencyStore } from "@/store/currency.store";
+} from './currency-conversion';
+import { useSettingsStore } from '@/store/settings.store';
+import { useCurrencyStore } from '@/store/currency.store';
 
 function displayCode(): CurrencyCode {
   return useSettingsStore.getState?.()?.currency || DEFAULT_CURRENCY;
@@ -56,12 +56,12 @@ export function parseCurrencyInput(text: string, customCode?: CurrencyCode) {
   const config = getCurrencyConfig(code);
 
   if (config.precision === 0) {
-    const digits = text.replace(/[^\d]/g, "");
+    const digits = text.replace(/[^\d]/g, '');
     if (!digits) return 0;
     return parseInt(digits, 10);
   }
 
-  const clean = text.replace(/[^\d.]/g, "");
+  const clean = text.replace(/[^\d.]/g, '');
   const num = parseFloat(clean);
   return isNaN(num) ? 0 : num;
 }
@@ -72,10 +72,10 @@ export function formatCurrencyInput(text: string, customCode?: CurrencyCode) {
   const config = getCurrencyConfig(code);
 
   if (config.precision === 0) {
-    const digits = text.replace(/[^\d]/g, "");
-    if (!digits) return "";
+    const digits = text.replace(/[^\d]/g, '');
+    if (!digits) return '';
     return currency(digits, {
-      symbol: "",
+      symbol: '',
       separator: config.separator,
       decimal: config.decimal,
       precision: 0,
@@ -84,7 +84,7 @@ export function formatCurrencyInput(text: string, customCode?: CurrencyCode) {
       .trim();
   }
 
-  return text.replace(/[^\d.]/g, "");
+  return text.replace(/[^\d.]/g, '');
 }
 
 /** Parses an amount typed in the display currency back into stored VND. */
@@ -128,12 +128,12 @@ export const formatVndInput = formatCurrencyInput;
 
 export function walletTypeLabel(type: string) {
   switch (type) {
-    case "CASH":
-      return "Cash";
-    case "BANK":
-      return "Bank";
-    case "CREDIT_CARD":
-      return "Card";
+    case 'CASH':
+      return 'Cash';
+    case 'BANK':
+      return 'Bank';
+    case 'CREDIT_CARD':
+      return 'Card';
     default:
       return type;
   }

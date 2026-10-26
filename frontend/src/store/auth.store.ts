@@ -1,7 +1,7 @@
-import { create } from "zustand";
-import * as SecureStore from "expo-secure-store";
-import { Platform } from "react-native";
-import type { BiometricIconName } from "@/lib/biometric-label";
+import { create } from 'zustand';
+import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
+import type { BiometricIconName } from '@/lib/biometric-label';
 import {
   authenticateWithBiometrics,
   getBiometricCapability,
@@ -10,7 +10,7 @@ import {
   isBiometricEnrolled,
   saveBiometricSession,
   setBiometricEnabled,
-} from "@/lib/biometrics";
+} from '@/lib/biometrics';
 
 export type User = {
   id: string;
@@ -21,11 +21,11 @@ export type User = {
   updatedAt?: string;
 };
 
-const TOKEN_KEY = "monevo_jwt_token";
-const USER_KEY = "monevo_user_info";
+const TOKEN_KEY = 'monevo_jwt_token';
+const USER_KEY = 'monevo_user_info';
 
 async function saveStorage(key: string, value: string) {
-  if (Platform.OS === "web") {
+  if (Platform.OS === 'web') {
     try {
       localStorage.setItem(key, value);
     } catch {}
@@ -37,7 +37,7 @@ async function saveStorage(key: string, value: string) {
 }
 
 async function getStorage(key: string): Promise<string | null> {
-  if (Platform.OS === "web") {
+  if (Platform.OS === 'web') {
     try {
       return localStorage.getItem(key);
     } catch {
@@ -53,7 +53,7 @@ async function getStorage(key: string): Promise<string | null> {
 }
 
 async function removeStorage(key: string) {
-  if (Platform.OS === "web") {
+  if (Platform.OS === 'web') {
     try {
       localStorage.removeItem(key);
     } catch {}
@@ -64,10 +64,10 @@ async function removeStorage(key: string) {
   }
 }
 
-export type BiometricEnableResult = "success" | "cancelled" | "unavailable";
+export type BiometricEnableResult = 'success' | 'cancelled' | 'unavailable';
 
 export type BiometricLoginResult =
-  "success" | "cancelled" | "no-session" | "unavailable";
+  'success' | 'cancelled' | 'no-session' | 'unavailable';
 
 type StoredSession = {
   user: User;
@@ -114,8 +114,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isHydrated: false,
   biometricEnabled: false,
   biometricAvailable: false,
-  biometricLabel: "Biometrics",
-  biometricIcon: "lock-closed-outline",
+  biometricLabel: 'Biometrics',
+  biometricIcon: 'lock-closed-outline',
 
   restoreSession: async () => {
     try {
@@ -139,7 +139,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             return;
           }
 
-          const unlocked = await authenticateWithBiometrics("Unlock Monevo");
+          const unlocked = await authenticateWithBiometrics('Unlock Monevo');
           if (!unlocked) {
             set({
               isHydrated: true,
@@ -248,13 +248,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         biometricLabel: capability.label,
         biometricIcon: capability.icon,
       });
-      return "unavailable";
+      return 'unavailable';
     }
 
     const confirmed = await authenticateWithBiometrics(
       `Enable ${capability.label} for Monevo`,
     );
-    if (!confirmed) return "cancelled";
+    if (!confirmed) return 'cancelled';
 
     const current = get();
     if (current.user && current.token) {
@@ -267,7 +267,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       biometricLabel: capability.label,
       biometricIcon: capability.icon,
     });
-    return "success";
+    return 'success';
   },
 
   disableBiometrics: async () => {
@@ -277,22 +277,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   loginWithBiometrics: async () => {
     const capability = await getBiometricCapability();
-    if (!capability.available) return "unavailable";
+    if (!capability.available) return 'unavailable';
 
     const enrolled = await isBiometricEnrolled();
-    if (!enrolled) return "unavailable";
+    if (!enrolled) return 'unavailable';
 
     const authenticated = await authenticateWithBiometrics(
       `Sign in to Monevo with ${capability.label}`,
     );
-    if (!authenticated) return "cancelled";
+    if (!authenticated) return 'cancelled';
 
     try {
       let session = await readStoredSession();
       if (!session) {
         session = await getBiometricSession();
       }
-      if (!session) return "no-session";
+      if (!session) return 'no-session';
 
       void saveStorage(TOKEN_KEY, session.token);
       void saveStorage(USER_KEY, JSON.stringify(session.user));
@@ -307,9 +307,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         biometricLabel: capability.label,
         biometricIcon: capability.icon,
       });
-      return "success";
+      return 'success';
     } catch {
-      return "no-session";
+      return 'no-session';
     }
   },
 }));

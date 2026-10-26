@@ -1,18 +1,18 @@
-import { create } from "zustand";
-import { apiClient } from "@/services/api/client";
-import { useAuthStore } from "@/store/auth.store";
+import { create } from 'zustand';
+import { apiClient } from '@/services/api/client';
+import { useAuthStore } from '@/store/auth.store';
 import type {
   CreateTransactionBody,
   Paginated,
   TransactionPageMeta,
   TransactionSummary,
   UpdateTransactionBody,
-} from "@/types/api";
+} from '@/types/api';
 
 export type Transaction = {
   id: string;
   amount: number;
-  type: "INCOME" | "EXPENSE" | string;
+  type: 'INCOME' | 'EXPENSE' | string;
   note: string | null;
   date: string;
   walletId: string;
@@ -30,8 +30,8 @@ export type TransactionQueryParams = {
   startDate?: string;
   endDate?: string;
   search?: string;
-  sortBy?: "date" | "amount";
-  sortOrder?: "asc" | "desc";
+  sortBy?: 'date' | 'amount';
+  sortOrder?: 'asc' | 'desc';
 };
 
 export const TRANSACTION_PAGE_SIZE = 20;
@@ -73,13 +73,13 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
 
     set({ isLoading: true });
     try {
-      const response = await apiClient.get<Transaction[]>("/transactions", {
+      const response = await apiClient.get<Transaction[]>('/transactions', {
         params: query,
       });
       set({ transactions: response.data, hasFetched: true });
     } catch (error: any) {
       if (error?.response?.status !== 401) {
-        console.error("Failed to fetch transactions:", error);
+        console.error('Failed to fetch transactions:', error);
       }
       set({ hasFetched: true });
     } finally {
@@ -94,7 +94,7 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
     try {
       const page = append ? (get().pageMeta?.page ?? 1) + 1 : 1;
       const response = await apiClient.get<Paginated<Transaction>>(
-        "/transactions",
+        '/transactions',
         { params: { ...query, page, limit: TRANSACTION_PAGE_SIZE } },
       );
       const { data, meta } = response.data;
@@ -106,7 +106,7 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
       });
     } catch (error: any) {
       if (error?.response?.status !== 401) {
-        console.error("Failed to fetch transactions page:", error);
+        console.error('Failed to fetch transactions page:', error);
       }
       if (!append) set({ hasFetched: true });
     } finally {
@@ -125,20 +125,20 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
 
     try {
       const response = await apiClient.get<TransactionSummary>(
-        "/transactions/summary",
+        '/transactions/summary',
         { params: query },
       );
       set({ summary: response.data });
     } catch (error: any) {
       if (error?.response?.status !== 401) {
-        console.error("Failed to fetch transaction summary:", error);
+        console.error('Failed to fetch transaction summary:', error);
       }
     }
   },
 
   createTransaction: async (payload) => {
     const response = await apiClient.post<Transaction>(
-      "/transactions",
+      '/transactions',
       payload,
     );
     set({ transactions: [response.data, ...get().transactions] });
