@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Keyboard,
@@ -9,20 +9,20 @@ import {
   StyleSheet,
   Text,
   View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import { useWalletStore } from "@/store/wallet.store";
-import { Category, useCategoryStore } from "@/store/category.store";
-import { useTransactionStore } from "@/store/transaction.store";
-import { useBudgetStore } from "@/store/budget.store";
-import { colors, radius, shadows, spacing, typography } from "@/theme";
-import { formatCurrency, parseVndInput } from "@/lib/format";
-import { apiErrorMessage } from "@/lib/api-error";
-import { captureEvent } from "@/lib/analytics";
-import { hapticFeedback } from "@/lib/haptics";
-import { calculateBudgetWarning } from "@/lib/budget-warning";
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useWalletStore } from '@/store/wallet.store';
+import { Category, useCategoryStore } from '@/store/category.store';
+import { useTransactionStore } from '@/store/transaction.store';
+import { useBudgetStore } from '@/store/budget.store';
+import { colors, radius, shadows, spacing, typography } from '@/theme';
+import { formatCurrency, parseVndInput } from '@/lib/format';
+import { apiErrorMessage } from '@/lib/api-error';
+import { captureEvent } from '@/lib/analytics';
+import { hapticFeedback } from '@/lib/haptics';
+import { calculateBudgetWarning } from '@/lib/budget-warning';
 import {
   Button,
   CategoryIcon,
@@ -30,11 +30,11 @@ import {
   Header,
   Input,
   WalletIcon,
-} from "@/components/ui";
-import { CategorySelectorModal } from "@/features/categories/components/CategorySelectorModal";
-import { WalletSelectorModal } from "@/features/wallets/components/WalletSelectorModal";
-import { BudgetWarningBanner } from "@/features/budgets/components/BudgetWarningBanner";
-import { selectCreatedCategory } from "@/features/transactions/utils/quick-transaction";
+} from '@/components/ui';
+import { CategorySelectorModal } from '@/features/categories/components/CategorySelectorModal';
+import { WalletSelectorModal } from '@/features/wallets/components/WalletSelectorModal';
+import { BudgetWarningBanner } from '@/features/budgets/components/BudgetWarningBanner';
+import { selectCreatedCategory } from '@/features/transactions/utils/quick-transaction';
 
 export default function AddTransactionScreen() {
   const router = useRouter();
@@ -48,9 +48,9 @@ export default function AddTransactionScreen() {
   const { createTransaction, fetchTransactions } = useTransactionStore();
   const { budgets, fetchBudgets } = useBudgetStore();
 
-  const [type, setType] = useState<"EXPENSE" | "INCOME">("EXPENSE");
-  const [amount, setAmount] = useState("");
-  const [note, setNote] = useState("");
+  const [type, setType] = useState<'EXPENSE' | 'INCOME'>('EXPENSE');
+  const [amount, setAmount] = useState('');
+  const [note, setNote] = useState('');
   const [walletId, setWalletId] = useState<string | null>(null);
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [showCategorySelector, setShowCategorySelector] = useState(false);
@@ -61,7 +61,7 @@ export default function AddTransactionScreen() {
   const noteFocusedRef = useRef(false);
 
   useEffect(() => {
-    const subscription = Keyboard.addListener("keyboardDidShow", () => {
+    const subscription = Keyboard.addListener('keyboardDidShow', () => {
       if (noteFocusedRef.current) {
         scrollRef.current?.scrollToEnd({ animated: true });
       }
@@ -80,7 +80,7 @@ export default function AddTransactionScreen() {
     if (didSeed.current || !walletsFetched || wallets.length > 0) return;
 
     didSeed.current = true;
-    void createWallet("Cash", "CASH", 0).catch(() => {
+    void createWallet('Cash', 'CASH', 0).catch(() => {
       didSeed.current = false;
     });
   }, [createWallet, wallets.length, walletsFetched]);
@@ -110,18 +110,18 @@ export default function AddTransactionScreen() {
   );
 
   const selectedCategoryName = useMemo(() => {
-    return selectedCategory ? selectedCategory.name : "Select Category";
+    return selectedCategory ? selectedCategory.name : 'Select Category';
   }, [selectedCategory]);
 
   const matchingBudget = useMemo(() => {
-    if (type !== "EXPENSE" || !selectedCategoryId) return undefined;
+    if (type !== 'EXPENSE' || !selectedCategoryId) return undefined;
     return budgets.find((b) => b.categoryId === selectedCategoryId);
   }, [type, selectedCategoryId, budgets]);
 
   const parsedAmount = useMemo(() => parseVndInput(amount) || 0, [amount]);
 
   const budgetWarning = useMemo(() => {
-    if (type !== "EXPENSE" || !matchingBudget) return null;
+    if (type !== 'EXPENSE' || !matchingBudget) return null;
     return calculateBudgetWarning(matchingBudget, parsedAmount);
   }, [type, matchingBudget, parsedAmount]);
 
@@ -149,7 +149,7 @@ export default function AddTransactionScreen() {
       });
 
       hapticFeedback.success();
-      captureEvent("transaction_created", {
+      captureEvent('transaction_created', {
         type,
         category: selectedCategory?.name ?? null,
         has_note: note.trim().length > 0,
@@ -159,8 +159,8 @@ export default function AddTransactionScreen() {
     } catch (error) {
       hapticFeedback.error();
       Alert.alert(
-        "Error",
-        apiErrorMessage(error, "Could not save transaction."),
+        'Error',
+        apiErrorMessage(error, 'Could not save transaction.'),
       );
     } finally {
       setIsSubmitting(false);
@@ -171,15 +171,15 @@ export default function AddTransactionScreen() {
     const validAmount = parseVndInput(amount);
     if (!validAmount || validAmount <= 0) {
       hapticFeedback.warning();
-      Alert.alert("Invalid Amount", "Please enter an amount greater than 0.");
+      Alert.alert('Invalid Amount', 'Please enter an amount greater than 0.');
       return;
     }
 
     if (!selectedWalletId) {
       hapticFeedback.warning();
       Alert.alert(
-        "No Wallet Selected",
-        "Please select a wallet or wait a moment for the default wallet to initialize.",
+        'No Wallet Selected',
+        'Please select a wallet or wait a moment for the default wallet to initialize.',
       );
       return;
     }
@@ -187,26 +187,26 @@ export default function AddTransactionScreen() {
     if (!selectedCategoryId) {
       hapticFeedback.warning();
       Alert.alert(
-        "No Category Selected",
-        "Please select a category for this transaction.",
+        'No Category Selected',
+        'Please select a category for this transaction.',
       );
       return;
     }
 
     // Budget overspending warning check
-    if (type === "EXPENSE" && budgetWarning?.status === "EXCEEDED") {
+    if (type === 'EXPENSE' && budgetWarning?.status === 'EXCEEDED') {
       hapticFeedback.warning();
       const catDisplayName = selectedCategory
         ? selectedCategory.name
-        : "this category";
+        : 'this category';
       Alert.alert(
-        "Budget Limit Exceeded",
+        'Budget Limit Exceeded',
         `This expense will exceed your monthly budget for "${catDisplayName}" by ${formatCurrency(budgetWarning.overAmount)}.\n\nDo you still want to proceed?`,
         [
-          { text: "Cancel", style: "cancel" },
+          { text: 'Cancel', style: 'cancel' },
           {
-            text: "Proceed",
-            style: "destructive",
+            text: 'Proceed',
+            style: 'destructive',
             onPress: () => {
               void executeSave(validAmount);
             },
@@ -231,7 +231,7 @@ export default function AddTransactionScreen() {
       />
 
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={0}
         style={{ flex: 1 }}
       >
@@ -252,9 +252,9 @@ export default function AddTransactionScreen() {
           </View>
 
           {/* 2. Budget Warning Banner */}
-          {type === "EXPENSE" &&
+          {type === 'EXPENSE' &&
             budgetWarning &&
-            budgetWarning.status !== "NONE" && (
+            budgetWarning.status !== 'NONE' && (
               <View style={styles.budgetBannerSection}>
                 <BudgetWarningBanner
                   warning={budgetWarning}
@@ -296,7 +296,7 @@ export default function AddTransactionScreen() {
                 <View
                   style={[
                     styles.typeBadge,
-                    type === "INCOME"
+                    type === 'INCOME'
                       ? styles.typeBadgeIncome
                       : styles.typeBadgeExpense,
                   ]}
@@ -304,12 +304,12 @@ export default function AddTransactionScreen() {
                   <Text
                     style={[
                       styles.typeBadgeText,
-                      type === "INCOME"
+                      type === 'INCOME'
                         ? styles.typeBadgeTextIncome
                         : styles.typeBadgeTextExpense,
                     ]}
                   >
-                    {type === "INCOME" ? "Income" : "Expense"}
+                    {type === 'INCOME' ? 'Income' : 'Expense'}
                   </Text>
                 </View>
                 <Ionicons
@@ -333,16 +333,16 @@ export default function AddTransactionScreen() {
                 pressed && styles.formRowPressed,
               ]}
               accessibilityRole="button"
-              accessibilityLabel={`Wallet: ${selectedWallet?.name || "Wallet"}`}
+              accessibilityLabel={`Wallet: ${selectedWallet?.name || 'Wallet'}`}
             >
               <View style={styles.rowLeft}>
-                <WalletIcon type={selectedWallet?.type ?? "CASH"} size="sm" />
+                <WalletIcon type={selectedWallet?.type ?? 'CASH'} size="sm" />
                 <View style={styles.rowTextCol}>
                   <Text style={styles.rowLabel}>
-                    {type === "INCOME" ? "Deposit To" : "Pay From"}
+                    {type === 'INCOME' ? 'Deposit To' : 'Pay From'}
                   </Text>
                   <Text style={styles.rowValue} numberOfLines={1}>
-                    {selectedWallet?.name || "Select Wallet"}
+                    {selectedWallet?.name || 'Select Wallet'}
                   </Text>
                 </View>
               </View>
@@ -439,12 +439,12 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     marginBottom: spacing.base,
     ...shadows.sm,
-    overflow: "hidden",
+    overflow: 'hidden',
   },
   formRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.base,
     backgroundColor: colors.surface,
@@ -453,8 +453,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceSecondary,
   },
   rowLeft: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     flex: 1,
     marginRight: spacing.sm,
   },
@@ -470,12 +470,12 @@ const styles = StyleSheet.create({
   rowValue: {
     ...typography.subhead,
     color: colors.text,
-    fontWeight: "700",
+    fontWeight: '700',
     marginTop: 2,
   },
   rowRight: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.xs + 2,
   },
   divider: {
@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
   },
   typeBadgeText: {
     ...typography.caption,
-    fontWeight: "700",
+    fontWeight: '700',
     fontSize: 11,
   },
   typeBadgeTextExpense: {
@@ -508,7 +508,7 @@ const styles = StyleSheet.create({
   walletBalanceText: {
     ...typography.subhead,
     color: colors.textSecondary,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   noteSection: {
     marginBottom: spacing.base,

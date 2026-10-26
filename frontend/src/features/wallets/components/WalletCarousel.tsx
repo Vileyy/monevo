@@ -5,7 +5,7 @@ import React, {
   useMemo,
   useRef,
   useState,
-} from "react";
+} from 'react';
 import {
   FlatList,
   Pressable,
@@ -13,18 +13,18 @@ import {
   Text,
   useWindowDimensions,
   View,
-} from "react-native";
-import type { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons } from "@expo/vector-icons";
-import { colors, radius, shadows, spacing, typography } from "@/theme";
-import type { IconName } from "@/lib/categories";
-import { getWalletMeta } from "@/lib/categories";
-import { formatCurrency } from "@/lib/format";
-import { useDisplayCurrency } from "@/hooks/use-display-currency";
-import { hapticFeedback } from "@/lib/haptics";
-import { useSettingsStore } from "@/store/settings.store";
-import { Wallet } from "@/store/wallet.store";
+} from 'react-native';
+import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, radius, shadows, spacing, typography } from '@/theme';
+import type { IconName } from '@/lib/categories';
+import { getWalletMeta } from '@/lib/categories';
+import { formatCurrency } from '@/lib/format';
+import { useDisplayCurrency } from '@/hooks/use-display-currency';
+import { hapticFeedback } from '@/lib/haptics';
+import { useSettingsStore } from '@/store/settings.store';
+import { Wallet } from '@/store/wallet.store';
 import {
   clampSlideIndex,
   MonthlyFlows,
@@ -32,7 +32,7 @@ import {
   WalletFlow,
   walletIdForIndex,
   walletIndexForId,
-} from "../utils/wallet-carousel";
+} from '../utils/wallet-carousel';
 
 export interface WalletCarouselProps {
   wallets: Wallet[];
@@ -51,7 +51,7 @@ interface WalletSlide {
   gradient: [string, string];
 }
 
-const ALL_WALLETS_GRADIENT: [string, string] = ["#0F172A", "#115E59"];
+const ALL_WALLETS_GRADIENT: [string, string] = ['#0F172A', '#115E59'];
 const EMPTY_FLOW: WalletFlow = { income: 0, expense: 0 };
 const CARD_HEIGHT = 196;
 
@@ -63,12 +63,12 @@ function buildSlides(
 
   return [
     {
-      key: "all",
-      title: "Total Balance",
-      subtitle: `${wallets.length} ${wallets.length === 1 ? "wallet" : "wallets"}`,
+      key: 'all',
+      title: 'Total Balance',
+      subtitle: `${wallets.length} ${wallets.length === 1 ? 'wallet' : 'wallets'}`,
       balance: totalBalance,
       flow: monthlyFlows.all,
-      icon: "wallet",
+      icon: 'wallet',
       gradient: ALL_WALLETS_GRADIENT,
     },
     ...wallets.map((wallet) => {
@@ -114,7 +114,7 @@ const CardFace = memo(function CardFace({
       end={{ x: 1, y: 1 }}
       style={styles.card}
       accessibilityLabel={`${slide.title}, ${slide.subtitle}, balance ${
-        hideBalance ? "hidden" : formatCurrency(slide.balance)
+        hideBalance ? 'hidden' : formatCurrency(slide.balance)
       }`}
       accessibilityHint="Swipe left or right to browse your balances"
     >
@@ -145,7 +145,7 @@ const CardFace = memo(function CardFace({
           ]}
         >
           <Ionicons
-            name={hideBalance ? "eye-off-outline" : "eye-outline"}
+            name={hideBalance ? 'eye-off-outline' : 'eye-outline'}
             size={16}
             color="rgba(255, 255, 255, 0.75)"
           />
@@ -153,20 +153,20 @@ const CardFace = memo(function CardFace({
       </View>
 
       <Text style={styles.balanceValue} numberOfLines={1} adjustsFontSizeToFit>
-        {hideBalance ? "••••••••" : formatCurrency(slide.balance)}
+        {hideBalance ? '••••••••' : formatCurrency(slide.balance)}
       </Text>
 
       <View style={styles.flowRow}>
         <View style={styles.flowItem}>
           <View style={styles.flowLabelRow}>
-            <View style={[styles.flowDot, { backgroundColor: "#34D399" }]} />
+            <View style={[styles.flowDot, { backgroundColor: '#34D399' }]} />
             <Text style={styles.flowLabel}>Income</Text>
           </View>
           <Text
-            style={[styles.flowValue, { color: "#6EE7B7" }]}
+            style={[styles.flowValue, { color: '#6EE7B7' }]}
             numberOfLines={1}
           >
-            {hideBalance ? "••••" : `+${formatCurrency(slide.flow.income)}`}
+            {hideBalance ? '••••' : `+${formatCurrency(slide.flow.income)}`}
           </Text>
         </View>
 
@@ -174,14 +174,14 @@ const CardFace = memo(function CardFace({
 
         <View style={styles.flowItem}>
           <View style={styles.flowLabelRow}>
-            <View style={[styles.flowDot, { backgroundColor: "#FB7185" }]} />
+            <View style={[styles.flowDot, { backgroundColor: '#FB7185' }]} />
             <Text style={styles.flowLabel}>Expense</Text>
           </View>
           <Text
-            style={[styles.flowValue, { color: "#FDA4AF" }]}
+            style={[styles.flowValue, { color: '#FDA4AF' }]}
             numberOfLines={1}
           >
-            {hideBalance ? "••••" : `−${formatCurrency(slide.flow.expense)}`}
+            {hideBalance ? '••••' : `−${formatCurrency(slide.flow.expense)}`}
           </Text>
         </View>
       </View>
@@ -351,30 +351,30 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: radius.xxl,
     padding: spacing.lg,
-    overflow: "hidden",
+    overflow: 'hidden',
   },
   cardGlow: {
-    position: "absolute",
+    position: 'absolute',
     top: -64,
     right: -48,
     width: 180,
     height: 180,
     borderRadius: 90,
-    backgroundColor: "rgba(255, 255, 255, 0.06)",
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
   },
   cardTopRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   iconBadge: {
     width: 34,
     height: 34,
     borderRadius: radius.md,
-    backgroundColor: "rgba(255, 255, 255, 0.14)",
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.12)",
-    alignItems: "center",
-    justifyContent: "center",
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginRight: spacing.sm + 2,
   },
   titleBlock: {
@@ -382,12 +382,12 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     ...typography.headline,
-    color: "#FFFFFF",
-    fontWeight: "700",
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
   cardSubtitle: {
     ...typography.caption,
-    color: "rgba(255, 255, 255, 0.6)",
+    color: 'rgba(255, 255, 255, 0.6)',
     marginTop: 1,
   },
   eyeBtn: {
@@ -400,26 +400,26 @@ const styles = StyleSheet.create({
   balanceValue: {
     fontSize: 30,
     lineHeight: 36,
-    fontWeight: "800",
-    color: "#FFFFFF",
+    fontWeight: '800',
+    color: '#FFFFFF',
     letterSpacing: -0.4,
     marginTop: spacing.sm,
     ...typography.tabular,
   },
   flowRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: "auto",
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 'auto',
     paddingTop: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: "rgba(255, 255, 255, 0.12)",
+    borderTopColor: 'rgba(255, 255, 255, 0.12)',
   },
   flowItem: {
     flex: 1,
   },
   flowLabelRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 6,
   },
   flowDot: {
@@ -429,8 +429,8 @@ const styles = StyleSheet.create({
   },
   flowLabel: {
     ...typography.caption,
-    color: "rgba(255, 255, 255, 0.6)",
-    textTransform: "uppercase",
+    color: 'rgba(255, 255, 255, 0.6)',
+    textTransform: 'uppercase',
     letterSpacing: 0.6,
   },
   flowValue: {
@@ -441,25 +441,25 @@ const styles = StyleSheet.create({
   flowDivider: {
     width: 1,
     height: 28,
-    backgroundColor: "rgba(255, 255, 255, 0.12)",
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
     marginHorizontal: spacing.md,
   },
   flowBarTrack: {
     height: 4,
     borderRadius: 2,
-    backgroundColor: "rgba(255, 255, 255, 0.12)",
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
     marginTop: spacing.md,
-    overflow: "hidden",
+    overflow: 'hidden',
   },
   flowBarFill: {
-    height: "100%",
+    height: '100%',
     borderRadius: 2,
-    backgroundColor: "#34D399",
+    backgroundColor: '#34D399',
   },
   dotsRow: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
     gap: 6,
     marginTop: spacing.md,
   },

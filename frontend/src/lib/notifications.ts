@@ -1,16 +1,16 @@
-import * as Notifications from "expo-notifications";
-import { Platform } from "react-native";
-import { ReminderItem } from "@/store/reminder.store";
-import { formatCurrency } from "@/lib/format";
+import * as Notifications from 'expo-notifications';
+import { Platform } from 'react-native';
+import { ReminderItem } from '@/store/reminder.store';
+import { formatCurrency } from '@/lib/format';
 
 // Prefix to identify Monevo reminder notifications
-export const REMINDER_NOTIFICATION_PREFIX = "monevo_reminder_";
+export const REMINDER_NOTIFICATION_PREFIX = 'monevo_reminder_';
 
 /**
  * Configure notification handler and Android channels
  */
 export async function initNotifications(): Promise<void> {
-  if (Platform.OS === "web") return;
+  if (Platform.OS === 'web') return;
 
   try {
     Notifications.setNotificationHandler({
@@ -23,18 +23,18 @@ export async function initNotifications(): Promise<void> {
       }),
     });
 
-    if (Platform.OS === "android") {
-      await Notifications.setNotificationChannelAsync("bill-reminders", {
-        name: "Bill Reminders & Recurring",
-        description: "Notifications for bill due dates",
+    if (Platform.OS === 'android') {
+      await Notifications.setNotificationChannelAsync('bill-reminders', {
+        name: 'Bill Reminders & Recurring',
+        description: 'Notifications for bill due dates',
         importance: Notifications.AndroidImportance.HIGH,
         vibrationPattern: [0, 250, 250, 250],
-        lightColor: "#22C55E",
-        sound: "default",
+        lightColor: '#22C55E',
+        sound: 'default',
       });
     }
   } catch (error) {
-    console.warn("Failed to initialize notifications:", error);
+    console.warn('Failed to initialize notifications:', error);
   }
 }
 
@@ -42,21 +42,21 @@ export async function initNotifications(): Promise<void> {
  * Request notification permissions from the user
  */
 export async function requestNotificationPermission(): Promise<boolean> {
-  if (Platform.OS === "web") return false;
+  if (Platform.OS === 'web') return false;
 
   try {
     const { status: existingStatus } =
       await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
 
-    if (existingStatus !== "granted") {
+    if (existingStatus !== 'granted') {
       const { status } = await Notifications.requestPermissionsAsync();
       finalStatus = status;
     }
 
-    return finalStatus === "granted";
+    return finalStatus === 'granted';
   } catch (error) {
-    console.warn("Failed to request notification permission:", error);
+    console.warn('Failed to request notification permission:', error);
     return false;
   }
 }
@@ -116,7 +116,7 @@ export async function scheduleReminderNotification(
   reminder: ReminderItem,
   daysBefore: number = 1,
 ): Promise<string | null> {
-  if (Platform.OS === "web") return null;
+  if (Platform.OS === 'web') return null;
 
   try {
     const identifier = `${REMINDER_NOTIFICATION_PREFIX}${reminder.id}`;
@@ -146,10 +146,10 @@ export async function scheduleReminderNotification(
           reminderId: reminder.id,
           amount: reminder.amount,
           dueDate: reminder.dueDate,
-          type: "BILL_REMINDER",
+          type: 'BILL_REMINDER',
         },
         sound: true,
-        ...(Platform.OS === "android" ? { channelId: "bill-reminders" } : {}),
+        ...(Platform.OS === 'android' ? { channelId: 'bill-reminders' } : {}),
       },
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.DATE,
@@ -173,7 +173,7 @@ export async function scheduleReminderNotification(
 export async function cancelReminderNotification(
   reminderId: string,
 ): Promise<void> {
-  if (Platform.OS === "web") return;
+  if (Platform.OS === 'web') return;
 
   try {
     const identifier = `${REMINDER_NOTIFICATION_PREFIX}${reminderId}`;
@@ -193,7 +193,7 @@ export async function syncReminderNotifications(
   reminders: ReminderItem[],
   daysBefore: number = 1,
 ): Promise<void> {
-  if (Platform.OS === "web") return;
+  if (Platform.OS === 'web') return;
 
   try {
     const hasPermission = await requestNotificationPermission();
@@ -216,6 +216,6 @@ export async function syncReminderNotifications(
       }
     }
   } catch (error) {
-    console.warn("Failed to sync reminder notifications:", error);
+    console.warn('Failed to sync reminder notifications:', error);
   }
 }

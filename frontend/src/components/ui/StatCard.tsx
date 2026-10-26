@@ -1,13 +1,13 @@
-import React from "react";
-import { StyleSheet, Text, View, ViewStyle } from "react-native";
-import { colors, radius, spacing, typography } from "@/theme";
-import { formatCurrency } from "@/lib/format";
-import { IconBadge } from "@/components/ui/IconBadge";
+import React from 'react';
+import { StyleSheet, Text, View, ViewStyle } from 'react-native';
+import { colors, radius, spacing, typography } from '@/theme';
+import { formatCurrency } from '@/lib/format';
+import { IconBadge } from '@/components/ui/IconBadge';
 
 export interface StatCardProps {
   label: string;
   amount: number;
-  type?: "income" | "expense" | "neutral";
+  type?: 'income' | 'expense' | 'neutral';
   subtitle?: string;
   style?: ViewStyle;
 }
@@ -15,33 +15,33 @@ export interface StatCardProps {
 export function StatCard({
   label,
   amount,
-  type = "neutral",
+  type = 'neutral',
   subtitle,
   style,
 }: StatCardProps) {
   const getIconAndColor = () => {
     switch (type) {
-      case "income":
+      case 'income':
         return {
-          icon: "arrow-down-circle" as const,
+          icon: 'arrow-down-circle' as const,
           color: colors.income,
           bgColor: colors.incomeBg,
-          sign: "+",
+          sign: '+',
         };
-      case "expense":
+      case 'expense':
         return {
-          icon: "arrow-up-circle" as const,
+          icon: 'arrow-up-circle' as const,
           color: colors.expense,
           bgColor: colors.expenseBg,
-          sign: "−",
+          sign: '−',
         };
-      case "neutral":
+      case 'neutral':
       default:
         return {
-          icon: "wallet" as const,
+          icon: 'wallet' as const,
           color: colors.primary,
           bgColor: colors.primaryMuted,
-          sign: "",
+          sign: '',
         };
     }
   };
@@ -63,7 +63,7 @@ export function StatCard({
       <Text
         style={[
           styles.amount,
-          { color: type === "neutral" ? colors.text : color },
+          { color: type === 'neutral' ? colors.text : color },
         ]}
       >
         {sign}
@@ -85,21 +85,21 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.xs + 2,
     marginBottom: spacing.xs,
   },
   label: {
     ...typography.caption,
-    fontWeight: "600",
+    fontWeight: '600',
     color: colors.textSecondary,
-    textTransform: "uppercase",
+    textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   amount: {
     ...typography.title3,
-    fontWeight: "700",
+    fontWeight: '700',
     marginTop: 4,
     ...typography.tabular,
   },

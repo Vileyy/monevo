@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 env:
-  HUSKY: "0"
+  HUSKY: '0'
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -75,6 +75,41 @@ jobs:
 
       - name: Test
         run: pnpm --filter frontend exec jest --ci
+
+  format:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install pnpm and Node.js
+        uses: pnpm/setup@c9883cc79df532ad1a7b81bf9ab944ceb090d65c # v2.0.0
+        with:
+          runtime: node@22
+          cache: true
+
+      - name: Check formatting
+        run: pnpm format:check
+
+  commits:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install pnpm and Node.js
+        uses: pnpm/setup@c9883cc79df532ad1a7b81bf9ab944ceb090d65c # v2.0.0
+        with:
+          runtime: node@22
+          cache: true
+
+      - name: Lint commit messages
+        run: |
+          pnpm exec commitlint \
+            --from "${{ github.event.pull_request.base.sha }}" \
+            --to "${{ github.event.pull_request.head.sha }}" \
+            --verbose
 
   audit:
     runs-on: ubuntu-24.04

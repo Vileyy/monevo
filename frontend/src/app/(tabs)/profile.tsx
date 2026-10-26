@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState } from 'react';
 import {
   Alert,
   Pressable,
@@ -7,36 +7,36 @@ import {
   StyleSheet,
   Text,
   View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useTabBarSpace } from "@/components/FloatingTabBar";
-import { useRouter } from "expo-router";
-import { Image } from "expo-image";
-import { Ionicons } from "@expo/vector-icons";
-import { useAuthStore } from "@/store/auth.store";
-import { useClerk } from "@clerk/clerk-expo";
-import { useWalletStore } from "@/store/wallet.store";
-import { useTransactionStore } from "@/store/transaction.store";
-import { useReminderStore } from "@/store/reminder.store";
-import { useSettingsStore } from "@/store/settings.store";
-import { getCurrencyConfig } from "@/lib/currencies";
-import { formatCurrency } from "@/lib/format";
-import { displayableEmail, getInitials } from "@/lib/user-profile";
-import { colors, radius, shadows, spacing, typography } from "@/theme";
-import { Card, Header } from "@/components/ui";
-import { SettingsRow } from "@/features/profile/components/SettingsRow";
-import { CurrencyPickerModal } from "@/features/profile/components/CurrencyPickerModal";
-import { EditProfileModal } from "@/features/profile/components/EditProfileModal";
-import { CategoryModal } from "@/features/categories/components/CategoryModal";
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTabBarSpace } from '@/components/FloatingTabBar';
+import { useRouter } from 'expo-router';
+import { Image } from 'expo-image';
+import { Ionicons } from '@expo/vector-icons';
+import { useAuthStore } from '@/store/auth.store';
+import { useClerk } from '@clerk/clerk-expo';
+import { useWalletStore } from '@/store/wallet.store';
+import { useTransactionStore } from '@/store/transaction.store';
+import { useReminderStore } from '@/store/reminder.store';
+import { useSettingsStore } from '@/store/settings.store';
+import { getCurrencyConfig } from '@/lib/currencies';
+import { formatCurrency } from '@/lib/format';
+import { displayableEmail, getInitials } from '@/lib/user-profile';
+import { colors, radius, shadows, spacing, typography } from '@/theme';
+import { Card, Header } from '@/components/ui';
+import { SettingsRow } from '@/features/profile/components/SettingsRow';
+import { CurrencyPickerModal } from '@/features/profile/components/CurrencyPickerModal';
+import { EditProfileModal } from '@/features/profile/components/EditProfileModal';
+import { CategoryModal } from '@/features/categories/components/CategoryModal';
 import {
   requestNotificationPermission,
   syncReminderNotifications,
-} from "@/lib/notifications";
-import { hapticFeedback } from "@/lib/haptics";
-import { deleteUserAccount } from "@/lib/account";
-import { openLegalPage } from "@/lib/legal-links";
-import { apiErrorMessage } from "@/lib/api-error";
-import { useDisplayCurrency } from "@/hooks/use-display-currency";
+} from '@/lib/notifications';
+import { hapticFeedback } from '@/lib/haptics';
+import { deleteUserAccount } from '@/lib/account';
+import { openLegalPage } from '@/lib/legal-links';
+import { apiErrorMessage } from '@/lib/api-error';
+import { useDisplayCurrency } from '@/hooks/use-display-currency';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -69,13 +69,13 @@ export default function ProfileScreen() {
         setReminderNotifications(true);
         void syncReminderNotifications(reminders);
         Alert.alert(
-          "Notifications Enabled",
-          "You will receive bill reminder notifications at 9:00 AM before the due date.",
+          'Notifications Enabled',
+          'You will receive bill reminder notifications at 9:00 AM before the due date.',
         );
       } else {
         Alert.alert(
-          "Permission Denied",
-          "Please enable notification permissions in your device settings to receive bill reminders.",
+          'Permission Denied',
+          'Please enable notification permissions in your device settings to receive bill reminders.',
         );
       }
     } else {
@@ -99,19 +99,19 @@ export default function ProfileScreen() {
   }, [currency]);
 
   const handleLogout = () => {
-    Alert.alert("Sign Out", "Are you sure you want to sign out of Monevo?", [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert('Sign Out', 'Are you sure you want to sign out of Monevo?', [
+      { text: 'Cancel', style: 'cancel' },
       {
-        text: "Sign Out",
-        style: "destructive",
+        text: 'Sign Out',
+        style: 'destructive',
         onPress: async () => {
           try {
             await signOut();
           } catch (e) {
-            console.warn("Clerk signOut error:", e);
+            console.warn('Clerk signOut error:', e);
           }
           logout();
-          router.replace("/login");
+          router.replace('/login');
         },
       },
     ]);
@@ -129,16 +129,16 @@ export default function ProfileScreen() {
       try {
         await signOut();
       } catch (e) {
-        console.warn("Clerk signOut error after account deletion:", e);
+        console.warn('Clerk signOut error after account deletion:', e);
       }
       logout();
-      router.replace("/login");
+      router.replace('/login');
     } catch (error) {
       Alert.alert(
-        "Deletion Failed",
+        'Deletion Failed',
         apiErrorMessage(
           error,
-          "Could not delete your account. Please try again or contact support.",
+          'Could not delete your account. Please try again or contact support.',
         ),
       );
     } finally {
@@ -150,13 +150,13 @@ export default function ProfileScreen() {
     if (isDeletingAccount) return;
 
     Alert.alert(
-      "Delete Account?",
-      "This permanently deletes your account and all wallets, transactions, categories, budgets and reminders. This action cannot be undone.",
+      'Delete Account?',
+      'This permanently deletes your account and all wallets, transactions, categories, budgets and reminders. This action cannot be undone.',
       [
-        { text: "Cancel", style: "cancel" },
+        { text: 'Cancel', style: 'cancel' },
         {
-          text: "Delete Account",
-          style: "destructive",
+          text: 'Delete Account',
+          style: 'destructive',
           onPress: () => void performAccountDeletion(),
         },
       ],
@@ -164,17 +164,17 @@ export default function ProfileScreen() {
   };
 
   const handleOpenLegalPage = async (
-    page: "privacy" | "terms" | "account-deletion",
+    page: 'privacy' | 'terms' | 'account-deletion',
   ) => {
     hapticFeedback.light();
     try {
       await openLegalPage(page);
     } catch (error) {
       Alert.alert(
-        "Unavailable",
+        'Unavailable',
         error instanceof Error
           ? error.message
-          : "Could not open this page right now.",
+          : 'Could not open this page right now.',
       );
     }
   };
@@ -190,7 +190,7 @@ export default function ProfileScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top"]}>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
       <Header
         title="Profile & Settings"
         subtitle="Manage your account and preferences"
@@ -231,14 +231,14 @@ export default function ProfileScreen() {
 
             <View style={styles.profileInfo}>
               <Text style={styles.userName} numberOfLines={1}>
-                {user?.name || "Monevo User"}
+                {user?.name || 'Monevo User'}
               </Text>
               <Text
                 style={styles.userEmail}
                 numberOfLines={1}
                 ellipsizeMode="middle"
               >
-                {displayEmail ?? "Personal account"}
+                {displayEmail ?? 'Personal account'}
               </Text>
             </View>
 
@@ -267,7 +267,7 @@ export default function ProfileScreen() {
                 adjustsFontSizeToFit
                 minimumFontScale={0.75}
               >
-                {hideBalance ? "••••••" : formatCurrency(totalNetWorth)}
+                {hideBalance ? '••••••' : formatCurrency(totalNetWorth)}
               </Text>
             </View>
             <View style={styles.statSeparator} />
@@ -295,7 +295,7 @@ export default function ProfileScreen() {
           />
           <View style={styles.rowDivider} />
           <SettingsRow
-            icon={hideBalance ? "eye-off-outline" : "eye-outline"}
+            icon={hideBalance ? 'eye-off-outline' : 'eye-outline'}
             iconColor={colors.info}
             iconBgColor={colors.infoBg}
             title="Hide Balance"
@@ -340,7 +340,7 @@ export default function ProfileScreen() {
           <View style={styles.rowDivider} />
           <SettingsRow
             icon="trash-outline"
-            title={isDeletingAccount ? "Deleting Account..." : "Delete Account"}
+            title={isDeletingAccount ? 'Deleting Account...' : 'Delete Account'}
             subtitle="Permanently remove your account and all data"
             destructive
             showChevron={false}
@@ -358,21 +358,21 @@ export default function ProfileScreen() {
             iconBgColor={colors.infoBg}
             title="Privacy Policy"
             subtitle="How we collect, use and protect your data"
-            onPress={() => void handleOpenLegalPage("privacy")}
+            onPress={() => void handleOpenLegalPage('privacy')}
           />
           <View style={styles.rowDivider} />
           <SettingsRow
             icon="document-text-outline"
             title="Terms of Service"
             subtitle="Rules for using Monevo"
-            onPress={() => void handleOpenLegalPage("terms")}
+            onPress={() => void handleOpenLegalPage('terms')}
           />
           <View style={styles.rowDivider} />
           <SettingsRow
             icon="information-circle-outline"
             title="Account Deletion Info"
             subtitle="Delete in the app or request deletion online"
-            onPress={() => void handleOpenLegalPage("account-deletion")}
+            onPress={() => void handleOpenLegalPage('account-deletion')}
           />
         </Card>
 
@@ -413,15 +413,15 @@ const styles = StyleSheet.create({
     ...shadows.sm,
   },
   profileHeader: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   avatarRing: {
     width: 64,
     height: 64,
     borderRadius: 32,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: colors.primaryMuted,
     marginRight: spacing.md,
   },
@@ -430,23 +430,23 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: 28,
     backgroundColor: colors.primary,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   avatarText: {
     ...typography.title2,
     color: colors.surface,
-    fontWeight: "700",
+    fontWeight: '700',
   },
   profileInfo: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: 'center',
   },
   userName: {
     ...typography.title3,
     fontSize: 18,
     lineHeight: 24,
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.text,
   },
   editButton: {
@@ -454,8 +454,8 @@ const styles = StyleSheet.create({
     height: 34,
     borderRadius: radius.full,
     backgroundColor: colors.primaryLight,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     marginLeft: spacing.sm,
   },
   editButtonPressed: {
@@ -473,12 +473,12 @@ const styles = StyleSheet.create({
     marginVertical: spacing.md,
   },
   statsRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   statCol: {
     flex: 1,
-    alignItems: "center",
+    alignItems: 'center',
   },
   statColWide: {
     flex: 1.5,
@@ -486,16 +486,16 @@ const styles = StyleSheet.create({
   statLabel: {
     fontSize: 10,
     lineHeight: 14,
-    fontWeight: "600",
+    fontWeight: '600',
     letterSpacing: 0.6,
-    textTransform: "uppercase",
+    textTransform: 'uppercase',
     color: colors.textMuted,
     marginBottom: 4,
   },
   statValue: {
     fontSize: 17,
     lineHeight: 22,
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.text,
     ...typography.tabular,
   },
@@ -507,16 +507,16 @@ const styles = StyleSheet.create({
   },
   sectionHeader: {
     ...typography.caption,
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.textMuted,
-    textTransform: "uppercase",
+    textTransform: 'uppercase',
     letterSpacing: 0.8,
     marginBottom: spacing.xs,
     marginLeft: spacing.xs,
   },
   sectionCard: {
     padding: 0,
-    overflow: "hidden",
+    overflow: 'hidden',
     marginBottom: spacing.lg,
   },
   rowDivider: {

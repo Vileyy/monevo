@@ -68,7 +68,7 @@ export function computeMonthlyFlows(
     }
 
     const walletFlow = (byWallet[tx.walletId] ??= { income: 0, expense: 0 });
-    if (tx.type === "INCOME") {
+    if (tx.type === 'INCOME') {
       walletFlow.income += tx.amount;
       all.income += tx.amount;
     } else {

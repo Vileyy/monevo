@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState } from 'react';
 import {
   Modal as RNModal,
   Pressable,
@@ -8,12 +8,12 @@ import {
   useWindowDimensions,
   View,
   ViewStyle,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { colors, radius, shadows, spacing, typography } from "@/theme";
-import { hapticFeedback } from "@/lib/haptics";
-import type { IconName } from "@/lib/categories";
-import type { FilterOption } from "../utils/transaction-filters";
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, radius, shadows, spacing, typography } from '@/theme';
+import { hapticFeedback } from '@/lib/haptics';
+import type { IconName } from '@/lib/categories';
+import type { FilterOption } from '../utils/transaction-filters';
 
 interface MenuAnchor {
   top: number;
@@ -176,8 +176,8 @@ const styles = StyleSheet.create({
   },
   trigger: {
     height: 44,
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.xs + 2,
     paddingHorizontal: spacing.md,
     borderRadius: radius.md,
@@ -195,22 +195,22 @@ const styles = StyleSheet.create({
   triggerText: {
     ...typography.footnote,
     flex: 1,
-    fontWeight: "600",
+    fontWeight: '600',
     color: colors.textSecondary,
   },
   triggerTextActive: {
     color: colors.primaryDark,
-    fontWeight: "700",
+    fontWeight: '700',
   },
   backdrop: {
-    position: "absolute",
+    position: 'absolute',
     top: 0,
     right: 0,
     bottom: 0,
     left: 0,
   },
   menuShadow: {
-    position: "absolute",
+    position: 'absolute',
     borderRadius: radius.lg,
     ...shadows.lg,
   },
@@ -220,12 +220,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.surface,
-    overflow: "hidden",
+    overflow: 'hidden',
   },
   row: {
     minHeight: 46,
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.sm + 2,
     paddingHorizontal: spacing.base,
   },
@@ -240,10 +240,10 @@ const styles = StyleSheet.create({
     ...typography.subhead,
     flex: 1,
     color: colors.text,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   rowTextSelected: {
     color: colors.primaryDark,
-    fontWeight: "700",
+    fontWeight: '700',
   },
 });

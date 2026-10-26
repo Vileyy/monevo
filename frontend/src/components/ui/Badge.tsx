@@ -1,11 +1,11 @@
-import React from "react";
-import { StyleSheet, Text, TextStyle, View, ViewStyle } from "react-native";
-import { colors, radius, spacing, typography } from "@/theme";
+import React from 'react';
+import { StyleSheet, Text, TextStyle, View, ViewStyle } from 'react-native';
+import { colors, radius, spacing, typography } from '@/theme';
 
 export interface BadgeProps {
   label: string;
-  variant?: "primary" | "success" | "danger" | "warning" | "info" | "neutral";
-  size?: "sm" | "md";
+  variant?: 'primary' | 'success' | 'danger' | 'warning' | 'info' | 'neutral';
+  size?: 'sm' | 'md';
   icon?: React.ReactNode;
   style?: ViewStyle;
   textStyle?: TextStyle;
@@ -13,41 +13,41 @@ export interface BadgeProps {
 
 export function Badge({
   label,
-  variant = "neutral",
-  size = "md",
+  variant = 'neutral',
+  size = 'md',
   icon,
   style,
   textStyle,
 }: BadgeProps) {
   const getColors = () => {
     switch (variant) {
-      case "primary":
+      case 'primary':
         return {
           bg: colors.primaryMuted,
           text: colors.primary,
           border: colors.primaryLight,
         };
-      case "success":
+      case 'success':
         return {
           bg: colors.incomeBg,
           text: colors.income,
           border: colors.incomeBorder,
         };
-      case "danger":
+      case 'danger':
         return {
           bg: colors.expenseBg,
           text: colors.expense,
           border: colors.expenseBorder,
         };
-      case "warning":
+      case 'warning':
         return {
           bg: colors.warningBg,
           text: colors.warning,
-          border: "#FDE68A",
+          border: '#FDE68A',
         };
-      case "info":
-        return { bg: colors.infoBg, text: colors.info, border: "#BFDBFE" };
-      case "neutral":
+      case 'info':
+        return { bg: colors.infoBg, text: colors.info, border: '#BFDBFE' };
+      case 'neutral':
       default:
         return {
           bg: colors.surfaceSecondary,
@@ -63,7 +63,7 @@ export function Badge({
     <View
       style={[
         styles.badge,
-        size === "sm" ? styles.badgeSm : styles.badgeMd,
+        size === 'sm' ? styles.badgeSm : styles.badgeMd,
         { backgroundColor: bg, borderColor: border },
         style,
       ]}
@@ -72,7 +72,7 @@ export function Badge({
       <Text
         style={[
           styles.text,
-          size === "sm" ? styles.textSm : styles.textMd,
+          size === 'sm' ? styles.textSm : styles.textMd,
           { color: text },
           textStyle,
         ]}
@@ -85,11 +85,11 @@ export function Badge({
 
 const styles = StyleSheet.create({
   badge: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     borderRadius: radius.full,
     borderWidth: 1,
-    alignSelf: "flex-start",
+    alignSelf: 'flex-start',
   },
   badgeSm: {
     paddingHorizontal: spacing.xs + 2,
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
     marginRight: 4,
   },
   text: {
-    fontWeight: "600",
+    fontWeight: '600',
   },
   textSm: {
     ...typography.caption,

@@ -1,11 +1,11 @@
-import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { colors, radius, shadows, spacing, typography } from "@/theme";
-import { BudgetSummary } from "@/store/budget.store";
-import { formatCurrency } from "@/lib/format";
-import { useSettingsStore } from "@/store/settings.store";
-import { BudgetProgressBar } from "./BudgetProgressBar";
+import React from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, radius, shadows, spacing, typography } from '@/theme';
+import { BudgetSummary } from '@/store/budget.store';
+import { formatCurrency } from '@/lib/format';
+import { useSettingsStore } from '@/store/settings.store';
+import { BudgetProgressBar } from './BudgetProgressBar';
 
 export interface BudgetSummaryHeroProps {
   summary: BudgetSummary;
@@ -17,18 +17,18 @@ export interface BudgetSummaryHeroProps {
 }
 
 const MONTH_NAMES = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 export function BudgetSummaryHero({
@@ -75,7 +75,7 @@ export function BudgetSummaryHero({
           <View>
             <Text style={styles.cardSubtitle}>Monthly Budget</Text>
             <Text style={styles.cardTotal}>
-              {hideBalance ? "••••••••" : formatCurrency(summary.totalBudget)}
+              {hideBalance ? '••••••••' : formatCurrency(summary.totalBudget)}
             </Text>
           </View>
 
@@ -113,7 +113,7 @@ export function BudgetSummaryHero({
             <View>
               <Text style={styles.statLabel}>Spent</Text>
               <Text style={styles.statValue}>
-                {hideBalance ? "••••" : formatCurrency(summary.totalSpent)}
+                {hideBalance ? '••••' : formatCurrency(summary.totalSpent)}
               </Text>
             </View>
           </View>
@@ -133,7 +133,7 @@ export function BudgetSummaryHero({
                 ]}
               >
                 {hideBalance
-                  ? "••••"
+                  ? '••••'
                   : formatCurrency(Math.max(summary.totalRemaining, 0))}
               </Text>
             </View>
@@ -149,9 +149,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   monthHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: spacing.sm,
     paddingHorizontal: spacing.xs,
   },
@@ -160,12 +160,12 @@ const styles = StyleSheet.create({
     height: 34,
     borderRadius: radius.full,
     backgroundColor: colors.surfaceSecondary,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   monthTitle: {
     ...typography.headline,
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.text,
   },
   card: {
@@ -175,28 +175,28 @@ const styles = StyleSheet.create({
     ...shadows.lg,
   },
   cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   cardSubtitle: {
     ...typography.subhead,
-    color: "rgba(255, 255, 255, 0.7)",
-    fontWeight: "600",
-    textTransform: "uppercase",
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontWeight: '600',
+    textTransform: 'uppercase',
     letterSpacing: 0.8,
   },
   cardTotal: {
     fontSize: 28,
     lineHeight: 34,
-    fontWeight: "800",
-    color: "#FFFFFF",
+    fontWeight: '800',
+    color: '#FFFFFF',
     marginTop: 2,
     ...typography.tabular,
   },
   addButton: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: colors.primary,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs + 3,
@@ -205,33 +205,33 @@ const styles = StyleSheet.create({
   },
   addButtonText: {
     ...typography.caption,
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.surface,
   },
   progressContainer: {
     marginTop: spacing.md,
   },
   progressLabelRow: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
     marginTop: spacing.xs,
   },
   percentageText: {
     ...typography.caption,
-    color: "rgba(255, 255, 255, 0.7)",
-    fontWeight: "600",
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontWeight: '600',
   },
   statsRow: {
-    flexDirection: "row",
+    flexDirection: 'row',
     marginTop: spacing.md,
     paddingTop: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: "rgba(255, 255, 255, 0.1)",
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
   statCol: {
     flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   statDot: {
     width: 8,
@@ -241,19 +241,19 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     ...typography.caption,
-    color: "rgba(255, 255, 255, 0.6)",
+    color: 'rgba(255, 255, 255, 0.6)',
   },
   statValue: {
     ...typography.caption,
-    fontWeight: "700",
-    color: "#FFFFFF",
+    fontWeight: '700',
+    color: '#FFFFFF',
     marginTop: 1,
     ...typography.tabular,
   },
   statDivider: {
     width: 1,
     height: 28,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     marginHorizontal: spacing.sm,
   },
 });

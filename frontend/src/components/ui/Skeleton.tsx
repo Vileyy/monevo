@@ -1,13 +1,13 @@
-import React, { useEffect } from "react";
-import { StyleSheet, View, ViewStyle } from "react-native";
+import React, { useEffect } from 'react';
+import { StyleSheet, View, ViewStyle } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withRepeat,
   withSequence,
   withTiming,
-} from "react-native-reanimated";
-import { colors, radius } from "@/theme";
+} from 'react-native-reanimated';
+import { colors, radius } from '@/theme';
 
 export interface SkeletonProps {
   width?: number | string;
@@ -17,7 +17,7 @@ export interface SkeletonProps {
 }
 
 export function Skeleton({
-  width = "100%",
+  width = '100%',
   height = 20,
   borderRadius = radius.sm,
   style,
@@ -79,8 +79,8 @@ export function WalletSkeletonCard() {
       <Skeleton width="70%" height={26} style={{ marginTop: 12 }} />
       <View
         style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
+          flexDirection: 'row',
+          justifyContent: 'space-between',
           marginTop: 20,
         }}
       >
@@ -99,8 +99,8 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   skeletonRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: colors.surface,
     padding: 14,
     borderRadius: radius.lg,

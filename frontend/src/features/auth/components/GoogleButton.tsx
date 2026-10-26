@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -6,9 +6,9 @@ import {
   Text,
   View,
   ViewStyle,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { colors, radius, spacing, typography } from "@/theme";
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, radius, spacing, typography } from '@/theme';
 
 export interface GoogleButtonProps {
   onPress: () => void;
@@ -52,15 +52,15 @@ export function GoogleButton({
 
 const styles = StyleSheet.create({
   button: {
-    width: "100%",
+    width: '100%',
     backgroundColor: colors.surface,
     borderWidth: 1.5,
     borderColor: colors.border,
     borderRadius: radius.md,
     paddingVertical: 13,
     paddingHorizontal: spacing.base,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     minHeight: 48,
   },
   pressed: {
@@ -71,18 +71,18 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   contentRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   iconContainer: {
     marginRight: spacing.sm,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   buttonText: {
     ...typography.headline,
     color: colors.text,
-    fontWeight: "600",
+    fontWeight: '600',
   },
 });

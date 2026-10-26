@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   Pressable,
@@ -6,14 +6,14 @@ import {
   StyleSheet,
   Text,
   View,
-} from "react-native";
-import { colors, radius, spacing, typography } from "@/theme";
-import { Button, CategoryIcon, CurrencyInput, Modal } from "@/components/ui";
-import { BudgetItem, useBudgetStore } from "@/store/budget.store";
-import { useCategoryStore } from "@/store/category.store";
-import { formatAmountInput, parseVndInput } from "@/lib/format";
-import { apiErrorMessage } from "@/lib/api-error";
-import { captureEvent } from "@/lib/analytics";
+} from 'react-native';
+import { colors, radius, spacing, typography } from '@/theme';
+import { Button, CategoryIcon, CurrencyInput, Modal } from '@/components/ui';
+import { BudgetItem, useBudgetStore } from '@/store/budget.store';
+import { useCategoryStore } from '@/store/category.store';
+import { formatAmountInput, parseVndInput } from '@/lib/format';
+import { apiErrorMessage } from '@/lib/api-error';
+import { captureEvent } from '@/lib/analytics';
 
 export interface BudgetModalProps {
   visible: boolean;
@@ -35,14 +35,14 @@ function BudgetForm({ budgetToEdit, month, year, onClose }: BudgetFormProps) {
   const { createOrUpdateBudget } = useBudgetStore();
 
   const expenseCategories = useMemo(() => {
-    return categories.filter((c) => c.type === "EXPENSE");
+    return categories.filter((c) => c.type === 'EXPENSE');
   }, [categories]);
 
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>(
-    budgetToEdit?.categoryId || expenseCategories[0]?.id || "",
+    budgetToEdit?.categoryId || expenseCategories[0]?.id || '',
   );
   const [amount, setAmount] = useState<string>(
-    budgetToEdit ? formatAmountInput(budgetToEdit.amount) : "",
+    budgetToEdit ? formatAmountInput(budgetToEdit.amount) : '',
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -56,12 +56,12 @@ function BudgetForm({ budgetToEdit, month, year, onClose }: BudgetFormProps) {
     const numericAmount = parseVndInput(amount);
 
     if (!selectedCategoryId) {
-      Alert.alert("Required", "Please select a category.");
+      Alert.alert('Required', 'Please select a category.');
       return;
     }
 
     if (numericAmount <= 0) {
-      Alert.alert("Required", "Please enter a valid budget amount.");
+      Alert.alert('Required', 'Please enter a valid budget amount.');
       return;
     }
 
@@ -73,14 +73,14 @@ function BudgetForm({ budgetToEdit, month, year, onClose }: BudgetFormProps) {
         month,
         year,
       );
-      captureEvent("budget_set", {
+      captureEvent('budget_set', {
         is_update: Boolean(budgetToEdit),
         month,
         year,
       });
       onClose();
     } catch (error) {
-      Alert.alert("Error", apiErrorMessage(error, "Failed to save budget"));
+      Alert.alert('Error', apiErrorMessage(error, 'Failed to save budget'));
     } finally {
       setIsSubmitting(false);
     }
@@ -144,7 +144,7 @@ function BudgetForm({ budgetToEdit, month, year, onClose }: BudgetFormProps) {
           style={styles.button}
         />
         <Button
-          title={budgetToEdit ? "Update Budget" : "Set Budget"}
+          title={budgetToEdit ? 'Update Budget' : 'Set Budget'}
           onPress={handleSave}
           isLoading={isSubmitting}
           style={styles.button}
@@ -165,11 +165,11 @@ export function BudgetModal({
     <Modal
       visible={visible}
       onClose={onClose}
-      title={budgetToEdit ? "Edit Budget Limit" : "Set Category Budget"}
+      title={budgetToEdit ? 'Edit Budget Limit' : 'Set Category Budget'}
     >
       {visible ? (
         <BudgetForm
-          key={`${budgetToEdit?.id || "new"}-${month}-${year}`}
+          key={`${budgetToEdit?.id || 'new'}-${month}-${year}`}
           budgetToEdit={budgetToEdit}
           month={month}
           year={year}
@@ -187,17 +187,17 @@ const styles = StyleSheet.create({
   sectionLabel: {
     ...typography.subhead,
     color: colors.textSecondary,
-    fontWeight: "600",
+    fontWeight: '600',
     marginBottom: spacing.sm,
   },
   categoryChipsList: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: spacing.sm,
     paddingBottom: spacing.md,
   },
   categoryChip: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: colors.surface,
     borderWidth: 1.5,
     borderColor: colors.border,
@@ -215,18 +215,18 @@ const styles = StyleSheet.create({
   },
   categoryChipText: {
     ...typography.caption,
-    fontWeight: "600",
+    fontWeight: '600',
     color: colors.text,
   },
   categoryChipTextSelected: {
     color: colors.primaryDark,
-    fontWeight: "700",
+    fontWeight: '700',
   },
   inputSpacing: {
     marginTop: spacing.xs,
   },
   buttonRow: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: spacing.md,
     marginTop: spacing.md,
   },

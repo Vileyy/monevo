@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Platform,
@@ -9,46 +9,46 @@ import {
   Text,
   useWindowDimensions,
   View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useTabBarSpace } from "@/components/FloatingTabBar";
-import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTabBarSpace } from '@/components/FloatingTabBar';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import {
   Transaction,
   TransactionQueryParams,
   useTransactionStore,
-} from "@/store/transaction.store";
-import { useWalletStore } from "@/store/wallet.store";
-import { colors, radius, shadows, spacing, typography } from "@/theme";
-import { formatCurrency } from "@/lib/format";
-import { hapticFeedback } from "@/lib/haptics";
-import { useDebouncedValue } from "@/hooks/use-debounced-value";
-import { useDisplayCurrency } from "@/hooks/use-display-currency";
+} from '@/store/transaction.store';
+import { useWalletStore } from '@/store/wallet.store';
+import { colors, radius, shadows, spacing, typography } from '@/theme';
+import { formatCurrency } from '@/lib/format';
+import { hapticFeedback } from '@/lib/haptics';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
+import { useDisplayCurrency } from '@/hooks/use-display-currency';
 import {
   EmptyState,
   Header,
   Input,
   SegmentedControl,
   TransactionSkeletonList,
-} from "@/components/ui";
-import { TransactionItem } from "@/features/transactions/components/TransactionItem";
-import { TransactionDetailModal } from "@/features/transactions/components/TransactionDetailModal";
-import { FilterDropdown } from "@/features/transactions/components/FilterDropdown";
+} from '@/components/ui';
+import { TransactionItem } from '@/features/transactions/components/TransactionItem';
+import { TransactionDetailModal } from '@/features/transactions/components/TransactionDetailModal';
+import { FilterDropdown } from '@/features/transactions/components/FilterDropdown';
 import {
   SORT_OPTIONS,
   SortOption,
   sortOptionFor,
   walletFilterLabel,
   walletFilterOptions,
-} from "@/features/transactions/utils/transaction-filters";
+} from '@/features/transactions/utils/transaction-filters';
 
 const SORT_QUERY: Record<
-  Exclude<SortOption, "DATE_DESC">,
-  Pick<TransactionQueryParams, "sortBy" | "sortOrder">
+  Exclude<SortOption, 'DATE_DESC'>,
+  Pick<TransactionQueryParams, 'sortBy' | 'sortOrder'>
 > = {
-  AMOUNT_DESC: { sortBy: "amount", sortOrder: "desc" },
-  AMOUNT_ASC: { sortBy: "amount", sortOrder: "asc" },
+  AMOUNT_DESC: { sortBy: 'amount', sortOrder: 'desc' },
+  AMOUNT_ASC: { sortBy: 'amount', sortOrder: 'asc' },
 };
 
 export default function TransactionsScreen() {
@@ -70,22 +70,22 @@ export default function TransactionsScreen() {
   const { wallets, fetchWallets } = useWalletStore();
 
   const [refreshing, setRefreshing] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebouncedValue(searchQuery.trim(), 400);
-  const [typeFilter, setTypeFilter] = useState<"ALL" | "EXPENSE" | "INCOME">(
-    "ALL",
+  const [typeFilter, setTypeFilter] = useState<'ALL' | 'EXPENSE' | 'INCOME'>(
+    'ALL',
   );
-  const [selectedWalletId, setSelectedWalletId] = useState<string>("ALL");
-  const [sortBy, setSortBy] = useState<SortOption>("DATE_DESC");
+  const [selectedWalletId, setSelectedWalletId] = useState<string>('ALL');
+  const [sortBy, setSortBy] = useState<SortOption>('DATE_DESC');
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
 
   // Server-side query: filters, debounced search and sorting
   const serverQuery = useMemo<TransactionQueryParams>(() => {
     const query: TransactionQueryParams = {};
-    if (typeFilter !== "ALL") query.type = typeFilter;
-    if (selectedWalletId !== "ALL") query.walletId = selectedWalletId;
+    if (typeFilter !== 'ALL') query.type = typeFilter;
+    if (selectedWalletId !== 'ALL') query.walletId = selectedWalletId;
     if (debouncedSearch) query.search = debouncedSearch;
-    if (sortBy !== "DATE_DESC") Object.assign(query, SORT_QUERY[sortBy]);
+    if (sortBy !== 'DATE_DESC') Object.assign(query, SORT_QUERY[sortBy]);
     return query;
   }, [typeFilter, selectedWalletId, debouncedSearch, sortBy]);
 
@@ -112,11 +112,11 @@ export default function TransactionsScreen() {
   const sections = useMemo(() => {
     if (transactions.length === 0) return [];
 
-    if (sortBy !== "DATE_DESC") {
+    if (sortBy !== 'DATE_DESC') {
       const label =
-        sortBy === "AMOUNT_DESC"
-          ? "Sorted: Highest → Lowest"
-          : "Sorted: Lowest → Highest";
+        sortBy === 'AMOUNT_DESC'
+          ? 'Sorted: Highest → Lowest'
+          : 'Sorted: Lowest → Highest';
       return [{ title: label, data: transactions }];
     }
 
@@ -132,16 +132,16 @@ export default function TransactionsScreen() {
       const txDateStr = txDate.toDateString();
 
       let label = txDate.toLocaleDateString(undefined, {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
-        year: "numeric",
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
       });
 
       if (txDateStr === todayStr) {
-        label = "Today";
+        label = 'Today';
       } else if (txDateStr === yesterdayStr) {
-        label = "Yesterday";
+        label = 'Yesterday';
       }
 
       if (!map.has(label)) {
@@ -156,18 +156,18 @@ export default function TransactionsScreen() {
 
   const hasActiveFilters =
     debouncedSearch.length > 0 ||
-    typeFilter !== "ALL" ||
-    selectedWalletId !== "ALL" ||
-    sortBy !== "DATE_DESC";
+    typeFilter !== 'ALL' ||
+    selectedWalletId !== 'ALL' ||
+    sortBy !== 'DATE_DESC';
 
   const resetFilters = () => {
-    setSearchQuery("");
-    setTypeFilter("ALL");
-    setSelectedWalletId("ALL");
-    setSortBy("DATE_DESC");
+    setSearchQuery('');
+    setTypeFilter('ALL');
+    setSelectedWalletId('ALL');
+    setSortBy('DATE_DESC');
   };
 
-  const handleTypeChange = (val: "ALL" | "EXPENSE" | "INCOME") => {
+  const handleTypeChange = (val: 'ALL' | 'EXPENSE' | 'INCOME') => {
     hapticFeedback.selection();
     setTypeFilter(val);
   };
@@ -233,16 +233,16 @@ export default function TransactionsScreen() {
         <View style={styles.filterSection}>
           <SegmentedControl
             options={[
-              { value: "ALL", label: "All" },
+              { value: 'ALL', label: 'All' },
               {
-                value: "EXPENSE",
-                label: "Expenses",
+                value: 'EXPENSE',
+                label: 'Expenses',
                 activeColor: colors.expense,
                 activeBgColor: colors.surface,
               },
               {
-                value: "INCOME",
-                label: "Income",
+                value: 'INCOME',
+                label: 'Income',
                 activeColor: colors.income,
                 activeBgColor: colors.surface,
               },
@@ -257,7 +257,7 @@ export default function TransactionsScreen() {
           <FilterDropdown
             icon="wallet-outline"
             label={walletFilterLabel(wallets, selectedWalletId)}
-            active={selectedWalletId !== "ALL"}
+            active={selectedWalletId !== 'ALL'}
             options={walletFilterOptions(wallets)}
             value={selectedWalletId}
             onChange={handleWalletSelect}
@@ -266,7 +266,7 @@ export default function TransactionsScreen() {
           <FilterDropdown
             icon={sortOptionFor(sortBy).icon}
             label={sortOptionFor(sortBy).label}
-            active={sortBy !== "DATE_DESC"}
+            active={sortBy !== 'DATE_DESC'}
             options={SORT_OPTIONS}
             value={sortBy}
             onChange={handleSortSelect}
@@ -329,7 +329,7 @@ export default function TransactionsScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <Header
         title="Transaction History"
         subtitle={`${pageMeta?.total ?? 0} records found`}
@@ -337,7 +337,7 @@ export default function TransactionsScreen() {
           <Pressable
             onPress={() => {
               hapticFeedback.light();
-              router.push("/add-transaction");
+              router.push('/add-transaction');
             }}
             style={styles.addBtn}
             hitSlop={8}
@@ -372,14 +372,14 @@ export default function TransactionsScreen() {
               title="No Transactions Found"
               description="Try adjusting your search query, sorting, or filters to find what you're looking for."
               actionTitle={
-                hasActiveFilters ? "Reset Filters" : "Add Transaction"
+                hasActiveFilters ? 'Reset Filters' : 'Add Transaction'
               }
               onAction={() => {
                 hapticFeedback.light();
                 if (hasActiveFilters) {
                   resetFilters();
                 } else {
-                  router.push("/add-transaction");
+                  router.push('/add-transaction');
                 }
               }}
             />
@@ -391,7 +391,7 @@ export default function TransactionsScreen() {
         ]}
         showsVerticalScrollIndicator={false}
         stickySectionHeadersEnabled={false}
-        removeClippedSubviews={Platform.OS === "android"}
+        removeClippedSubviews={Platform.OS === 'android'}
         initialNumToRender={12}
         maxToRenderPerBatch={10}
         windowSize={7}
@@ -427,8 +427,8 @@ const styles = StyleSheet.create({
     height: 38,
     borderRadius: radius.full,
     backgroundColor: colors.primaryMuted,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   listContent: {
     paddingHorizontal: spacing.base,
@@ -441,7 +441,7 @@ const styles = StyleSheet.create({
   },
   filterRowSection: {
     marginTop: spacing.md,
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: spacing.sm,
   },
   sortDropdown: {
@@ -449,7 +449,7 @@ const styles = StyleSheet.create({
     minWidth: 142,
   },
   summaryBar: {
-    flexDirection: "row",
+    flexDirection: 'row',
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
     paddingVertical: spacing.md,
@@ -463,17 +463,17 @@ const styles = StyleSheet.create({
   summaryItem: {
     flex: 1,
     minWidth: 0,
-    alignItems: "center",
+    alignItems: 'center',
   },
   summaryLabel: {
     ...typography.caption,
     color: colors.textSecondary,
-    fontWeight: "600",
-    textTransform: "uppercase",
+    fontWeight: '600',
+    textTransform: 'uppercase',
   },
   summaryVal: {
     ...typography.headline,
-    fontWeight: "700",
+    fontWeight: '700',
     marginTop: 2,
     flexShrink: 1,
     ...typography.tabular,
@@ -489,7 +489,7 @@ const styles = StyleSheet.create({
   },
   groupHeader: {
     ...typography.subhead,
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.textSecondary,
     marginTop: spacing.sm,
     marginBottom: spacing.xs,
@@ -497,7 +497,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingVertical: spacing.lg,
-    alignItems: "center",
+    alignItems: 'center',
   },
   footerText: {
     ...typography.footnote,

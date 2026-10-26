@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   Pressable,
   StyleSheet,
@@ -8,9 +8,9 @@ import {
   TextStyle,
   View,
   ViewStyle,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { colors, radius, spacing, typography } from "@/theme";
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, radius, spacing, typography } from '@/theme';
 
 export interface InputProps extends TextInputProps {
   label?: string;
@@ -42,7 +42,7 @@ export function Input({
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   const handleClear = () => {
-    if (onChangeText) onChangeText("");
+    if (onChangeText) onChangeText('');
   };
 
   return (
@@ -94,11 +94,11 @@ export function Input({
             hitSlop={8}
             accessibilityRole="button"
             accessibilityLabel={
-              isPasswordVisible ? "Hide password" : "Show password"
+              isPasswordVisible ? 'Hide password' : 'Show password'
             }
           >
             <Ionicons
-              name={isPasswordVisible ? "eye-off-outline" : "eye-outline"}
+              name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
               size={20}
               color={colors.textSecondary}
             />
@@ -118,17 +118,17 @@ export function Input({
 const styles = StyleSheet.create({
   wrapper: {
     marginBottom: spacing.base,
-    width: "100%",
+    width: '100%',
   },
   label: {
     ...typography.subhead,
     color: colors.textSecondary,
-    fontWeight: "600",
+    fontWeight: '600',
     marginBottom: spacing.xs,
   },
   inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: colors.surface,
     borderWidth: 1.5,
     borderColor: colors.border,
@@ -148,23 +148,23 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     lineHeight: 20,
-    fontWeight: "400",
+    fontWeight: '400',
     color: colors.text,
     paddingVertical: 0,
     paddingHorizontal: 0,
     margin: 0,
-    textAlignVertical: "center",
+    textAlignVertical: 'center',
   },
   iconSlot: {
     marginRight: spacing.md,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   iconButton: {
     padding: spacing.xs,
-    justifyContent: "center",
-    alignItems: "center",
-    height: "100%",
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100%',
   },
   errorText: {
     ...typography.footnote,

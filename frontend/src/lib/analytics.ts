@@ -1,5 +1,5 @@
-import PostHog from "posthog-react-native";
-import type { User } from "@/store/auth.store";
+import PostHog from 'posthog-react-native';
+import type { User } from '@/store/auth.store';
 
 const apiKey = process.env.EXPO_PUBLIC_POSTHOG_API_KEY;
 const host = process.env.EXPO_PUBLIC_POSTHOG_HOST;
@@ -17,7 +17,7 @@ export const analytics = apiKey
 
 // Dev builds share the same project; tag events so they can be filtered.
 void analytics?.register({
-  environment: __DEV__ ? "development" : "production",
+  environment: __DEV__ ? 'development' : 'production',
 });
 
 export function identifyUser(user: User) {

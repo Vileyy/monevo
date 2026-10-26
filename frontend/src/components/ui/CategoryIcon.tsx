@@ -1,19 +1,19 @@
-import React from "react";
-import { ViewStyle } from "react-native";
-import { IconBadge, IconBadgeSize } from "@/components/ui/IconBadge";
-import { getCategoryFallback, getCategoryIconMeta } from "@/lib/categories";
+import React from 'react';
+import { ViewStyle } from 'react-native';
+import { IconBadge, IconBadgeSize } from '@/components/ui/IconBadge';
+import { getCategoryFallback, getCategoryIconMeta } from '@/lib/categories';
 
 export interface CategoryIconProps {
-  type?: "EXPENSE" | "INCOME";
+  type?: 'EXPENSE' | 'INCOME';
   icon?: string | null;
   size?: IconBadgeSize;
   style?: ViewStyle;
 }
 
 export function CategoryIcon({
-  type = "EXPENSE",
+  type = 'EXPENSE',
   icon,
-  size = "md",
+  size = 'md',
   style,
 }: CategoryIconProps) {
   const meta = getCategoryIconMeta(icon) ?? getCategoryFallback(type);

@@ -1,14 +1,14 @@
-import React, { useState } from "react";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { colors, radius, spacing, typography } from "@/theme";
-import { Button, Input, SegmentedControl } from "@/components/ui";
-import { apiErrorMessage } from "@/lib/api-error";
-import { hapticFeedback } from "@/lib/haptics";
-import { CATEGORY_ICON_OPTIONS, IconName } from "@/lib/categories";
-import { Category, useCategoryStore } from "@/store/category.store";
+import React, { useState } from 'react';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, radius, spacing, typography } from '@/theme';
+import { Button, Input, SegmentedControl } from '@/components/ui';
+import { apiErrorMessage } from '@/lib/api-error';
+import { hapticFeedback } from '@/lib/haptics';
+import { CATEGORY_ICON_OPTIONS, IconName } from '@/lib/categories';
+import { Category, useCategoryStore } from '@/store/category.store';
 
-export type CategoryType = "EXPENSE" | "INCOME";
+export type CategoryType = 'EXPENSE' | 'INCOME';
 
 export interface CategoryFormProps {
   type: CategoryType;
@@ -23,12 +23,12 @@ export function CategoryForm({
 }: CategoryFormProps) {
   const { createCategory } = useCategoryStore();
 
-  const [name, setName] = useState("");
+  const [name, setName] = useState('');
   const [pickedIcon, setPickedIcon] = useState<IconName | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const selectedIcon =
-    pickedIcon ?? (type === "INCOME" ? "cash" : "restaurant");
+    pickedIcon ?? (type === 'INCOME' ? 'cash' : 'restaurant');
 
   const handleTypeChange = (nextType: CategoryType) => {
     hapticFeedback.selection();
@@ -37,20 +37,20 @@ export function CategoryForm({
 
   const handleSave = async () => {
     if (!name.trim()) {
-      Alert.alert("Required", "Please enter a category name.");
+      Alert.alert('Required', 'Please enter a category name.');
       return;
     }
 
     setIsSubmitting(true);
     try {
       const created = await createCategory(name.trim(), type, selectedIcon);
-      setName("");
+      setName('');
       setPickedIcon(null);
       onCreated?.(created);
     } catch (error) {
       Alert.alert(
-        "Error",
-        apiErrorMessage(error, "Could not create category."),
+        'Error',
+        apiErrorMessage(error, 'Could not create category.'),
       );
     } finally {
       setIsSubmitting(false);
@@ -62,8 +62,8 @@ export function CategoryForm({
       <View style={styles.segmentWrapper}>
         <SegmentedControl
           options={[
-            { value: "EXPENSE", label: "Expense" },
-            { value: "INCOME", label: "Income" },
+            { value: 'EXPENSE', label: 'Expense' },
+            { value: 'INCOME', label: 'Income' },
           ]}
           value={type}
           onChange={handleTypeChange}
@@ -126,23 +126,23 @@ const styles = StyleSheet.create({
   sectionLabel: {
     ...typography.subhead,
     color: colors.textSecondary,
-    fontWeight: "600",
+    fontWeight: '600',
     marginBottom: spacing.sm,
   },
   iconGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: spacing.sm + 2,
-    justifyContent: "center",
+    justifyContent: 'center',
   },
   iconTile: {
     width: 46,
     height: 46,
     borderRadius: radius.md + 2,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1.5,
-    borderColor: "transparent",
+    borderColor: 'transparent',
   },
   iconTileSelected: {
     borderColor: colors.primary,

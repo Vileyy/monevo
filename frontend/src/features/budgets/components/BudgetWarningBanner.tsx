@@ -1,11 +1,11 @@
-import React, { memo } from "react";
-import { StyleSheet, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { colors, radius, shadows, spacing, typography } from "@/theme";
-import { BudgetWarningDetails } from "@/lib/budget-warning";
-import { formatCurrency } from "@/lib/format";
-import { BudgetProgressBar } from "./BudgetProgressBar";
-import { useDisplayCurrency } from "@/hooks/use-display-currency";
+import React, { memo } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, radius, shadows, spacing, typography } from '@/theme';
+import { BudgetWarningDetails } from '@/lib/budget-warning';
+import { formatCurrency } from '@/lib/format';
+import { BudgetProgressBar } from './BudgetProgressBar';
+import { useDisplayCurrency } from '@/hooks/use-display-currency';
 
 export interface BudgetWarningBannerProps {
   warning: BudgetWarningDetails;
@@ -18,14 +18,14 @@ export const BudgetWarningBanner = memo(function BudgetWarningBanner({
 }: BudgetWarningBannerProps) {
   useDisplayCurrency();
 
-  if (warning.status === "NONE") {
+  if (warning.status === 'NONE') {
     return null;
   }
 
-  const isExceeded = warning.status === "EXCEEDED";
-  const isWarning = warning.status === "WARNING";
+  const isExceeded = warning.status === 'EXCEEDED';
+  const isWarning = warning.status === 'WARNING';
 
-  const displayName = categoryName || "Budget";
+  const displayName = categoryName || 'Budget';
 
   const containerStyle = [
     styles.container,
@@ -34,10 +34,10 @@ export const BudgetWarningBanner = memo(function BudgetWarningBanner({
   ];
 
   const iconName = isExceeded
-    ? "alert-circle"
+    ? 'alert-circle'
     : isWarning
-      ? "warning-outline"
-      : "pie-chart-outline";
+      ? 'warning-outline'
+      : 'pie-chart-outline';
 
   const iconColor = isExceeded
     ? colors.danger
@@ -46,9 +46,9 @@ export const BudgetWarningBanner = memo(function BudgetWarningBanner({
       : colors.accent;
 
   const headerTitle = isExceeded
-    ? "Budget Exceeded"
+    ? 'Budget Exceeded'
     : isWarning
-      ? "Approaching Budget Limit"
+      ? 'Approaching Budget Limit'
       : `Budget: ${displayName}`;
 
   const headerTitleStyle = [
@@ -58,9 +58,9 @@ export const BudgetWarningBanner = memo(function BudgetWarningBanner({
   ];
 
   const tagLabel = isExceeded
-    ? "Over Limit"
+    ? 'Over Limit'
     : isWarning
-      ? "Near Limit"
+      ? 'Near Limit'
       : `${Math.round(warning.projectedPercentage)}%`;
 
   const tagStyle = [
@@ -108,7 +108,7 @@ export const BudgetWarningBanner = memo(function BudgetWarningBanner({
       {/* Footer Meta */}
       <View style={styles.footerRow}>
         <Text style={styles.metaText}>
-          Spent after:{" "}
+          Spent after:{' '}
           <Text
             style={[styles.metaValue, isExceeded && styles.metaValueExceeded]}
           >
@@ -116,7 +116,7 @@ export const BudgetWarningBanner = memo(function BudgetWarningBanner({
           </Text>
         </Text>
         <Text style={styles.metaText}>
-          Limit:{" "}
+          Limit:{' '}
           <Text style={styles.metaValue}>
             {formatCurrency(warning.budgetAmount)}
           </Text>
@@ -141,31 +141,31 @@ const styles = StyleSheet.create({
   },
   containerWarning: {
     backgroundColor: colors.warningBg,
-    borderColor: "#FDE68A",
+    borderColor: '#FDE68A',
   },
   headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: spacing.xs,
   },
   titleGroup: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.xs,
     flex: 1,
     marginRight: spacing.sm,
   },
   headerTitle: {
     ...typography.subhead,
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.text,
   },
   headerTitleExceeded: {
     color: colors.danger,
   },
   headerTitleWarning: {
-    color: "#B45309",
+    color: '#B45309',
   },
   tag: {
     paddingHorizontal: spacing.xs + 2,
@@ -174,14 +174,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceSecondary,
   },
   tagExceeded: {
-    backgroundColor: "#FFE4E6",
+    backgroundColor: '#FFE4E6',
   },
   tagWarning: {
-    backgroundColor: "#FEF3C7",
+    backgroundColor: '#FEF3C7',
   },
   tagText: {
     ...typography.caption,
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.textSecondary,
     fontSize: 11,
   },
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     color: colors.danger,
   },
   tagTextWarning: {
-    color: "#B45309",
+    color: '#B45309',
   },
   messageText: {
     ...typography.caption,
@@ -201,9 +201,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   footerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   metaText: {
     ...typography.caption,
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
   },
   metaValue: {
-    fontWeight: "600",
+    fontWeight: '600',
     color: colors.text,
   },
   metaValueExceeded: {

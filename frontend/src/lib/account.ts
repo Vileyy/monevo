@@ -1,4 +1,4 @@
-import { apiClient } from "@/services/api/client";
+import { apiClient } from '@/services/api/client';
 
 export type DeleteAccountResult = {
   deleted: boolean;
@@ -9,6 +9,6 @@ export type DeleteAccountResult = {
  * wallets, categories, transactions, budgets and reminders.
  */
 export async function deleteUserAccount(): Promise<DeleteAccountResult> {
-  const response = await apiClient.delete<DeleteAccountResult>("/users/me");
+  const response = await apiClient.delete<DeleteAccountResult>('/users/me');
   return response.data;
 }

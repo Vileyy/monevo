@@ -1,11 +1,11 @@
 /* eslint-disable no-undef */
-jest.mock("expo-secure-store", () => ({
+jest.mock('expo-secure-store', () => ({
   setItemAsync: jest.fn().mockResolvedValue(undefined),
   getItemAsync: jest.fn().mockResolvedValue(null),
   deleteItemAsync: jest.fn().mockResolvedValue(undefined),
 }));
 
-jest.mock("expo-local-authentication", () => ({
+jest.mock('expo-local-authentication', () => ({
   hasHardwareAsync: jest.fn().mockResolvedValue(false),
   isEnrolledAsync: jest.fn().mockResolvedValue(false),
   supportedAuthenticationTypesAsync: jest.fn().mockResolvedValue([]),
@@ -17,46 +17,46 @@ jest.mock("expo-local-authentication", () => ({
   },
 }));
 
-jest.mock("expo-haptics", () => ({
+jest.mock('expo-haptics', () => ({
   impactAsync: jest.fn().mockResolvedValue(undefined),
   selectionAsync: jest.fn().mockResolvedValue(undefined),
   notificationAsync: jest.fn().mockResolvedValue(undefined),
   ImpactFeedbackStyle: {
-    Light: "light",
-    Medium: "medium",
-    Heavy: "heavy",
+    Light: 'light',
+    Medium: 'medium',
+    Heavy: 'heavy',
   },
   NotificationFeedbackType: {
-    Success: "success",
-    Warning: "warning",
-    Error: "error",
+    Success: 'success',
+    Warning: 'warning',
+    Error: 'error',
   },
 }));
 
-jest.mock("expo-notifications", () => ({
+jest.mock('expo-notifications', () => ({
   setNotificationHandler: jest.fn(),
   setNotificationChannelAsync: jest.fn(),
-  getPermissionsAsync: jest.fn().mockResolvedValue({ status: "granted" }),
-  requestPermissionsAsync: jest.fn().mockResolvedValue({ status: "granted" }),
-  scheduleNotificationAsync: jest.fn().mockResolvedValue("mock_notif_id_123"),
+  getPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted' }),
+  requestPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted' }),
+  scheduleNotificationAsync: jest.fn().mockResolvedValue('mock_notif_id_123'),
   cancelScheduledNotificationAsync: jest.fn().mockResolvedValue(undefined),
   getAllScheduledNotificationsAsync: jest.fn().mockResolvedValue([]),
   SchedulableTriggerInputTypes: {
-    DATE: "date",
+    DATE: 'date',
   },
   AndroidImportance: {
     HIGH: 4,
   },
 }));
 
-jest.mock("react-native", () => ({
+jest.mock('react-native', () => ({
   Platform: {
-    OS: "ios",
+    OS: 'ios',
     select: jest.fn((dict) => dict.ios || dict.default),
   },
 }));
 
-jest.mock("@clerk/clerk-expo", () => ({
+jest.mock('@clerk/clerk-expo', () => ({
   ClerkProvider: ({ children }) => children,
   ClerkLoaded: ({ children }) => children,
   useSignIn: () => ({
@@ -82,15 +82,15 @@ jest.mock("@clerk/clerk-expo", () => ({
   }),
   useAuth: () => ({
     isSignedIn: true,
-    userId: "test_user_1",
-    getToken: jest.fn().mockResolvedValue("test_token"),
+    userId: 'test_user_1',
+    getToken: jest.fn().mockResolvedValue('test_token'),
     signOut: jest.fn(),
   }),
   useUser: () => ({
     user: {
-      id: "test_user_1",
-      emailAddresses: [{ emailAddress: "test@example.com" }],
-      fullName: "Test User",
+      id: 'test_user_1',
+      emailAddresses: [{ emailAddress: 'test@example.com' }],
+      fullName: 'Test User',
     },
   }),
 }));

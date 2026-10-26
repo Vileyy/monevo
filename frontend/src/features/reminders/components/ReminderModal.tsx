@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   Alert,
   Pressable,
@@ -6,20 +6,20 @@ import {
   StyleSheet,
   Text,
   View,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { colors, radius, spacing, typography } from "@/theme";
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, radius, spacing, typography } from '@/theme';
 import {
   Button,
   CurrencyInput,
   IconBadge,
   Input,
   Modal,
-} from "@/components/ui";
-import { useReminderStore } from "@/store/reminder.store";
-import { REMINDER_PRESETS, ReminderCategoryMeta } from "@/lib/reminders";
-import { parseVndInput } from "@/lib/format";
-import { captureEvent } from "@/lib/analytics";
+} from '@/components/ui';
+import { useReminderStore } from '@/store/reminder.store';
+import { REMINDER_PRESETS, ReminderCategoryMeta } from '@/lib/reminders';
+import { parseVndInput } from '@/lib/format';
+import { captureEvent } from '@/lib/analytics';
 
 export interface ReminderModalProps {
   visible: boolean;
@@ -33,7 +33,7 @@ export function ReminderModal({ visible, onClose }: ReminderModalProps) {
     REMINDER_PRESETS[0],
   );
   const [title, setTitle] = useState(REMINDER_PRESETS[0].defaultTitle);
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState('');
   const [dueDay, setDueDay] = useState(10);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -46,12 +46,12 @@ export function ReminderModal({ visible, onClose }: ReminderModalProps) {
     const numericAmount = parseVndInput(amount);
 
     if (!title.trim()) {
-      Alert.alert("Missing Information", "Please enter a reminder title.");
+      Alert.alert('Missing Information', 'Please enter a reminder title.');
       return;
     }
 
     if (numericAmount <= 0) {
-      Alert.alert("Missing Information", "Please enter a valid amount.");
+      Alert.alert('Missing Information', 'Please enter a valid amount.');
       return;
     }
 
@@ -63,15 +63,15 @@ export function ReminderModal({ visible, onClose }: ReminderModalProps) {
         dueDate: dueDay,
         category: selectedPreset.category,
       });
-      captureEvent("reminder_created", {
+      captureEvent('reminder_created', {
         category: selectedPreset.category,
       });
       setTitle(REMINDER_PRESETS[0].defaultTitle);
-      setAmount("");
+      setAmount('');
       setDueDay(10);
       onClose();
     } catch {
-      Alert.alert("Error", "Could not create reminder. Please try again.");
+      Alert.alert('Error', 'Could not create reminder. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -193,18 +193,18 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     ...typography.subhead,
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.textSecondary,
     marginBottom: spacing.xs + 2,
   },
   presetsList: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: spacing.sm,
     paddingBottom: spacing.md,
   },
   presetChip: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: colors.surface,
     borderWidth: 1.5,
     borderColor: colors.border,
@@ -222,12 +222,12 @@ const styles = StyleSheet.create({
   },
   presetChipText: {
     ...typography.caption,
-    fontWeight: "600",
+    fontWeight: '600',
     color: colors.text,
   },
   presetChipTextSelected: {
     color: colors.primaryDark,
-    fontWeight: "700",
+    fontWeight: '700',
   },
   inputSpacing: {
     marginTop: spacing.xs,
@@ -237,9 +237,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   stepperRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     backgroundColor: colors.surfaceSecondary,
     borderRadius: radius.xl,
     padding: spacing.sm,
@@ -249,18 +249,18 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: radius.lg,
     backgroundColor: colors.surface,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: colors.border,
   },
   dueDayBadge: {
-    alignItems: "center",
+    alignItems: 'center',
   },
   dueDayText: {
     fontSize: 20,
     lineHeight: 26,
-    fontWeight: "800",
+    fontWeight: '800',
     color: colors.primary,
   },
   dueDaySub: {
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   buttonRow: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: spacing.md,
     marginTop: spacing.md,
   },

@@ -1,6 +1,6 @@
-import { create } from "zustand";
-import { apiClient } from "@/services/api/client";
-import { Category } from "./category.store";
+import { create } from 'zustand';
+import { apiClient } from '@/services/api/client';
+import { Category } from './category.store';
 
 export interface BudgetItem {
   id: string;
@@ -70,7 +70,7 @@ export const useBudgetStore = create<BudgetState>((set, get) => ({
 
     set({ isLoading: true, error: null });
     try {
-      const response = await apiClient.get<BudgetResponse>("/budgets", {
+      const response = await apiClient.get<BudgetResponse>('/budgets', {
         params: {
           month: targetMonth,
           year: targetYear,
@@ -87,7 +87,7 @@ export const useBudgetStore = create<BudgetState>((set, get) => ({
     } catch (err: unknown) {
       set({
         isLoading: false,
-        error: err instanceof Error ? err.message : "Failed to load budgets",
+        error: err instanceof Error ? err.message : 'Failed to load budgets',
       });
     }
   },
@@ -98,7 +98,7 @@ export const useBudgetStore = create<BudgetState>((set, get) => ({
 
     set({ isLoading: true, error: null });
     try {
-      await apiClient.post("/budgets", {
+      await apiClient.post('/budgets', {
         categoryId,
         amount,
         month: targetMonth,

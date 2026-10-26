@@ -1,9 +1,9 @@
-import React from "react";
-import { StyleSheet, View, ViewStyle } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { IconName } from "@/lib/categories";
+import React from 'react';
+import { StyleSheet, View, ViewStyle } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { IconName } from '@/lib/categories';
 
-export type IconBadgeSize = "xs" | "sm" | "md" | "lg";
+export type IconBadgeSize = 'xs' | 'sm' | 'md' | 'lg';
 
 const SIZES: Record<IconBadgeSize, { box: number; icon: number }> = {
   xs: { box: 26, icon: 14 },
@@ -28,7 +28,7 @@ export function IconBadge({
   icon,
   color,
   backgroundColor,
-  size = "md",
+  size = 'md',
   style,
 }: IconBadgeProps) {
   const spec = SIZES[size];
@@ -42,7 +42,7 @@ export function IconBadge({
           height: spec.box,
           borderRadius: Math.round(spec.box * 0.32),
           backgroundColor,
-          borderColor: withAlpha(color, "24"),
+          borderColor: withAlpha(color, '24'),
         },
         style,
       ]}
@@ -54,8 +54,8 @@ export function IconBadge({
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
   },
 });

@@ -1,13 +1,13 @@
-import React, { memo } from "react";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { colors, radius, shadows, spacing, typography } from "@/theme";
-import { BudgetItem } from "@/store/budget.store";
-import { formatCurrency } from "@/lib/format";
-import { CategoryIcon } from "@/components/ui";
-import { BudgetProgressBar } from "./BudgetProgressBar";
-import { hapticFeedback } from "@/lib/haptics";
-import { useDisplayCurrency } from "@/hooks/use-display-currency";
+import React, { memo } from 'react';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, radius, shadows, spacing, typography } from '@/theme';
+import { BudgetItem } from '@/store/budget.store';
+import { formatCurrency } from '@/lib/format';
+import { CategoryIcon } from '@/components/ui';
+import { BudgetProgressBar } from './BudgetProgressBar';
+import { hapticFeedback } from '@/lib/haptics';
+import { useDisplayCurrency } from '@/hooks/use-display-currency';
 
 export interface BudgetCardProps {
   budget: BudgetItem;
@@ -34,13 +34,13 @@ export const BudgetCard = memo(function BudgetCard({
   const handleDeletePress = () => {
     hapticFeedback.light();
     Alert.alert(
-      "Delete Budget",
+      'Delete Budget',
       `Are you sure you want to delete the ${displayName} budget?`,
       [
-        { text: "Cancel", style: "cancel" },
+        { text: 'Cancel', style: 'cancel' },
         {
-          text: "Delete",
-          style: "destructive",
+          text: 'Delete',
+          style: 'destructive',
           onPress: () => {
             hapticFeedback.warning();
             onDelete();
@@ -94,7 +94,7 @@ export const BudgetCard = memo(function BudgetCard({
 
         <View style={styles.progressMeta}>
           <Text style={styles.spentText}>
-            Spent:{" "}
+            Spent:{' '}
             <Text style={styles.spentAmount}>
               {formatCurrency(budget.spent)}
             </Text>
@@ -127,13 +127,13 @@ const styles = StyleSheet.create({
     ...shadows.sm,
   },
   topRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   categoryInfo: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     flex: 1,
   },
   nameContainer: {
@@ -150,8 +150,8 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   actionButtons: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.xs,
   },
   actionBtn: {
@@ -159,16 +159,16 @@ const styles = StyleSheet.create({
     height: 32,
     borderRadius: radius.md,
     backgroundColor: colors.surfaceSecondary,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   progressSection: {
     marginTop: spacing.md,
   },
   progressMeta: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginTop: spacing.xs + 2,
   },
   spentText: {
@@ -176,12 +176,12 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   spentAmount: {
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.text,
   },
   statusText: {
     ...typography.caption,
-    fontWeight: "600",
+    fontWeight: '600',
     color: colors.primaryDark,
   },
   nearLimitText: {
@@ -189,6 +189,6 @@ const styles = StyleSheet.create({
   },
   overBudgetText: {
     color: colors.danger,
-    fontWeight: "700",
+    fontWeight: '700',
   },
 });

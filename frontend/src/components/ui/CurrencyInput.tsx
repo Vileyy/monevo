@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   Platform,
   Pressable,
@@ -7,17 +7,17 @@ import {
   Text,
   TextInput,
   View,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { colors, radius, spacing, typography } from "@/theme";
-import { formatCurrencyInput, parseCurrencyInput } from "@/lib/format";
-import { getCurrencyConfig } from "@/lib/currencies";
-import { useSettingsStore } from "@/store/settings.store";
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, radius, spacing, typography } from '@/theme';
+import { formatCurrencyInput, parseCurrencyInput } from '@/lib/format';
+import { getCurrencyConfig } from '@/lib/currencies';
+import { useSettingsStore } from '@/store/settings.store';
 
 export interface CurrencyInputProps {
   value: string;
   onChangeText: (text: string) => void;
-  type?: "EXPENSE" | "INCOME";
+  type?: 'EXPENSE' | 'INCOME';
   quickAmounts?: number[];
   error?: string;
   autoFocus?: boolean;
@@ -29,7 +29,7 @@ const DEFAULT_DECIMAL_QUICK = [5, 10, 20, 50, 100, 200];
 export function CurrencyInput({
   value,
   onChangeText,
-  type = "EXPENSE",
+  type = 'EXPENSE',
   quickAmounts,
   error,
   autoFocus = false,
@@ -39,9 +39,9 @@ export function CurrencyInput({
 
   const activeQuickAmounts =
     quickAmounts ||
-    (currencyCode === "VND" ? DEFAULT_VND_QUICK : DEFAULT_DECIMAL_QUICK);
+    (currencyCode === 'VND' ? DEFAULT_VND_QUICK : DEFAULT_DECIMAL_QUICK);
 
-  const isIncome = type === "INCOME";
+  const isIncome = type === 'INCOME';
   const mainColor = isIncome ? colors.income : colors.expense;
   const currentNumericValue = parseCurrencyInput(value, currencyCode);
 
@@ -51,7 +51,7 @@ export function CurrencyInput({
   };
 
   const handleClear = () => {
-    onChangeText("");
+    onChangeText('');
   };
 
   const formatQuickChipLabel = (amt: number) => {
@@ -143,12 +143,12 @@ export function CurrencyInput({
 const styles = StyleSheet.create({
   container: {
     marginBottom: spacing.base,
-    width: "100%",
+    width: '100%',
   },
   label: {
     ...typography.subhead,
     color: colors.textSecondary,
-    fontWeight: "600",
+    fontWeight: '600',
     marginBottom: spacing.xs,
   },
   inputCard: {
@@ -158,25 +158,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.base,
     paddingVertical: spacing.sm + 2,
     minHeight: 64,
-    justifyContent: "center",
+    justifyContent: 'center',
   },
   row: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     height: 44,
   },
   numericInput: {
     flex: 1,
     fontSize: 28,
     lineHeight: 34,
-    fontWeight: "800",
+    fontWeight: '800',
     paddingVertical: 0,
     paddingHorizontal: 0,
     margin: 0,
     height: 44,
     ...typography.tabular,
     includeFontPadding: false,
-    textAlignVertical: "center",
+    textAlignVertical: 'center',
     ...Platform.select({
       ios: {
         marginTop: 2,
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
   currencySuffix: {
     fontSize: 26,
     lineHeight: 32,
-    fontWeight: "800",
+    fontWeight: '800',
     marginLeft: spacing.xs,
     marginRight: spacing.sm,
     ...typography.tabular,
@@ -194,8 +194,8 @@ const styles = StyleSheet.create({
   },
   clearBtn: {
     padding: spacing.xs,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   errorText: {
     ...typography.footnote,
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
   },
   quickAmountsList: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: spacing.sm,
     paddingTop: spacing.sm,
     paddingRight: spacing.xl,
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
   },
   quickChipText: {
     ...typography.footnote,
-    fontWeight: "600",
+    fontWeight: '600',
     color: colors.textSecondary,
   },
 });

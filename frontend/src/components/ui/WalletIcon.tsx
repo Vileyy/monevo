@@ -1,7 +1,7 @@
-import React from "react";
-import { ViewStyle } from "react-native";
-import { IconBadge, IconBadgeSize } from "@/components/ui/IconBadge";
-import { getWalletMeta } from "@/lib/categories";
+import React from 'react';
+import { ViewStyle } from 'react-native';
+import { IconBadge, IconBadgeSize } from '@/components/ui/IconBadge';
+import { getWalletMeta } from '@/lib/categories';
 
 export interface WalletIconProps {
   type: string;
@@ -9,7 +9,7 @@ export interface WalletIconProps {
   style?: ViewStyle;
 }
 
-export function WalletIcon({ type, size = "md", style }: WalletIconProps) {
+export function WalletIcon({ type, size = 'md', style }: WalletIconProps) {
   const meta = getWalletMeta(type);
 
   return (

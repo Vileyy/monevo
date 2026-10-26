@@ -1,6 +1,6 @@
-import { getWalletMeta, type IconName } from "@/lib/categories";
+import { getWalletMeta, type IconName } from '@/lib/categories';
 
-export type SortOption = "DATE_DESC" | "AMOUNT_DESC" | "AMOUNT_ASC";
+export type SortOption = 'DATE_DESC' | 'AMOUNT_DESC' | 'AMOUNT_ASC';
 
 export type FilterOption<T extends string> = {
   value: T;
@@ -9,9 +9,9 @@ export type FilterOption<T extends string> = {
 };
 
 export const SORT_OPTIONS: (FilterOption<SortOption> & { icon: IconName })[] = [
-  { value: "DATE_DESC", label: "Latest", icon: "time-outline" },
-  { value: "AMOUNT_DESC", label: "High → Low", icon: "trending-down-outline" },
-  { value: "AMOUNT_ASC", label: "Low → High", icon: "trending-up-outline" },
+  { value: 'DATE_DESC', label: 'Latest', icon: 'time-outline' },
+  { value: 'AMOUNT_DESC', label: 'High → Low', icon: 'trending-down-outline' },
+  { value: 'AMOUNT_ASC', label: 'Low → High', icon: 'trending-up-outline' },
 ];
 
 export function sortOptionFor(
@@ -26,7 +26,7 @@ export function walletFilterOptions(
   wallets: { id: string; name: string; type: string }[],
 ): FilterOption<string>[] {
   return [
-    { value: "ALL", label: "All accounts", icon: "wallet-outline" },
+    { value: 'ALL', label: 'All accounts', icon: 'wallet-outline' },
     ...wallets.map((wallet) => ({
       value: wallet.id,
       label: wallet.name,
@@ -39,8 +39,8 @@ export function walletFilterLabel(
   wallets: { id: string; name: string }[],
   selectedId: string,
 ): string {
-  if (selectedId === "ALL") return "All accounts";
+  if (selectedId === 'ALL') return 'All accounts';
   return (
-    wallets.find((wallet) => wallet.id === selectedId)?.name ?? "All accounts"
+    wallets.find((wallet) => wallet.id === selectedId)?.name ?? 'All accounts'
   );
 }

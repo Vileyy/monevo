@@ -1,9 +1,9 @@
 export function displayableEmail(email?: string | null): string | null {
   if (
     !email ||
-    !email.includes("@") ||
-    email.endsWith("@clerk.user") ||
-    email.endsWith("@clerk.dev")
+    !email.includes('@') ||
+    email.endsWith('@clerk.user') ||
+    email.endsWith('@clerk.dev')
   ) {
     return null;
   }
@@ -28,5 +28,5 @@ export function getInitials(
     return email.substring(0, 2).toUpperCase();
   }
 
-  return "ME";
+  return 'ME';
 }

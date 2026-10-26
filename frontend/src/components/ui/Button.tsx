@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -7,14 +7,14 @@ import {
   TextStyle,
   View,
   ViewStyle,
-} from "react-native";
-import { colors, radius, spacing, typography } from "@/theme";
+} from 'react-native';
+import { colors, radius, spacing, typography } from '@/theme';
 
 export interface ButtonProps {
   title: string;
   onPress?: () => void;
-  variant?: "primary" | "secondary" | "outline" | "danger" | "ghost";
-  size?: "sm" | "md" | "lg";
+  variant?: 'primary' | 'secondary' | 'outline' | 'danger' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
   isLoading?: boolean;
   disabled?: boolean;
   leftIcon?: React.ReactNode;
@@ -27,8 +27,8 @@ export interface ButtonProps {
 export function Button({
   title,
   onPress,
-  variant = "primary",
-  size = "md",
+  variant = 'primary',
+  size = 'md',
   isLoading = false,
   disabled = false,
   leftIcon,
@@ -39,15 +39,15 @@ export function Button({
 }: ButtonProps) {
   const getVariantContainerStyle = (): ViewStyle => {
     switch (variant) {
-      case "secondary":
+      case 'secondary':
         return styles.secondaryContainer;
-      case "outline":
+      case 'outline':
         return styles.outlineContainer;
-      case "danger":
+      case 'danger':
         return styles.dangerContainer;
-      case "ghost":
+      case 'ghost':
         return styles.ghostContainer;
-      case "primary":
+      case 'primary':
       default:
         return styles.primaryContainer;
     }
@@ -55,15 +55,15 @@ export function Button({
 
   const getVariantTextStyle = (): TextStyle => {
     switch (variant) {
-      case "secondary":
+      case 'secondary':
         return styles.secondaryText;
-      case "outline":
+      case 'outline':
         return styles.outlineText;
-      case "danger":
+      case 'danger':
         return styles.dangerText;
-      case "ghost":
+      case 'ghost':
         return styles.ghostText;
-      case "primary":
+      case 'primary':
       default:
         return styles.primaryText;
     }
@@ -71,11 +71,11 @@ export function Button({
 
   const getSizeContainerStyle = (): ViewStyle => {
     switch (size) {
-      case "sm":
+      case 'sm':
         return styles.smContainer;
-      case "lg":
+      case 'lg':
         return styles.lgContainer;
-      case "md":
+      case 'md':
       default:
         return styles.mdContainer;
     }
@@ -83,18 +83,18 @@ export function Button({
 
   const getSizeTextStyle = (): TextStyle => {
     switch (size) {
-      case "sm":
+      case 'sm':
         return styles.smText;
-      case "lg":
+      case 'lg':
         return styles.lgText;
-      case "md":
+      case 'md':
       default:
         return styles.mdText;
     }
   };
 
   const spinnerColor =
-    variant === "primary" || variant === "danger"
+    variant === 'primary' || variant === 'danger'
       ? colors.textInverse
       : colors.primary;
 
@@ -140,20 +140,20 @@ export function Button({
 const styles = StyleSheet.create({
   baseContainer: {
     borderRadius: radius.md,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   fullWidth: {
-    width: "100%",
+    width: '100%',
   },
   pressed: {
     opacity: 0.88,
     transform: [{ scale: 0.98 }],
   },
   contentRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   leftIcon: {
     marginRight: spacing.sm,
@@ -162,8 +162,8 @@ const styles = StyleSheet.create({
     marginLeft: spacing.sm,
   },
   baseText: {
-    fontWeight: "600",
-    textAlign: "center",
+    fontWeight: '600',
+    textAlign: 'center',
   },
 
   // Sizes
@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
   },
   smText: {
     ...typography.subhead,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   mdContainer: {
     paddingVertical: 14,
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
   },
   lgText: {
     fontSize: 17,
-    fontWeight: "700",
+    fontWeight: '700',
   },
 
   // Variants
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
     color: colors.textInverse,
   },
   ghostContainer: {
-    backgroundColor: "transparent",
+    backgroundColor: 'transparent',
   },
   ghostText: {
     color: colors.primary,

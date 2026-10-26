@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState } from 'react';
 import {
   Alert,
   Pressable,
@@ -6,12 +6,12 @@ import {
   Text,
   useWindowDimensions,
   View,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { colors, radius, spacing, typography } from "@/theme";
-import { Button, Modal } from "@/components/ui";
-import { buildCalendarWeeks, formatRangeLabel } from "@/lib/date-range";
-import type { CalendarCell } from "@/lib/date-range";
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, radius, spacing, typography } from '@/theme';
+import { Button, Modal } from '@/components/ui';
+import { buildCalendarWeeks, formatRangeLabel } from '@/lib/date-range';
+import type { CalendarCell } from '@/lib/date-range';
 
 export interface DateRange {
   startDate: Date;
@@ -26,21 +26,21 @@ export interface DateRangePickerModalProps {
 }
 
 const MONTH_NAMES = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
-const WEEKDAY_HEADERS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+const WEEKDAY_HEADERS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
 const MAX_CELL_SIZE = 46;
 const MAX_CONTENT_WIDTH = 640;
@@ -91,7 +91,7 @@ function DateRangePickerContent({
   onClose,
   initialRange,
   onApplyRange,
-}: Omit<DateRangePickerModalProps, "visible">) {
+}: Omit<DateRangePickerModalProps, 'visible'>) {
   const { width: windowWidth } = useWindowDimensions();
 
   const [viewYear, setViewYear] = useState<number>(() =>
@@ -131,7 +131,7 @@ function DateRangePickerContent({
   };
 
   const applyPreset = (
-    preset: "THIS_MONTH" | "FIRST_15" | "LAST_15" | "LAST_7" | "LAST_30",
+    preset: 'THIS_MONTH' | 'FIRST_15' | 'LAST_15' | 'LAST_7' | 'LAST_30',
   ) => {
     const now = new Date();
     const year = now.getFullYear();
@@ -142,23 +142,23 @@ function DateRangePickerContent({
     let end: Date;
 
     switch (preset) {
-      case "THIS_MONTH":
+      case 'THIS_MONTH':
         start = new Date(year, month, 1);
         end = new Date(year, month, lastDay);
         break;
-      case "FIRST_15":
+      case 'FIRST_15':
         start = new Date(year, month, 1);
         end = new Date(year, month, 15);
         break;
-      case "LAST_15":
+      case 'LAST_15':
         start = new Date(year, month, 16);
         end = new Date(year, month, lastDay);
         break;
-      case "LAST_7":
+      case 'LAST_7':
         start = new Date(year, month, now.getDate() - 6);
         end = new Date(year, month, now.getDate());
         break;
-      case "LAST_30":
+      case 'LAST_30':
         start = new Date(year, month, now.getDate() - 29);
         end = new Date(year, month, now.getDate());
         break;
@@ -195,7 +195,7 @@ function DateRangePickerContent({
 
   const handleApply = () => {
     if (!selectedStart) {
-      Alert.alert("Selection Required", "Please select a date range.");
+      Alert.alert('Selection Required', 'Please select a date range.');
       return;
     }
 
@@ -243,25 +243,25 @@ function DateRangePickerContent({
         <View style={styles.presetRow}>
           <PresetChip
             label="This Month"
-            onPress={() => applyPreset("THIS_MONTH")}
+            onPress={() => applyPreset('THIS_MONTH')}
           />
           <PresetChip
             label="1st – 15th"
-            onPress={() => applyPreset("FIRST_15")}
+            onPress={() => applyPreset('FIRST_15')}
           />
           <PresetChip
             label="16th – End"
-            onPress={() => applyPreset("LAST_15")}
+            onPress={() => applyPreset('LAST_15')}
           />
         </View>
         <View style={styles.presetRow}>
           <PresetChip
             label="Last 7 Days"
-            onPress={() => applyPreset("LAST_7")}
+            onPress={() => applyPreset('LAST_7')}
           />
           <PresetChip
             label="Last 30 Days"
-            onPress={() => applyPreset("LAST_30")}
+            onPress={() => applyPreset('LAST_30')}
           />
         </View>
       </View>
@@ -355,12 +355,12 @@ function DateRangePickerContent({
                           styles.rangeBand,
                           { height: cellSize },
                           isBandStart && {
-                            left: "50%",
+                            left: '50%',
                             borderTopLeftRadius: cellSize / 2,
                             borderBottomLeftRadius: cellSize / 2,
                           },
                           isBandEnd && {
-                            right: "50%",
+                            right: '50%',
                             borderTopRightRadius: cellSize / 2,
                             borderBottomRightRadius: cellSize / 2,
                           },
@@ -425,7 +425,7 @@ function DateRangePickerContent({
 
         <View style={styles.daysPill}>
           <Text style={styles.daysPillText}>
-            {rangeDaysCount} {rangeDaysCount === 1 ? "day" : "days"}
+            {rangeDaysCount} {rangeDaysCount === 1 ? 'day' : 'days'}
           </Text>
         </View>
       </View>
@@ -478,12 +478,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing.base,
   },
   presetRow: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: spacing.sm,
   },
   presetChip: {
     flex: 1,
-    alignItems: "center",
+    alignItems: 'center',
     paddingVertical: spacing.sm + 2,
     borderRadius: radius.full,
     backgroundColor: colors.surfaceSecondary,
@@ -496,11 +496,11 @@ const styles = StyleSheet.create({
   },
   presetText: {
     ...typography.footnote,
-    fontWeight: "600",
+    fontWeight: '600',
     color: colors.textSecondary,
   },
   calendarCard: {
-    alignItems: "center",
+    alignItems: 'center',
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
@@ -509,10 +509,10 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    alignSelf: "stretch",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    alignSelf: 'stretch',
     marginBottom: spacing.md,
   },
   monthTitle: {
@@ -520,48 +520,48 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   navGroup: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.xs + 2,
   },
   navButton: {
     width: 32,
     height: 32,
     borderRadius: radius.full,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: colors.surfaceSecondary,
   },
   navButtonPressed: {
     backgroundColor: colors.border,
   },
   weekdaysRow: {
-    flexDirection: "row",
+    flexDirection: 'row',
     marginBottom: spacing.xs,
   },
   weekdayLabel: {
     ...typography.caption,
-    fontWeight: "600",
+    fontWeight: '600',
     color: colors.textMuted,
-    textAlign: "center",
+    textAlign: 'center',
   },
   weekRow: {
-    flexDirection: "row",
+    flexDirection: 'row',
   },
   dayCell: {
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   rangeBand: {
-    position: "absolute",
+    position: 'absolute',
     left: 0,
     right: 0,
     top: 0,
     backgroundColor: colors.primaryLight,
   },
   dayButton: {
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   dayButtonSelected: {
     backgroundColor: colors.primary,
@@ -570,7 +570,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primaryMuted,
   },
   todayDot: {
-    position: "absolute",
+    position: 'absolute',
     bottom: 3,
     width: 4,
     height: 4,
@@ -580,7 +580,7 @@ const styles = StyleSheet.create({
   dayText: {
     fontSize: 15,
     lineHeight: 19,
-    fontWeight: "500",
+    fontWeight: '500',
     color: colors.text,
     ...typography.tabular,
   },
@@ -590,16 +590,16 @@ const styles = StyleSheet.create({
   },
   dayTextInRange: {
     color: colors.primaryDark,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   dayTextSelected: {
     color: colors.surface,
-    fontWeight: "700",
+    fontWeight: '700',
     opacity: 1,
   },
   summaryCard: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: colors.surface,
     padding: spacing.md,
     borderRadius: radius.lg,
@@ -612,8 +612,8 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: radius.md,
     backgroundColor: colors.primaryLight,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     marginRight: spacing.md,
   },
   summaryTextCol: {
@@ -622,7 +622,7 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     ...typography.caption,
-    fontWeight: "600",
+    fontWeight: '600',
     color: colors.textMuted,
     letterSpacing: 0.6,
   },
@@ -640,11 +640,11 @@ const styles = StyleSheet.create({
   },
   daysPillText: {
     ...typography.caption,
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.primaryDark,
   },
   buttonRow: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: spacing.md,
   },
   button: {

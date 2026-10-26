@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState } from 'react';
 import {
   Dimensions,
   NativeScrollEvent,
@@ -8,57 +8,57 @@ import {
   StyleSheet,
   Text,
   View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import { colors, radius, shadows, spacing, typography } from "@/theme";
-import { IconBadge } from "@/components/ui";
-import { Button } from "@/components/ui";
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, radius, shadows, spacing, typography } from '@/theme';
+import { IconBadge } from '@/components/ui';
+import { Button } from '@/components/ui';
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface OnboardingSlide {
   id: string;
   badge: string;
   title: string;
   subtitle: string;
-  illustration: "wallets" | "transactions" | "analytics";
+  illustration: 'wallets' | 'transactions' | 'analytics';
 }
 
 const SLIDES: OnboardingSlide[] = [
   {
-    id: "1",
-    badge: "WALLET MANAGEMENT",
-    title: "All Your Wallets\nIn One Secure Place",
+    id: '1',
+    badge: 'WALLET MANAGEMENT',
+    title: 'All Your Wallets\nIn One Secure Place',
     subtitle:
-      "Track cash, bank accounts, and credit cards in real-time with automatic balance calculations.",
-    illustration: "wallets",
+      'Track cash, bank accounts, and credit cards in real-time with automatic balance calculations.',
+    illustration: 'wallets',
   },
   {
-    id: "2",
-    badge: "EXPENSE TRACKING",
-    title: "Log Spending\nIn Just a Few Seconds",
+    id: '2',
+    badge: 'EXPENSE TRACKING',
+    title: 'Log Spending\nIn Just a Few Seconds',
     subtitle:
-      "Categorize daily expenses effortlessly with smart presets, custom notes, and quick amount shortcuts.",
-    illustration: "transactions",
+      'Categorize daily expenses effortlessly with smart presets, custom notes, and quick amount shortcuts.',
+    illustration: 'transactions',
   },
   {
-    id: "3",
-    badge: "SMART INSIGHTS",
-    title: "Visualize Your Wealth\nAnd Boost Your Savings",
+    id: '3',
+    badge: 'SMART INSIGHTS',
+    title: 'Visualize Your Wealth\nAnd Boost Your Savings',
     subtitle:
-      "Gain total financial clarity with automated cashflow analytics, category breakdowns, and savings progress.",
-    illustration: "analytics",
+      'Gain total financial clarity with automated cashflow analytics, category breakdowns, and savings progress.',
+    illustration: 'analytics',
   },
 ];
 
 function SlideIllustration({
   type,
 }: {
-  type: OnboardingSlide["illustration"];
+  type: OnboardingSlide['illustration'];
 }) {
-  if (type === "wallets") {
+  if (type === 'wallets') {
     return (
       <View style={styles.illustrationWrapper}>
         {/* Visual Card 1: Bank */}
@@ -84,7 +84,7 @@ function SlideIllustration({
     );
   }
 
-  if (type === "transactions") {
+  if (type === 'transactions') {
     return (
       <View style={styles.illustrationWrapper}>
         <View style={styles.mockTxContainer}>
@@ -167,7 +167,7 @@ function SlideIllustration({
             <View
               style={[
                 styles.mockBarFill,
-                { width: "35%", backgroundColor: "#EA580C" },
+                { width: '35%', backgroundColor: '#EA580C' },
               ]}
             />
           </View>
@@ -183,7 +183,7 @@ function SlideIllustration({
             <View
               style={[
                 styles.mockBarFill,
-                { width: "22%", backgroundColor: "#DB2777" },
+                { width: '22%', backgroundColor: '#DB2777' },
               ]}
             />
           </View>
@@ -213,12 +213,12 @@ export default function OnboardingScreen() {
         animated: true,
       });
     } else {
-      router.replace("/register");
+      router.replace('/register');
     }
   };
 
   const handleSkip = () => {
-    router.replace("/login");
+    router.replace('/login');
   };
 
   return (
@@ -288,7 +288,7 @@ export default function OnboardingScreen() {
             <View style={styles.finalActionGroup}>
               <Button
                 title="Get Started"
-                onPress={() => router.replace("/register")}
+                onPress={() => router.replace('/register')}
                 size="lg"
                 rightIcon={
                   <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
@@ -296,12 +296,12 @@ export default function OnboardingScreen() {
               />
 
               <Pressable
-                onPress={() => router.replace("/login")}
+                onPress={() => router.replace('/login')}
                 style={styles.loginLink}
                 hitSlop={8}
               >
                 <Text style={styles.loginLinkText}>
-                  Already have an account?{" "}
+                  Already have an account?{' '}
                   <Text style={styles.loginLinkHighlight}>Sign in</Text>
                 </Text>
               </Pressable>
@@ -328,30 +328,30 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: spacing.xl,
     paddingTop: spacing.sm,
     paddingBottom: spacing.sm,
   },
   brandRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   brandBadge: {
     width: 32,
     height: 32,
     borderRadius: radius.md,
     backgroundColor: colors.primary,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     marginRight: spacing.xs + 2,
     ...shadows.sm,
   },
   brandText: {
     fontSize: 18,
-    fontWeight: "800",
+    fontWeight: '800',
     letterSpacing: 1.5,
     color: colors.text,
   },
@@ -361,69 +361,69 @@ const styles = StyleSheet.create({
   },
   skipText: {
     ...typography.subhead,
-    fontWeight: "600",
+    fontWeight: '600',
     color: colors.textSecondary,
   },
   sliderContent: {
-    alignItems: "center",
+    alignItems: 'center',
   },
   slide: {
     width: SCREEN_WIDTH,
     paddingHorizontal: spacing.xl,
-    justifyContent: "center",
+    justifyContent: 'center',
   },
   illustrationContainer: {
     height: 250,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: spacing.base,
   },
   illustrationWrapper: {
-    width: "100%",
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
   },
   mockCard: {
-    width: "88%",
+    width: '88%',
     borderRadius: radius.xl,
     padding: spacing.base,
     ...shadows.md,
   },
   mockBankCard: {
-    backgroundColor: "#1E3A8A",
-    transform: [{ rotate: "-4deg" }, { translateY: -12 }],
+    backgroundColor: '#1E3A8A',
+    transform: [{ rotate: '-4deg' }, { translateY: -12 }],
   },
   mockCashCard: {
-    backgroundColor: "#065F46",
+    backgroundColor: '#065F46',
     marginTop: -40,
-    transform: [{ rotate: "2deg" }],
+    transform: [{ rotate: '2deg' }],
   },
   mockCardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   mockCardType: {
     ...typography.caption,
-    fontWeight: "700",
-    color: "rgba(255, 255, 255, 0.7)",
+    fontWeight: '700',
+    color: 'rgba(255, 255, 255, 0.7)',
   },
   mockCardName: {
     ...typography.subhead,
-    color: "#FFFFFF",
-    fontWeight: "600",
+    color: '#FFFFFF',
+    fontWeight: '600',
     marginTop: spacing.md,
   },
   mockCardBalance: {
     fontSize: 20,
-    fontWeight: "800",
-    color: "#FFFFFF",
+    fontWeight: '800',
+    color: '#FFFFFF',
     marginTop: 2,
     ...typography.tabular,
   },
   mockTxContainer: {
-    width: "100%",
+    width: '100%',
     backgroundColor: colors.surface,
     borderRadius: radius.xl,
     padding: spacing.md,
@@ -433,15 +433,15 @@ const styles = StyleSheet.create({
     ...shadows.sm,
   },
   mockTxRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: colors.surfaceSecondary,
     padding: spacing.sm + 2,
     borderRadius: radius.lg,
   },
   mockTxTitle: {
     ...typography.footnote,
-    fontWeight: "600",
+    fontWeight: '600',
     color: colors.text,
   },
   mockTxSub: {
@@ -451,75 +451,75 @@ const styles = StyleSheet.create({
   },
   mockTxAmount: {
     ...typography.footnote,
-    fontWeight: "700",
+    fontWeight: '700',
     ...typography.tabular,
   },
   mockAnalyticsCard: {
-    width: "100%",
+    width: '100%',
     backgroundColor: colors.surfaceDark,
     borderRadius: radius.xl,
     padding: spacing.lg,
     ...shadows.md,
   },
   mockAnalyticsHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: spacing.base,
   },
   mockAnalyticsLabel: {
     ...typography.caption,
-    color: "rgba(255, 255, 255, 0.6)",
-    fontWeight: "700",
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontWeight: '700',
     letterSpacing: 0.8,
   },
   mockAnalyticsValue: {
     fontSize: 22,
-    fontWeight: "800",
-    color: "#6EE7B7",
+    fontWeight: '800',
+    color: '#6EE7B7',
     marginTop: 2,
     ...typography.tabular,
   },
   mockSavingsBadge: {
-    backgroundColor: "rgba(16, 185, 129, 0.2)",
+    backgroundColor: 'rgba(16, 185, 129, 0.2)',
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     borderRadius: radius.full,
   },
   mockSavingsText: {
     ...typography.caption,
-    color: "#34D399",
-    fontWeight: "700",
+    color: '#34D399',
+    fontWeight: '700',
   },
   mockBarItem: {
     marginTop: spacing.xs,
   },
   mockBarLabelRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 4,
   },
   mockBarLabel: {
     ...typography.caption,
-    color: "rgba(255, 255, 255, 0.7)",
+    color: 'rgba(255, 255, 255, 0.7)',
   },
   mockBarVal: {
     ...typography.caption,
-    fontWeight: "700",
-    color: "#FFFFFF",
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
   mockBarBg: {
     height: 6,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: radius.full,
-    overflow: "hidden",
+    overflow: 'hidden',
   },
   mockBarFill: {
-    height: "100%",
+    height: '100%',
     borderRadius: radius.full,
   },
   textContainer: {
-    alignItems: "center",
+    alignItems: 'center',
     paddingHorizontal: spacing.sm,
   },
   badgeContainer: {
@@ -531,7 +531,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     ...typography.caption,
-    fontWeight: "700",
+    fontWeight: '700',
     letterSpacing: 1,
     color: colors.primary,
   },
@@ -540,13 +540,13 @@ const styles = StyleSheet.create({
     fontSize: 26,
     lineHeight: 32,
     color: colors.text,
-    textAlign: "center",
+    textAlign: 'center',
     marginBottom: spacing.xs,
   },
   subtitle: {
     ...typography.body,
     color: colors.textSecondary,
-    textAlign: "center",
+    textAlign: 'center',
     lineHeight: 22,
     maxWidth: 320,
   },
@@ -556,9 +556,9 @@ const styles = StyleSheet.create({
     paddingTop: spacing.sm,
   },
   paginationRow: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
     gap: spacing.xs + 2,
     marginBottom: spacing.lg,
   },
@@ -573,11 +573,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
   },
   actionRow: {
-    width: "100%",
+    width: '100%',
   },
   finalActionGroup: {
-    width: "100%",
-    alignItems: "center",
+    width: '100%',
+    alignItems: 'center',
   },
   loginLink: {
     marginTop: spacing.md,
@@ -589,6 +589,6 @@ const styles = StyleSheet.create({
   },
   loginLinkHighlight: {
     color: colors.primary,
-    fontWeight: "700",
+    fontWeight: '700',
   },
 });

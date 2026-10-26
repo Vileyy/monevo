@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   Pressable,
   StyleSheet,
@@ -6,9 +6,9 @@ import {
   Text,
   View,
   ViewStyle,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { colors, radius, spacing, typography } from "@/theme";
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, radius, spacing, typography } from '@/theme';
 
 export interface SettingsRowProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -62,7 +62,7 @@ export function SettingsRow({
         <Text
           style={[
             styles.title,
-            destructive && { color: colors.danger, fontWeight: "600" },
+            destructive && { color: colors.danger, fontWeight: '600' },
           ]}
           numberOfLines={1}
         >
@@ -118,8 +118,8 @@ export function SettingsRow({
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: spacing.md + 2,
     paddingHorizontal: spacing.lg,
   },
@@ -130,18 +130,18 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: radius.md,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: spacing.md,
   },
   textContainer: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: 'center',
     marginRight: spacing.sm,
   },
   title: {
     ...typography.body,
-    fontWeight: "600",
+    fontWeight: '600',
     color: colors.text,
   },
   subtitle: {
@@ -150,18 +150,18 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   rightContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.xs + 2,
   },
   valueText: {
     ...typography.footnote,
-    fontWeight: "600",
+    fontWeight: '600',
     color: colors.textSecondary,
     backgroundColor: colors.surfaceSecondary,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     borderRadius: radius.full,
-    overflow: "hidden",
+    overflow: 'hidden',
   },
 });

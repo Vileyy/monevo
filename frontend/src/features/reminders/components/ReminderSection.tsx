@@ -1,10 +1,10 @@
-import React, { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { colors, radius, shadows, spacing, typography } from "@/theme";
-import { ReminderItem } from "@/store/reminder.store";
-import { ReminderCard } from "./ReminderCard";
-import { ReminderModal } from "./ReminderModal";
+import React, { useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, radius, shadows, spacing, typography } from '@/theme';
+import { ReminderItem } from '@/store/reminder.store';
+import { ReminderCard } from './ReminderCard';
+import { ReminderModal } from './ReminderModal';
 
 export interface ReminderSectionProps {
   reminders: ReminderItem[];
@@ -79,9 +79,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.base,
   },
   sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: spacing.md,
   },
   sectionTitle: {
@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
   },
   sectionLink: {
     ...typography.subhead,
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.primary,
   },
   emptyCard: {
@@ -98,8 +98,8 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.base,
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: colors.border,
     marginBottom: spacing.sm,
@@ -113,8 +113,8 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: radius.full,
     backgroundColor: colors.primaryLight,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   emptyTextCol: {
     flex: 1,
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
   emptyTitle: {
     ...typography.subhead,
     color: colors.text,
-    fontWeight: "700",
+    fontWeight: '700',
   },
   emptyDescription: {
     ...typography.caption,

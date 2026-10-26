@@ -1,12 +1,12 @@
-import { create } from "zustand";
-import { apiClient } from "@/services/api/client";
-import { useAuthStore } from "@/store/auth.store";
-import { CreateCategoryBody, UpdateCategoryBody } from "@/types/api";
+import { create } from 'zustand';
+import { apiClient } from '@/services/api/client';
+import { useAuthStore } from '@/store/auth.store';
+import { CreateCategoryBody, UpdateCategoryBody } from '@/types/api';
 
 export type Category = {
   id: string;
   name: string;
-  type: "INCOME" | "EXPENSE" | string;
+  type: 'INCOME' | 'EXPENSE' | string;
   icon: string | null;
   createdAt: string;
   updatedAt: string;
@@ -19,7 +19,7 @@ type CategoryState = {
   fetchCategories: () => Promise<void>;
   createCategory: (
     name: string,
-    type: "INCOME" | "EXPENSE",
+    type: 'INCOME' | 'EXPENSE',
     icon?: string,
   ) => Promise<Category>;
   updateCategory: (id: string, data: UpdateCategoryBody) => Promise<Category>;
@@ -36,10 +36,10 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
 
     set({ isLoading: true });
     try {
-      const response = await apiClient.get<Category[]>("/categories");
+      const response = await apiClient.get<Category[]>('/categories');
       set({ categories: response.data, hasFetched: true });
     } catch (error) {
-      console.error("Failed to fetch categories:", error);
+      console.error('Failed to fetch categories:', error);
       set({ hasFetched: true });
     } finally {
       set({ isLoading: false });
@@ -52,7 +52,7 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
       type,
       icon: icon || undefined,
     };
-    const response = await apiClient.post<Category>("/categories", payload);
+    const response = await apiClient.post<Category>('/categories', payload);
     set({ categories: [...get().categories, response.data] });
     return response.data;
   },

@@ -1,11 +1,11 @@
-import axios from "axios";
-import { useAuthStore } from "@/store/auth.store";
+import axios from 'axios';
+import { useAuthStore } from '@/store/auth.store';
 
 export const apiClient = axios.create({
   baseURL: process.env.EXPO_PUBLIC_API_URL,
   timeout: 10000,
   headers: {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
   },
 });
 

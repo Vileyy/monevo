@@ -7,12 +7,9 @@
     "lint": "pnpm --filter backend lint:check && pnpm --filter frontend lint",
     "test": "pnpm --filter backend test && pnpm --filter frontend test",
     "typecheck": "pnpm --filter backend exec tsc --noEmit -p tsconfig.build.json && pnpm --filter frontend typecheck",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "build": "pnpm --filter backend build"
-  },
-  "lint-staged": {
-    "*.{ts,tsx,js,jsx}": [
-      "prettier --write"
-    ]
   },
   "dependencies": {
     "@prisma/client": "^7.9.1",
@@ -22,6 +19,8 @@
   "devDependencies": {
     "@babel/core": "^7.29.7",
     "@babel/traverse": "^7.29.7",
+    "@commitlint/cli": "^21.2.4",
+    "@commitlint/config-conventional": "^21.2.4",
     "eslint": "^9.39.5",
     "husky": "^9.1.7",
     "lint-staged": "^17.3.0",

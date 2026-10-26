@@ -1,10 +1,10 @@
-import { Platform, ViewStyle } from "react-native";
+import { Platform, ViewStyle } from 'react-native';
 
 export const shadows = {
   none: {} as ViewStyle,
   sm: Platform.select({
     ios: {
-      shadowColor: "#0F172A",
+      shadowColor: '#0F172A',
       shadowOffset: { width: 0, height: 1 },
       shadowOpacity: 0.05,
       shadowRadius: 2,
@@ -13,7 +13,7 @@ export const shadows = {
       elevation: 1,
     },
     default: {
-      shadowColor: "#0F172A",
+      shadowColor: '#0F172A',
       shadowOffset: { width: 0, height: 1 },
       shadowOpacity: 0.05,
       shadowRadius: 2,
@@ -21,7 +21,7 @@ export const shadows = {
   }) as ViewStyle,
   md: Platform.select({
     ios: {
-      shadowColor: "#0F172A",
+      shadowColor: '#0F172A',
       shadowOffset: { width: 0, height: 3 },
       shadowOpacity: 0.08,
       shadowRadius: 6,
@@ -30,7 +30,7 @@ export const shadows = {
       elevation: 3,
     },
     default: {
-      shadowColor: "#0F172A",
+      shadowColor: '#0F172A',
       shadowOffset: { width: 0, height: 3 },
       shadowOpacity: 0.08,
       shadowRadius: 6,
@@ -38,7 +38,7 @@ export const shadows = {
   }) as ViewStyle,
   lg: Platform.select({
     ios: {
-      shadowColor: "#0F172A",
+      shadowColor: '#0F172A',
       shadowOffset: { width: 0, height: 8 },
       shadowOpacity: 0.12,
       shadowRadius: 16,
@@ -47,7 +47,7 @@ export const shadows = {
       elevation: 6,
     },
     default: {
-      shadowColor: "#0F172A",
+      shadowColor: '#0F172A',
       shadowOffset: { width: 0, height: 8 },
       shadowOpacity: 0.12,
       shadowRadius: 16,

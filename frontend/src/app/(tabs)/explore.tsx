@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Pressable,
   RefreshControl,
@@ -6,32 +6,32 @@ import {
   StyleSheet,
   Text,
   View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useTabBarSpace } from "@/components/FloatingTabBar";
-import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import { useTransactionStore } from "@/store/transaction.store";
-import { BudgetItem, useBudgetStore } from "@/store/budget.store";
-import { useSettingsStore } from "@/store/settings.store";
-import { colors, radius, shadows, spacing, typography } from "@/theme";
-import { formatCurrency } from "@/lib/format";
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTabBarSpace } from '@/components/FloatingTabBar';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useTransactionStore } from '@/store/transaction.store';
+import { BudgetItem, useBudgetStore } from '@/store/budget.store';
+import { useSettingsStore } from '@/store/settings.store';
+import { colors, radius, shadows, spacing, typography } from '@/theme';
+import { formatCurrency } from '@/lib/format';
 import {
   CategoryIcon,
   EmptyState,
   Header,
   SegmentedControl,
   StatCard,
-} from "@/components/ui";
-import { BudgetSummaryHero } from "@/features/budgets/components/BudgetSummaryHero";
-import { BudgetCard } from "@/features/budgets/components/BudgetCard";
-import { BudgetModal } from "@/features/budgets/components/BudgetModal";
-import { CategoryPieChart } from "@/features/insights/components/CategoryPieChart";
+} from '@/components/ui';
+import { BudgetSummaryHero } from '@/features/budgets/components/BudgetSummaryHero';
+import { BudgetCard } from '@/features/budgets/components/BudgetCard';
+import { BudgetModal } from '@/features/budgets/components/BudgetModal';
+import { CategoryPieChart } from '@/features/insights/components/CategoryPieChart';
 import {
   DateRange,
   DateRangePickerModal,
-} from "@/features/insights/components/DateRangePickerModal";
-import { useDisplayCurrency } from "@/hooks/use-display-currency";
+} from '@/features/insights/components/DateRangePickerModal';
+import { useDisplayCurrency } from '@/hooks/use-display-currency';
 
 export default function ExploreScreen() {
   const router = useRouter();
@@ -49,8 +49,8 @@ export default function ExploreScreen() {
     setSelectedDate,
   } = useBudgetStore();
 
-  const [activeTab, setActiveTab] = useState<"ANALYTICS" | "BUDGETS">(
-    "ANALYTICS",
+  const [activeTab, setActiveTab] = useState<'ANALYTICS' | 'BUDGETS'>(
+    'ANALYTICS',
   );
   const [refreshing, setRefreshing] = useState(false);
   const [customRange, setCustomRange] = useState<DateRange>(() => {
@@ -136,9 +136,9 @@ export default function ExploreScreen() {
     > = {};
 
     for (const tx of filteredTransactions) {
-      const catName = tx.category?.name || "Other";
+      const catName = tx.category?.name || 'Other';
       const catIcon = tx.category?.icon ?? null;
-      if (tx.type === "INCOME") {
+      if (tx.type === 'INCOME') {
         totalIncome += tx.amount;
         incomeCategoryMap[catName] = incomeCategoryMap[catName] || {
           name: catName,
@@ -191,7 +191,7 @@ export default function ExploreScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <Header
         title="Insights & Budgets"
         subtitle="Cashflow analytics and spending limits"
@@ -216,15 +216,15 @@ export default function ExploreScreen() {
         <View style={styles.segmentContainer}>
           <SegmentedControl
             options={[
-              { value: "ANALYTICS", label: "Analytics" },
-              { value: "BUDGETS", label: "Budgets" },
+              { value: 'ANALYTICS', label: 'Analytics' },
+              { value: 'BUDGETS', label: 'Budgets' },
             ]}
             value={activeTab}
             onChange={setActiveTab}
           />
         </View>
 
-        {activeTab === "BUDGETS" ? (
+        {activeTab === 'BUDGETS' ? (
           /* ================= BUDGETS TAB ================= */
           <View>
             <BudgetSummaryHero
@@ -288,7 +288,7 @@ export default function ExploreScreen() {
                 style={{ marginRight: 8 }}
               />
               <Text style={styles.dateRangeText}>
-                {formatDateShort(customRange.startDate)} –{" "}
+                {formatDateShort(customRange.startDate)} –{' '}
                 {formatDateShort(customRange.endDate)}
               </Text>
               <Ionicons
@@ -326,7 +326,7 @@ export default function ExploreScreen() {
                 title="No Expense Records"
                 description="Add your daily expenses to see a categorized breakdown of where your money goes."
                 actionTitle="Add Expense"
-                onAction={() => router.push("/add-transaction")}
+                onAction={() => router.push('/add-transaction')}
               />
             )}
 
@@ -352,13 +352,13 @@ export default function ExploreScreen() {
                           <View style={{ marginLeft: spacing.sm }}>
                             <Text style={styles.catName}>{item.name}</Text>
                             <Text style={styles.catTxCount}>
-                              {item.count}{" "}
-                              {item.count === 1 ? "record" : "records"}
+                              {item.count}{' '}
+                              {item.count === 1 ? 'record' : 'records'}
                             </Text>
                           </View>
                         </View>
 
-                        <View style={{ alignItems: "flex-end" }}>
+                        <View style={{ alignItems: 'flex-end' }}>
                           <Text
                             style={[styles.catAmount, { color: colors.income }]}
                           >
@@ -412,15 +412,15 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   dateRangeBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: colors.surface,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.base,
     borderRadius: radius.xl,
-    alignSelf: "center",
-    width: "100%",
+    alignSelf: 'center',
+    width: '100%',
     marginBottom: spacing.md,
     borderWidth: 1,
     borderColor: colors.border,
@@ -432,11 +432,11 @@ const styles = StyleSheet.create({
   },
   dateRangeText: {
     ...typography.subhead,
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.text,
   },
   statsRow: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: spacing.md,
     marginBottom: spacing.md,
   },
@@ -458,13 +458,13 @@ const styles = StyleSheet.create({
     ...shadows.sm,
   },
   breakdownHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   catInfoRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   catName: {
     ...typography.headline,
@@ -477,7 +477,7 @@ const styles = StyleSheet.create({
   },
   catAmount: {
     ...typography.headline,
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.text,
     ...typography.tabular,
   },

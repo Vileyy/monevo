@@ -1,13 +1,13 @@
-import React, { memo } from "react";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { colors, radius, shadows, spacing, typography } from "@/theme";
-import { ReminderItem, useReminderStore } from "@/store/reminder.store";
-import { formatCurrency } from "@/lib/format";
-import { getReminderCategoryMeta } from "@/lib/reminders";
-import { Button, IconBadge } from "@/components/ui";
-import { hapticFeedback } from "@/lib/haptics";
-import { useDisplayCurrency } from "@/hooks/use-display-currency";
+import React, { memo } from 'react';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, radius, shadows, spacing, typography } from '@/theme';
+import { ReminderItem, useReminderStore } from '@/store/reminder.store';
+import { formatCurrency } from '@/lib/format';
+import { getReminderCategoryMeta } from '@/lib/reminders';
+import { Button, IconBadge } from '@/components/ui';
+import { hapticFeedback } from '@/lib/haptics';
+import { useDisplayCurrency } from '@/hooks/use-display-currency';
 
 export interface ReminderCardProps {
   reminder: ReminderItem;
@@ -25,12 +25,12 @@ export const ReminderCard = memo(function ReminderCard({
   const handlePayPress = () => {
     hapticFeedback.light();
     Alert.alert(
-      "Confirm Payment",
+      'Confirm Payment',
       `Record payment of ${formatCurrency(reminder.amount)} for "${reminder.title}"?\n\nThis will deduct from your account balance and save to transaction history.`,
       [
-        { text: "Cancel", style: "cancel" },
+        { text: 'Cancel', style: 'cancel' },
         {
-          text: "Mark as Paid ✔",
+          text: 'Mark as Paid ✔',
           onPress: async () => {
             try {
               hapticFeedback.success();
@@ -39,8 +39,8 @@ export const ReminderCard = memo(function ReminderCard({
             } catch {
               hapticFeedback.error();
               Alert.alert(
-                "Error",
-                "Could not record payment. Please try again.",
+                'Error',
+                'Could not record payment. Please try again.',
               );
             }
           },
@@ -52,13 +52,13 @@ export const ReminderCard = memo(function ReminderCard({
   const handleDeletePress = () => {
     hapticFeedback.light();
     Alert.alert(
-      "Delete Reminder",
+      'Delete Reminder',
       `Are you sure you want to delete "${reminder.title}"?`,
       [
-        { text: "Cancel", style: "cancel" },
+        { text: 'Cancel', style: 'cancel' },
         {
-          text: "Delete",
-          style: "destructive",
+          text: 'Delete',
+          style: 'destructive',
           onPress: () => {
             hapticFeedback.warning();
             void deleteReminder(reminder.id);
@@ -72,41 +72,41 @@ export const ReminderCard = memo(function ReminderCard({
   const getDueStatusText = () => {
     if (reminder.isPaidThisMonth) {
       return {
-        label: "Paid this month",
+        label: 'Paid this month',
         color: colors.success,
         bg: colors.incomeBg,
-        icon: "checkmark-circle" as const,
+        icon: 'checkmark-circle' as const,
       };
     }
-    if (reminder.status === "DUE_TODAY") {
+    if (reminder.status === 'DUE_TODAY') {
       return {
-        label: "Due today!",
+        label: 'Due today!',
         color: colors.danger,
         bg: colors.expenseBg,
-        icon: "alert-circle" as const,
+        icon: 'alert-circle' as const,
       };
     }
-    if (reminder.status === "OVERDUE") {
+    if (reminder.status === 'OVERDUE') {
       return {
         label: `Overdue since day ${reminder.dueDate}`,
         color: colors.danger,
         bg: colors.expenseBg,
-        icon: "warning" as const,
+        icon: 'warning' as const,
       };
     }
-    if (reminder.status === "DUE_SOON") {
+    if (reminder.status === 'DUE_SOON') {
       return {
         label: `Due day ${reminder.dueDate} (${reminder.daysUntilDue} days left)`,
         color: colors.warning,
         bg: colors.warningBg,
-        icon: "time" as const,
+        icon: 'time' as const,
       };
     }
     return {
       label: `Due day ${reminder.dueDate} monthly`,
       color: colors.textSecondary,
       bg: colors.surfaceSecondary,
-      icon: "calendar-outline" as const,
+      icon: 'calendar-outline' as const,
     };
   };
 
@@ -185,13 +185,13 @@ const styles = StyleSheet.create({
     ...shadows.sm,
   },
   headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   titleGroup: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     flex: 1,
   },
   iconBox: {
@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.headline,
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.text,
   },
   categoryLabel: {
@@ -212,13 +212,13 @@ const styles = StyleSheet.create({
   },
   deleteBtn: {
     padding: spacing.xs,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   amountRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginTop: spacing.md,
     paddingTop: spacing.sm,
     borderTopWidth: 1,
@@ -227,20 +227,20 @@ const styles = StyleSheet.create({
   amount: {
     fontSize: 22,
     lineHeight: 28,
-    fontWeight: "800",
+    fontWeight: '800',
     color: colors.text,
     ...typography.tabular,
   },
   statusBadge: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: spacing.sm + 2,
     paddingVertical: spacing.xs + 1,
     borderRadius: radius.full,
   },
   statusBadgeText: {
     ...typography.caption,
-    fontWeight: "700",
+    fontWeight: '700',
   },
   actionRow: {
     marginTop: spacing.md,

@@ -1,1 +1,1 @@
-export { authStyles as styles } from "./auth.styles";
+export { authStyles as styles } from './auth.styles';

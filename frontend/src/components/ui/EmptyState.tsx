@@ -1,9 +1,9 @@
-import React from "react";
-import { StyleSheet, Text, View, ViewStyle } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { colors, radius, spacing, typography } from "@/theme";
-import { Button } from "./Button";
-import { IconName } from "@/lib/categories";
+import React from 'react';
+import { StyleSheet, Text, View, ViewStyle } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, radius, spacing, typography } from '@/theme';
+import { Button } from './Button';
+import { IconName } from '@/lib/categories';
 
 export interface EmptyStateProps {
   icon?: IconName;
@@ -15,7 +15,7 @@ export interface EmptyStateProps {
 }
 
 export function EmptyState({
-  icon = "wallet-outline",
+  icon = 'wallet-outline',
   title,
   description,
   actionTitle,
@@ -48,8 +48,8 @@ export function EmptyState({
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingVertical: spacing.xxl,
     paddingHorizontal: spacing.xl,
     backgroundColor: colors.surface,
@@ -62,20 +62,20 @@ const styles = StyleSheet.create({
     height: 72,
     borderRadius: radius.full,
     backgroundColor: colors.primaryMuted,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: spacing.base,
   },
   title: {
     ...typography.title3,
     color: colors.text,
-    textAlign: "center",
+    textAlign: 'center',
     marginBottom: spacing.xs,
   },
   description: {
     ...typography.subhead,
     color: colors.textSecondary,
-    textAlign: "center",
+    textAlign: 'center',
     lineHeight: 20,
     maxWidth: 280,
   },

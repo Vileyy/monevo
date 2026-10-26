@@ -1,6 +1,6 @@
-import React from "react";
-import { Pressable, StyleSheet, Text, View, ViewStyle } from "react-native";
-import { colors, radius, spacing, typography } from "@/theme";
+import React from 'react';
+import { Pressable, StyleSheet, Text, View, ViewStyle } from 'react-native';
+import { colors, radius, spacing, typography } from '@/theme';
 
 export interface SegmentOption<T extends string> {
   value: T;
@@ -64,7 +64,7 @@ export function SegmentedControl<T extends string>({
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: "row",
+    flexDirection: 'row',
     backgroundColor: colors.surfaceSecondary,
     padding: spacing.xxs + 2,
     borderRadius: radius.md,
@@ -73,15 +73,15 @@ const styles = StyleSheet.create({
   },
   segment: {
     flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingVertical: spacing.sm + 2,
     borderRadius: radius.sm + 2,
   },
   segmentActive: {
     backgroundColor: colors.surface,
-    shadowColor: "#0F172A",
+    shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.08,
     shadowRadius: 3,
@@ -92,11 +92,11 @@ const styles = StyleSheet.create({
   },
   segmentText: {
     ...typography.subhead,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   segmentTextActive: {
     color: colors.text,
-    fontWeight: "700",
+    fontWeight: '700',
   },
   segmentTextInactive: {
     color: colors.textSecondary,

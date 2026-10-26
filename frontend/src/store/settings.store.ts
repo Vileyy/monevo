@@ -1,10 +1,10 @@
-import { create } from "zustand";
-import { CurrencyCode, DEFAULT_CURRENCY } from "@/lib/currencies";
-import { getStorage, saveStorage } from "@/lib/persistent-storage";
+import { create } from 'zustand';
+import { CurrencyCode, DEFAULT_CURRENCY } from '@/lib/currencies';
+import { getStorage, saveStorage } from '@/lib/persistent-storage';
 
-const CURRENCY_KEY = "monevo_settings_currency";
-const HIDE_BALANCE_KEY = "monevo_settings_hide_balance";
-const NOTIFICATIONS_KEY = "monevo_settings_reminder_notifications";
+const CURRENCY_KEY = 'monevo_settings_currency';
+const HIDE_BALANCE_KEY = 'monevo_settings_hide_balance';
+const NOTIFICATIONS_KEY = 'monevo_settings_reminder_notifications';
 
 interface SettingsState {
   currency: CurrencyCode;
@@ -36,9 +36,9 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
       set({
         currency: (savedCurrency as CurrencyCode) || DEFAULT_CURRENCY,
-        hideBalance: savedHideBalance === "true",
+        hideBalance: savedHideBalance === 'true',
         reminderNotifications:
-          savedNotifications === null ? true : savedNotifications === "true",
+          savedNotifications === null ? true : savedNotifications === 'true',
         isHydrated: true,
       });
     } catch {

@@ -1,13 +1,13 @@
-import React, { memo } from "react";
-import { Pressable, StyleSheet, Text, View, ViewStyle } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { colors, radius, shadows, spacing, typography } from "@/theme";
-import { formatCurrency } from "@/lib/format";
-import { WalletIcon } from "@/components/ui";
-import { getWalletMeta } from "@/lib/categories";
-import { Wallet } from "@/store/wallet.store";
-import { hapticFeedback } from "@/lib/haptics";
-import { useDisplayCurrency } from "@/hooks/use-display-currency";
+import React, { memo } from 'react';
+import { Pressable, StyleSheet, Text, View, ViewStyle } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, radius, shadows, spacing, typography } from '@/theme';
+import { formatCurrency } from '@/lib/format';
+import { WalletIcon } from '@/components/ui';
+import { getWalletMeta } from '@/lib/categories';
+import { Wallet } from '@/store/wallet.store';
+import { hapticFeedback } from '@/lib/haptics';
+import { useDisplayCurrency } from '@/hooks/use-display-currency';
 
 export interface WalletCardProps {
   wallet: Wallet;
@@ -104,11 +104,11 @@ const styles = StyleSheet.create({
     padding: spacing.base,
     borderWidth: 1,
     borderColor: colors.border,
-    justifyContent: "space-between",
+    justifyContent: 'space-between',
     ...shadows.sm,
   },
   standardCard: {
-    width: "100%",
+    width: '100%',
     minHeight: 120,
     marginBottom: spacing.md,
   },
@@ -126,9 +126,9 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.98 }],
   },
   topRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   typeBadge: {
     paddingHorizontal: spacing.xs + 2,
@@ -138,9 +138,9 @@ const styles = StyleSheet.create({
   },
   typeText: {
     ...typography.caption,
-    fontWeight: "600",
+    fontWeight: '600',
     fontSize: 10,
-    textTransform: "uppercase",
+    textTransform: 'uppercase',
   },
   bottomSection: {
     marginTop: spacing.md,
@@ -148,11 +148,11 @@ const styles = StyleSheet.create({
   name: {
     ...typography.subhead,
     color: colors.textSecondary,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   balance: {
     ...typography.headline,
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.text,
     marginTop: 2,
     ...typography.tabular,
@@ -161,24 +161,24 @@ const styles = StyleSheet.create({
     width: 104,
   },
   addCard: {
-    borderStyle: "dashed",
+    borderStyle: 'dashed',
     borderColor: colors.primary,
     backgroundColor: colors.primaryMuted,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   addIconCircle: {
     width: 40,
     height: 40,
     borderRadius: radius.full,
     backgroundColor: colors.surface,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: spacing.xs,
   },
   addTitle: {
     ...typography.subhead,
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.primary,
   },
   addSubtitle: {

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Pressable,
   RefreshControl,
@@ -6,28 +6,28 @@ import {
   StyleSheet,
   Text,
   View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useTabBarSpace } from "@/components/FloatingTabBar";
-import { useRouter } from "expo-router";
-import { useWalletStore } from "@/store/wallet.store";
-import { Transaction, useTransactionStore } from "@/store/transaction.store";
-import { useReminderStore } from "@/store/reminder.store";
-import { colors, spacing, typography } from "@/theme";
-import { hapticFeedback } from "@/lib/haptics";
-import { useDisplayCurrency } from "@/hooks/use-display-currency";
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTabBarSpace } from '@/components/FloatingTabBar';
+import { useRouter } from 'expo-router';
+import { useWalletStore } from '@/store/wallet.store';
+import { Transaction, useTransactionStore } from '@/store/transaction.store';
+import { useReminderStore } from '@/store/reminder.store';
+import { colors, spacing, typography } from '@/theme';
+import { hapticFeedback } from '@/lib/haptics';
+import { useDisplayCurrency } from '@/hooks/use-display-currency';
 import {
   EmptyState,
   TransactionSkeletonList,
   WalletSkeletonCard,
-} from "@/components/ui";
-import { WalletCarousel } from "@/features/wallets/components/WalletCarousel";
-import { WalletQuickActions } from "@/features/wallets/components/WalletQuickActions";
-import { computeMonthlyFlows } from "@/features/wallets/utils/wallet-carousel";
-import { ReminderSection } from "@/features/reminders/components/ReminderSection";
-import { TransactionItem } from "@/features/transactions/components/TransactionItem";
-import { TransactionDetailModal } from "@/features/transactions/components/TransactionDetailModal";
-import { QuickTransactionModal } from "@/features/transactions/components/QuickTransactionModal";
+} from '@/components/ui';
+import { WalletCarousel } from '@/features/wallets/components/WalletCarousel';
+import { WalletQuickActions } from '@/features/wallets/components/WalletQuickActions';
+import { computeMonthlyFlows } from '@/features/wallets/utils/wallet-carousel';
+import { ReminderSection } from '@/features/reminders/components/ReminderSection';
+import { TransactionItem } from '@/features/transactions/components/TransactionItem';
+import { TransactionDetailModal } from '@/features/transactions/components/TransactionDetailModal';
+import { QuickTransactionModal } from '@/features/transactions/components/QuickTransactionModal';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -51,7 +51,7 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [activeWalletId, setActiveWalletId] = useState<string | null>(null);
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
-  const [quickType, setQuickType] = useState<"INCOME" | "EXPENSE" | null>(null);
+  const [quickType, setQuickType] = useState<'INCOME' | 'EXPENSE' | null>(null);
 
   const loadData = useCallback(async () => {
     await Promise.all([fetchWallets(), fetchTransactions(), fetchReminders()]);
@@ -85,7 +85,7 @@ export default function HomeScreen() {
   const recentTransactions = displayedTransactions.slice(0, 5);
 
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView
         contentContainerStyle={[
           styles.scrollContent,
@@ -108,7 +108,7 @@ export default function HomeScreen() {
             <Pressable
               onPress={() => {
                 hapticFeedback.light();
-                router.push("/(tabs)/wallets");
+                router.push('/(tabs)/wallets');
               }}
               hitSlop={8}
             >
@@ -130,8 +130,8 @@ export default function HomeScreen() {
           )}
 
           <WalletQuickActions
-            onAddIncome={() => setQuickType("INCOME")}
-            onAddExpense={() => setQuickType("EXPENSE")}
+            onAddIncome={() => setQuickType('INCOME')}
+            onAddExpense={() => setQuickType('EXPENSE')}
           />
         </View>
 
@@ -143,7 +143,7 @@ export default function HomeScreen() {
               <Pressable
                 onPress={() => {
                   hapticFeedback.light();
-                  router.push("/(tabs)/transactions");
+                  router.push('/(tabs)/transactions');
                 }}
                 hitSlop={8}
               >
@@ -162,10 +162,10 @@ export default function HomeScreen() {
                 description={
                   activeWallet
                     ? `No activity found for ${activeWallet.name}.`
-                    : "Start recording your daily income and spending to see your activity."
+                    : 'Start recording your daily income and spending to see your activity.'
                 }
                 actionTitle="Add Transaction"
-                onAction={() => router.push("/add-transaction")}
+                onAction={() => router.push('/add-transaction')}
               />
             ) : (
               recentTransactions.map((tx) => (
@@ -192,9 +192,9 @@ export default function HomeScreen() {
 
       {/* Quick Income / Expense Modal */}
       <QuickTransactionModal
-        key={quickType ?? "closed"}
+        key={quickType ?? 'closed'}
         visible={quickType !== null}
-        initialType={quickType ?? "EXPENSE"}
+        initialType={quickType ?? 'EXPENSE'}
         onClose={() => setQuickType(null)}
         onSaved={loadData}
       />
@@ -214,9 +214,9 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: spacing.base,
     marginBottom: spacing.md,
   },
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
   },
   sectionLink: {
     ...typography.subhead,
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.primary,
   },
   walletSkeleton: {

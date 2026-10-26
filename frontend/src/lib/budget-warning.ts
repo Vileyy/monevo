@@ -1,7 +1,7 @@
-import { BudgetItem } from "@/store/budget.store";
-import { formatCurrency } from "./format";
+import { BudgetItem } from '@/store/budget.store';
+import { formatCurrency } from './format';
 
-export type BudgetWarningStatus = "NONE" | "OK" | "WARNING" | "EXCEEDED";
+export type BudgetWarningStatus = 'NONE' | 'OK' | 'WARNING' | 'EXCEEDED';
 
 export interface BudgetWarningDetails {
   status: BudgetWarningStatus;
@@ -24,7 +24,7 @@ export function calculateBudgetWarning(
 ): BudgetWarningDetails {
   if (!budget || budget.amount <= 0) {
     return {
-      status: "NONE",
+      status: 'NONE',
       budgetAmount: budget?.amount ?? 0,
       currentSpent: budget?.spent ?? 0,
       currentRemaining: budget?.remaining ?? 0,
@@ -32,7 +32,7 @@ export function calculateBudgetWarning(
       projectedRemaining: 0,
       projectedPercentage: 0,
       overAmount: 0,
-      message: "",
+      message: '',
     };
   }
 
@@ -54,7 +54,7 @@ export function calculateBudgetWarning(
         : `This expense exceeds your remaining budget of ${formatCurrency(currentRemaining)} by ${formatCurrency(overAmount)} (${Math.round(projectedPercentage)}% of limit).`;
 
     return {
-      status: "EXCEEDED",
+      status: 'EXCEEDED',
       budgetAmount: budget.amount,
       currentSpent,
       currentRemaining,
@@ -69,7 +69,7 @@ export function calculateBudgetWarning(
   // If projected spending is between 80% and 100%
   if (projectedPercentage >= 80) {
     return {
-      status: "WARNING",
+      status: 'WARNING',
       budgetAmount: budget.amount,
       currentSpent,
       currentRemaining,
@@ -83,7 +83,7 @@ export function calculateBudgetWarning(
 
   // Under 80%
   return {
-    status: "OK",
+    status: 'OK',
     budgetAmount: budget.amount,
     currentSpent,
     currentRemaining,

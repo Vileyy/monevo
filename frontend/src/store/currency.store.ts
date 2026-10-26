@@ -1,15 +1,15 @@
-import { create } from "zustand";
-import { apiClient } from "@/services/api/client";
-import { getStorage, saveStorage } from "@/lib/persistent-storage";
-import { CurrencyCode, SUPPORTED_CURRENCIES } from "@/lib/currencies";
-import { BASE_CURRENCY, RateMap } from "@/lib/currency-conversion";
+import { create } from 'zustand';
+import { apiClient } from '@/services/api/client';
+import { getStorage, saveStorage } from '@/lib/persistent-storage';
+import { CurrencyCode, SUPPORTED_CURRENCIES } from '@/lib/currencies';
+import { BASE_CURRENCY, RateMap } from '@/lib/currency-conversion';
 
-const RATES_STORAGE_KEY = "monevo_currency_rates";
+const RATES_STORAGE_KEY = 'monevo_currency_rates';
 
 /** Same open-source feed the API proxies, used when the API build is stale. */
 const PUBLIC_RATE_URLS = [
-  "https://latest.currency-api.pages.dev/v1/currencies/vnd.json",
-  "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/vnd.json",
+  'https://latest.currency-api.pages.dev/v1/currencies/vnd.json',
+  'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/vnd.json',
 ];
 
 const PUBLIC_FEED_TIMEOUT_MS = 8_000;
@@ -42,14 +42,14 @@ interface CurrencyState {
 }
 
 export function sanitizeRates(raw: unknown): RateMap {
-  if (!raw || typeof raw !== "object") return {};
+  if (!raw || typeof raw !== 'object') return {};
 
   const rates: RateMap = {};
   for (const [key, value] of Object.entries(raw)) {
     const code = key.toUpperCase() as CurrencyCode;
     if (
       CONVERTIBLE_CODES.has(code) &&
-      typeof value === "number" &&
+      typeof value === 'number' &&
       Number.isFinite(value) &&
       value > 0
     ) {
@@ -61,7 +61,7 @@ export function sanitizeRates(raw: unknown): RateMap {
 
 async function fetchFromApi(): Promise<RatesPayload | null> {
   try {
-    const { data } = await apiClient.get<RatesPayload>("/currency/rates");
+    const { data } = await apiClient.get<RatesPayload>('/currency/rates');
     return data ?? null;
   } catch {
     return null;

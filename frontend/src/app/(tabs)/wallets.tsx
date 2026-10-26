@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Pressable,
   RefreshControl,
@@ -6,15 +6,15 @@ import {
   StyleSheet,
   Text,
   View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useTabBarSpace } from "@/components/FloatingTabBar";
-import { Ionicons } from "@expo/vector-icons";
-import { useWalletStore, Wallet } from "@/store/wallet.store";
-import { useSettingsStore } from "@/store/settings.store";
-import { colors, radius, shadows, spacing, typography } from "@/theme";
-import { formatCurrency } from "@/lib/format";
-import { getWalletMeta } from "@/lib/categories";
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTabBarSpace } from '@/components/FloatingTabBar';
+import { Ionicons } from '@expo/vector-icons';
+import { useWalletStore, Wallet } from '@/store/wallet.store';
+import { useSettingsStore } from '@/store/settings.store';
+import { colors, radius, shadows, spacing, typography } from '@/theme';
+import { formatCurrency } from '@/lib/format';
+import { getWalletMeta } from '@/lib/categories';
 import {
   Button,
   EmptyState,
@@ -22,9 +22,9 @@ import {
   SegmentedControl,
   WalletIcon,
   WalletSkeletonCard,
-} from "@/components/ui";
-import { WalletModal } from "@/features/wallets/components/WalletModal";
-import { useDisplayCurrency } from "@/hooks/use-display-currency";
+} from '@/components/ui';
+import { WalletModal } from '@/features/wallets/components/WalletModal';
+import { useDisplayCurrency } from '@/hooks/use-display-currency';
 
 export default function WalletsScreen() {
   const { wallets, isLoading, fetchWallets } = useWalletStore();
@@ -33,8 +33,8 @@ export default function WalletsScreen() {
   useDisplayCurrency();
   const [refreshing, setRefreshing] = useState(false);
   const [typeFilter, setTypeFilter] = useState<
-    "ALL" | "CASH" | "BANK" | "CREDIT_CARD"
-  >("ALL");
+    'ALL' | 'CASH' | 'BANK' | 'CREDIT_CARD'
+  >('ALL');
   const [showModal, setShowModal] = useState(false);
   const [selectedWallet, setSelectedWallet] = useState<Wallet | null>(null);
 
@@ -49,7 +49,7 @@ export default function WalletsScreen() {
   };
 
   const filteredWallets = useMemo(() => {
-    if (typeFilter === "ALL") return wallets;
+    if (typeFilter === 'ALL') return wallets;
     return wallets.filter((w) => w.type === typeFilter);
   }, [wallets, typeFilter]);
 
@@ -60,35 +60,35 @@ export default function WalletsScreen() {
     let bank = 0;
     let card = 0;
     for (const w of wallets) {
-      if (w.type === "CASH") cash += w.balance;
-      else if (w.type === "BANK") bank += w.balance;
-      else if (w.type === "CREDIT_CARD") card += w.balance;
+      if (w.type === 'CASH') cash += w.balance;
+      else if (w.type === 'BANK') bank += w.balance;
+      else if (w.type === 'CREDIT_CARD') card += w.balance;
     }
     return { cash, bank, card };
   }, [wallets]);
 
   const { currentLabel, currentBalance } = useMemo(() => {
     switch (typeFilter) {
-      case "CASH":
-        return { currentLabel: "Cash Balance", currentBalance: stats.cash };
-      case "BANK":
-        return { currentLabel: "Bank Balance", currentBalance: stats.bank };
-      case "CREDIT_CARD":
-        return { currentLabel: "Cards Balance", currentBalance: stats.card };
-      case "ALL":
+      case 'CASH':
+        return { currentLabel: 'Cash Balance', currentBalance: stats.cash };
+      case 'BANK':
+        return { currentLabel: 'Bank Balance', currentBalance: stats.bank };
+      case 'CREDIT_CARD':
+        return { currentLabel: 'Cards Balance', currentBalance: stats.card };
+      case 'ALL':
       default:
         return {
-          currentLabel: "Total Net Worth",
+          currentLabel: 'Total Net Worth',
           currentBalance: totalNetWorth,
         };
     }
   }, [typeFilter, stats, totalNetWorth]);
 
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <Header
         title="Wallets"
-        subtitle={`${wallets.length} total ${wallets.length === 1 ? "wallet" : "wallets"} configured`}
+        subtitle={`${wallets.length} total ${wallets.length === 1 ? 'wallet' : 'wallets'} configured`}
         rightAction={
           <Pressable
             onPress={() => {
@@ -124,23 +124,23 @@ export default function WalletsScreen() {
         <View style={styles.netWorthCard}>
           <Text style={styles.netWorthLabel}>{currentLabel}</Text>
           <Text style={styles.netWorthValue}>
-            {hideBalance ? "••••••••" : formatCurrency(currentBalance)}
+            {hideBalance ? '••••••••' : formatCurrency(currentBalance)}
           </Text>
 
           <View style={styles.assetBreakdownRow}>
             <Pressable
               style={styles.assetCol}
               onPress={() =>
-                setTypeFilter((prev) => (prev === "CASH" ? "ALL" : "CASH"))
+                setTypeFilter((prev) => (prev === 'CASH' ? 'ALL' : 'CASH'))
               }
               hitSlop={6}
               accessibilityRole="button"
               accessibilityLabel={`Filter by cash, balance ${formatCurrency(stats.cash)}`}
             >
-              <View style={[styles.assetDot, { backgroundColor: "#10B981" }]} />
+              <View style={[styles.assetDot, { backgroundColor: '#10B981' }]} />
               <Text style={styles.assetType}>Cash</Text>
               <Text style={styles.assetAmount}>
-                {hideBalance ? "••••" : formatCurrency(stats.cash)}
+                {hideBalance ? '••••' : formatCurrency(stats.cash)}
               </Text>
             </Pressable>
 
@@ -149,16 +149,16 @@ export default function WalletsScreen() {
             <Pressable
               style={styles.assetCol}
               onPress={() =>
-                setTypeFilter((prev) => (prev === "BANK" ? "ALL" : "BANK"))
+                setTypeFilter((prev) => (prev === 'BANK' ? 'ALL' : 'BANK'))
               }
               hitSlop={6}
               accessibilityRole="button"
               accessibilityLabel={`Filter by bank, balance ${formatCurrency(stats.bank)}`}
             >
-              <View style={[styles.assetDot, { backgroundColor: "#3B82F6" }]} />
+              <View style={[styles.assetDot, { backgroundColor: '#3B82F6' }]} />
               <Text style={styles.assetType}>Bank</Text>
               <Text style={styles.assetAmount}>
-                {hideBalance ? "••••" : formatCurrency(stats.bank)}
+                {hideBalance ? '••••' : formatCurrency(stats.bank)}
               </Text>
             </Pressable>
 
@@ -168,17 +168,17 @@ export default function WalletsScreen() {
               style={styles.assetCol}
               onPress={() =>
                 setTypeFilter((prev) =>
-                  prev === "CREDIT_CARD" ? "ALL" : "CREDIT_CARD",
+                  prev === 'CREDIT_CARD' ? 'ALL' : 'CREDIT_CARD',
                 )
               }
               hitSlop={6}
               accessibilityRole="button"
               accessibilityLabel={`Filter by cards, balance ${formatCurrency(stats.card)}`}
             >
-              <View style={[styles.assetDot, { backgroundColor: "#8B5CF6" }]} />
+              <View style={[styles.assetDot, { backgroundColor: '#8B5CF6' }]} />
               <Text style={styles.assetType}>Cards</Text>
               <Text style={styles.assetAmount}>
-                {hideBalance ? "••••" : formatCurrency(stats.card)}
+                {hideBalance ? '••••' : formatCurrency(stats.card)}
               </Text>
             </Pressable>
           </View>
@@ -188,10 +188,10 @@ export default function WalletsScreen() {
         <View style={styles.segmentContainer}>
           <SegmentedControl
             options={[
-              { value: "ALL", label: "All" },
-              { value: "CASH", label: "Cash" },
-              { value: "BANK", label: "Bank" },
-              { value: "CREDIT_CARD", label: "Cards" },
+              { value: 'ALL', label: 'All' },
+              { value: 'CASH', label: 'Cash' },
+              { value: 'BANK', label: 'Bank' },
+              { value: 'CREDIT_CARD', label: 'Cards' },
             ]}
             value={typeFilter}
             onChange={setTypeFilter}
@@ -210,9 +210,9 @@ export default function WalletsScreen() {
               icon="wallet-outline"
               title="No Wallets Found"
               description={
-                typeFilter === "ALL"
+                typeFilter === 'ALL'
                   ? "You don't have any wallets configured yet. Tap below to create your first wallet."
-                  : "No wallets found for this filter."
+                  : 'No wallets found for this filter.'
               }
               actionTitle="Create Wallet"
               onAction={() => {
@@ -298,8 +298,8 @@ const styles = StyleSheet.create({
     height: 38,
     borderRadius: radius.full,
     backgroundColor: colors.primaryMuted,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   scrollContent: {
     paddingHorizontal: spacing.base,
@@ -314,29 +314,29 @@ const styles = StyleSheet.create({
   },
   netWorthLabel: {
     ...typography.subhead,
-    color: "rgba(255, 255, 255, 0.7)",
-    textTransform: "uppercase",
-    fontWeight: "600",
+    color: 'rgba(255, 255, 255, 0.7)',
+    textTransform: 'uppercase',
+    fontWeight: '600',
     letterSpacing: 0.8,
   },
   netWorthValue: {
     fontSize: 32,
-    fontWeight: "800",
-    color: "#FFFFFF",
+    fontWeight: '800',
+    color: '#FFFFFF',
     marginTop: spacing.xs,
     letterSpacing: -0.5,
     ...typography.tabular,
   },
   assetBreakdownRow: {
-    flexDirection: "row",
+    flexDirection: 'row',
     marginTop: spacing.lg,
     paddingTop: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: "rgba(255, 255, 255, 0.1)",
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
   assetCol: {
     flex: 1,
-    alignItems: "center",
+    alignItems: 'center',
   },
   assetDot: {
     width: 6,
@@ -346,18 +346,18 @@ const styles = StyleSheet.create({
   },
   assetType: {
     ...typography.caption,
-    color: "rgba(255, 255, 255, 0.6)",
+    color: 'rgba(255, 255, 255, 0.6)',
   },
   assetAmount: {
     ...typography.footnote,
-    fontWeight: "700",
-    color: "#FFFFFF",
+    fontWeight: '700',
+    color: '#FFFFFF',
     marginTop: 2,
     ...typography.tabular,
   },
   assetDivider: {
     width: 1,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   segmentContainer: {
     marginBottom: spacing.base,
@@ -366,8 +366,8 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   walletRowCard: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: colors.surface,
     padding: spacing.base,
     borderRadius: radius.xl,
@@ -393,17 +393,17 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   walletBalanceCol: {
-    alignItems: "flex-end",
+    alignItems: 'flex-end',
   },
   walletBalance: {
     ...typography.headline,
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.text,
     ...typography.tabular,
   },
   editActionRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginTop: 2,
   },
   editActionText: {

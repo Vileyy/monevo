@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Keyboard,
@@ -7,10 +7,10 @@ import {
   StyleSheet,
   Text,
   View,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { colors, radius, spacing, typography } from "@/theme";
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { colors, radius, spacing, typography } from '@/theme';
 import {
   Button,
   CategoryIcon,
@@ -20,26 +20,26 @@ import {
   Modal,
   SegmentedControl,
   WalletIcon,
-} from "@/components/ui";
-import { parseVndInput } from "@/lib/format";
-import { apiErrorMessage } from "@/lib/api-error";
-import { hapticFeedback } from "@/lib/haptics";
-import { calculateBudgetWarning } from "@/lib/budget-warning";
-import { useWalletStore } from "@/store/wallet.store";
-import { Category, useCategoryStore } from "@/store/category.store";
-import { useTransactionStore } from "@/store/transaction.store";
-import { useBudgetStore } from "@/store/budget.store";
-import { CategoryForm } from "@/features/categories/components/CategoryForm";
+} from '@/components/ui';
+import { parseVndInput } from '@/lib/format';
+import { apiErrorMessage } from '@/lib/api-error';
+import { hapticFeedback } from '@/lib/haptics';
+import { calculateBudgetWarning } from '@/lib/budget-warning';
+import { useWalletStore } from '@/store/wallet.store';
+import { Category, useCategoryStore } from '@/store/category.store';
+import { useTransactionStore } from '@/store/transaction.store';
+import { useBudgetStore } from '@/store/budget.store';
+import { CategoryForm } from '@/features/categories/components/CategoryForm';
 import {
   normalizeQuickNote,
   resolveCategoryId,
   resolveWalletId,
   validateQuickAmount,
-} from "@/features/transactions/utils/quick-transaction";
+} from '@/features/transactions/utils/quick-transaction';
 
 export interface QuickTransactionModalProps {
   visible: boolean;
-  initialType: "INCOME" | "EXPENSE";
+  initialType: 'INCOME' | 'EXPENSE';
   onClose: () => void;
   onSaved?: () => void;
 }
@@ -56,9 +56,9 @@ export function QuickTransactionModal({
   const { createTransaction, fetchTransactions } = useTransactionStore();
   const { budgets, fetchBudgets } = useBudgetStore();
 
-  const [type, setType] = useState<"INCOME" | "EXPENSE">(initialType);
-  const [amount, setAmount] = useState("");
-  const [note, setNote] = useState("");
+  const [type, setType] = useState<'INCOME' | 'EXPENSE'>(initialType);
+  const [amount, setAmount] = useState('');
+  const [note, setNote] = useState('');
   const [walletId, setWalletId] = useState<string | null>(null);
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [creatingCategory, setCreatingCategory] = useState(false);
@@ -77,7 +77,7 @@ export function QuickTransactionModal({
   }
 
   useEffect(() => {
-    const subscription = Keyboard.addListener("keyboardDidShow", () => {
+    const subscription = Keyboard.addListener('keyboardDidShow', () => {
       if (visible && noteFocusedRef.current) {
         scrollRef.current?.scrollToEnd({ animated: true });
       }
@@ -99,12 +99,12 @@ export function QuickTransactionModal({
   const selectedCategoryId = resolveCategoryId(categories, categoryId, type);
 
   const matchingBudget = useMemo(() => {
-    if (type !== "EXPENSE" || !selectedCategoryId) return undefined;
+    if (type !== 'EXPENSE' || !selectedCategoryId) return undefined;
     return budgets.find((budget) => budget.categoryId === selectedCategoryId);
   }, [type, selectedCategoryId, budgets]);
 
   const budgetWarning = useMemo(() => {
-    if (type !== "EXPENSE" || !matchingBudget) return null;
+    if (type !== 'EXPENSE' || !matchingBudget) return null;
     return calculateBudgetWarning(matchingBudget, parseVndInput(amount) || 0);
   }, [type, matchingBudget, amount]);
 
@@ -130,8 +130,8 @@ export function QuickTransactionModal({
     } catch (error) {
       hapticFeedback.error();
       Alert.alert(
-        "Error",
-        apiErrorMessage(error, "Could not save transaction."),
+        'Error',
+        apiErrorMessage(error, 'Could not save transaction.'),
       );
     } finally {
       setIsSubmitting(false);
@@ -143,29 +143,29 @@ export function QuickTransactionModal({
     const amountError = validateQuickAmount(validAmount);
     if (amountError) {
       hapticFeedback.warning();
-      Alert.alert("Invalid Amount", amountError);
+      Alert.alert('Invalid Amount', amountError);
       return;
     }
 
     if (!isReady) {
       hapticFeedback.warning();
       Alert.alert(
-        "Missing Details",
-        "Select an account and category before saving.",
+        'Missing Details',
+        'Select an account and category before saving.',
       );
       return;
     }
 
-    if (budgetWarning?.status === "EXCEEDED") {
+    if (budgetWarning?.status === 'EXCEEDED') {
       hapticFeedback.warning();
       Alert.alert(
-        "Budget Limit Exceeded",
+        'Budget Limit Exceeded',
         `${budgetWarning.message}\n\nDo you still want to proceed?`,
         [
-          { text: "Cancel", style: "cancel" },
+          { text: 'Cancel', style: 'cancel' },
           {
-            text: "Proceed",
-            style: "destructive",
+            text: 'Proceed',
+            style: 'destructive',
             onPress: () => {
               void persist(validAmount);
             },
@@ -187,10 +187,10 @@ export function QuickTransactionModal({
   const openFullForm = () => {
     hapticFeedback.light();
     onClose();
-    router.push("/add-transaction");
+    router.push('/add-transaction');
   };
 
-  const isIncome = type === "INCOME";
+  const isIncome = type === 'INCOME';
 
   return (
     <Modal
@@ -198,15 +198,15 @@ export function QuickTransactionModal({
       onClose={creatingCategory ? () => setCreatingCategory(false) : onClose}
       title={
         creatingCategory
-          ? "New Category"
+          ? 'New Category'
           : isIncome
-            ? "Add money"
-            : "Spend money"
+            ? 'Add money'
+            : 'Spend money'
       }
       subtitle={
         creatingCategory
-          ? "Create a custom spending or income category"
-          : "Saved to your account instantly"
+          ? 'Create a custom spending or income category'
+          : 'Saved to your account instantly'
       }
       scrollViewRef={scrollRef}
     >
@@ -221,14 +221,14 @@ export function QuickTransactionModal({
           <SegmentedControl
             options={[
               {
-                value: "INCOME",
-                label: "Money in",
+                value: 'INCOME',
+                label: 'Money in',
                 activeColor: colors.income,
                 activeBgColor: colors.incomeBg,
               },
               {
-                value: "EXPENSE",
-                label: "Money out",
+                value: 'EXPENSE',
+                label: 'Money out',
                 activeColor: colors.expense,
                 activeBgColor: colors.expenseBg,
               },
@@ -335,7 +335,7 @@ export function QuickTransactionModal({
               </ScrollView>
 
               <Text style={styles.fieldLabel}>
-                {isIncome ? "Deposit to" : "Pay from"}
+                {isIncome ? 'Deposit to' : 'Pay from'}
               </Text>
               <ScrollView
                 horizontal
@@ -379,8 +379,8 @@ export function QuickTransactionModal({
               <Input
                 placeholder={
                   isIncome
-                    ? "e.g. October salary, Freelance project"
-                    : "e.g. Lunch with team, Grab ride"
+                    ? 'e.g. October salary, Freelance project'
+                    : 'e.g. Lunch with team, Grab ride'
                 }
                 value={note}
                 onChangeText={setNote}
@@ -401,26 +401,26 @@ export function QuickTransactionModal({
                 }
               />
 
-              {type === "EXPENSE" &&
+              {type === 'EXPENSE' &&
                 budgetWarning &&
-                (budgetWarning.status === "WARNING" ||
-                  budgetWarning.status === "EXCEEDED") && (
+                (budgetWarning.status === 'WARNING' ||
+                  budgetWarning.status === 'EXCEEDED') && (
                   <View
                     style={[
                       styles.warningRow,
-                      budgetWarning.status === "EXCEEDED" &&
+                      budgetWarning.status === 'EXCEEDED' &&
                         styles.warningRowDanger,
                     ]}
                   >
                     <Ionicons
                       name={
-                        budgetWarning.status === "EXCEEDED"
-                          ? "alert-circle"
-                          : "information-circle"
+                        budgetWarning.status === 'EXCEEDED'
+                          ? 'alert-circle'
+                          : 'information-circle'
                       }
                       size={16}
                       color={
-                        budgetWarning.status === "EXCEEDED"
+                        budgetWarning.status === 'EXCEEDED'
                           ? colors.danger
                           : colors.warning
                       }
@@ -428,7 +428,7 @@ export function QuickTransactionModal({
                     <Text
                       style={[
                         styles.warningText,
-                        budgetWarning.status === "EXCEEDED" &&
+                        budgetWarning.status === 'EXCEEDED' &&
                           styles.warningTextDanger,
                       ]}
                       numberOfLines={2}
@@ -439,7 +439,7 @@ export function QuickTransactionModal({
                 )}
 
               <Button
-                title={isIncome ? "Add money" : "Spend money"}
+                title={isIncome ? 'Add money' : 'Spend money'}
                 onPress={handleSave}
                 isLoading={isSubmitting}
                 disabled={!isReady}
@@ -472,8 +472,8 @@ const styles = StyleSheet.create({
   fieldLabel: {
     ...typography.caption,
     color: colors.textMuted,
-    fontWeight: "700",
-    textTransform: "uppercase",
+    fontWeight: '700',
+    textTransform: 'uppercase',
     letterSpacing: 0.6,
     marginBottom: spacing.sm,
   },
@@ -483,8 +483,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.base,
   },
   categoryChip: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.xs + 2,
     paddingVertical: spacing.xs + 2,
     paddingLeft: spacing.xs,
@@ -499,12 +499,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primaryMuted,
   },
   addChip: {
-    borderStyle: "dashed",
+    borderStyle: 'dashed',
   },
   addChipText: {
     ...typography.subhead,
     color: colors.textSecondary,
-    fontWeight: "600",
+    fontWeight: '600',
     fontSize: 13,
   },
   emptyHint: {
@@ -514,8 +514,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   walletChip: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.xs + 2,
     paddingVertical: spacing.xs + 2,
     paddingLeft: spacing.xs,
@@ -536,16 +536,16 @@ const styles = StyleSheet.create({
   chipText: {
     ...typography.subhead,
     color: colors.textSecondary,
-    fontWeight: "600",
+    fontWeight: '600',
     fontSize: 13,
   },
   chipTextSelected: {
     color: colors.primaryDark,
-    fontWeight: "700",
+    fontWeight: '700',
   },
   warningRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     gap: spacing.xs + 2,
     backgroundColor: colors.warningBg,
     borderRadius: radius.md,
@@ -557,7 +557,7 @@ const styles = StyleSheet.create({
   },
   warningText: {
     ...typography.caption,
-    color: "#92400E",
+    color: '#92400E',
     flex: 1,
     lineHeight: 17,
   },
@@ -573,13 +573,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.expense,
   },
   moreLink: {
-    alignItems: "center",
+    alignItems: 'center',
     paddingVertical: spacing.md,
   },
   moreLinkText: {
     ...typography.caption,
     color: colors.textMuted,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   setupCard: {
     backgroundColor: colors.surfaceSecondary,
@@ -590,7 +590,7 @@ const styles = StyleSheet.create({
   setupTitle: {
     ...typography.subhead,
     color: colors.text,
-    fontWeight: "700",
+    fontWeight: '700',
   },
   setupText: {
     ...typography.caption,

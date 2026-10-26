@@ -1,554 +1,123 @@
-# 💰 Monevo
+<p align="center">
+  <img src=".github/assets/icon.png" width="120" alt="Monevo app icon" />
+</p>
 
-> **Know where your money goes. Build where your money goes next.**
+<h1 align="center">Monevo</h1>
 
-**Monevo** is a modern personal finance application designed to help people understand, track, and improve their everyday financial habits.
+<p align="center">
+  <strong>Know where your money goes.</strong><br />
+  A personal finance app for Android: record spending in seconds, keep wallets, budgets and bills in one place, and see where the money actually goes.
+</p>
 
-Instead of simply recording expenses, Monevo aims to become a practical daily finance companion — helping users manage transactions, budgets, wallets, and financial insights in one simple and intuitive experience.
-
-Built as a production-oriented mobile application with a scalable backend, Monevo is designed to be used in real life and distributed through the **Google Play Store**.
-
----
-
-## ✨ Features
-
-### 💸 Expense & Income Tracking
-
-* Record income and expenses
-* Categorize transactions
-* Add notes and transaction details
-* View transaction history
-* Search and filter transactions
-* Track spending over time
-
-### 💳 Wallet Management
-
-* Create and manage multiple wallets
-* Track wallet balances
-* Support different account types
-* Monitor money movement between wallets
-
-### 🎯 Budget Management
-
-* Create monthly budgets
-* Set spending limits by category
-* Monitor budget progress
-* Receive warnings when approaching limits
-* Track exceeded budgets
-
-### 📊 Financial Insights
-
-* Daily, weekly, and monthly summaries
-* Spending breakdown by category
-* Income vs. expense analysis
-* Spending trends
-* Financial overview dashboard
-
-### 🔔 Smart Notifications
-
-* Budget limit warnings
-* Recurring transaction reminders
-* Financial activity notifications
-
-### ☁️ Cloud Synchronization
-
-* Secure authentication
-* Sync data across devices
-* Backup personal financial data
-* Offline-first experience with background synchronization
+<p align="center">
+  <a href="https://github.com/Vileyy/monevo/actions/workflows/ci.yml"><img src="https://github.com/Vileyy/monevo/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <img src="https://img.shields.io/badge/Expo-SDK%2057-000020?style=flat-square&logo=expo&logoColor=white" alt="Expo SDK 57" />
+  <img src="https://img.shields.io/badge/NestJS-11-E0234E?style=flat-square&logo=nestjs&logoColor=white" alt="NestJS 11" />
+  <img src="https://img.shields.io/badge/PostgreSQL-17-4169E1?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL 17" />
+  <img src="https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white" alt="Android" />
+</p>
 
 ---
 
-# 🏗️ Architecture
+## Features
 
-Monevo follows a **Clean Architecture + Feature-Based Architecture** approach.
+| Area             | What you get                                                                |
+| ---------------- | --------------------------------------------------------------------------- |
+| **Wallets**      | Multiple wallets with live balances                                         |
+| **Transactions** | Income and expenses, notes, custom categories, filters, currency conversion |
+| **Budgets**      | Monthly limits per category, overspending warnings                          |
+| **Reminders**    | Bill due dates with scheduled local notifications                           |
+| **Insights**     | Period totals and a category breakdown                                      |
+| **Accounts**     | Google sign-in via Clerk, secure session storage, biometric unlock          |
 
-The goal is to keep business logic independent from UI and infrastructure, making the application easier to test, maintain, and scale.
+Not built yet: transaction search UI, CSV/Excel export, receipt photos, offline caching and sync.
 
-```text
-┌───────────────────────────────┐
-│          Mobile App           │
-│       React Native + TS       │
-├───────────────────────────────┤
-│ Presentation                  │
-│  Screens / Components         │
-│  Hooks / State                │
-├───────────────────────────────┤
-│ Domain                        │
-│  Entities                     │
-│  Use Cases                    │
-│  Business Rules               │
-├───────────────────────────────┤
-│ Data                          │
-│  Repositories                 │
-│  API / Local DB               │
-│  DTOs / Mappers               │
-└───────────────┬───────────────┘
-                │
-                ▼
-        ┌───────────────┐
-        │   FastAPI     │
-        │    Backend    │
-        └───────┬───────┘
-                │
-        ┌───────┴────────┐
-        ▼                ▼
-   PostgreSQL          Redis
-```
+## Stack
 
-### Mobile Architecture
+| Layer    | Technology                                                                  |
+| -------- | --------------------------------------------------------------------------- |
+| App      | Expo SDK 57, Expo Router, React Native 0.86, Zustand, TanStack Query, Axios |
+| API      | NestJS 11, JWT, class-validator, Swagger                                    |
+| Database | PostgreSQL 17, Prisma 7 (`prisma-client` + `@prisma/adapter-pg`)            |
+| Auth     | Clerk (Google sign-in) issuing the API JWT, plus biometric unlock on device |
+| Infra    | Docker Compose on a single EC2 instance, GitHub Actions CI                  |
 
-```text
-apps/mobile/
-
-src/
-├── app/
-├── features/
-│   ├── auth/
-│   ├── transactions/
-│   ├── wallets/
-│   ├── budgets/
-│   ├── categories/
-│   └── statistics/
-├── components/
-├── core/
-├── services/
-├── store/
-└── shared/
-```
-
-Each feature owns its UI, domain logic, data access, and related components where appropriate.
-
----
-
-# 🛠️ Tech Stack
-
-## Mobile
-
-| Technology     | Purpose                             |
-| -------------- | ----------------------------------- |
-| React Native   | Cross-platform mobile application   |
-| Expo           | Development, build, and deployment  |
-| TypeScript     | Type-safe development               |
-| Expo Router    | Application navigation              |
-| Zustand        | Client-side state management        |
-| TanStack Query | Server state & API synchronization  |
-| Axios          | HTTP client                         |
-| SQLite         | Local persistence / offline support |
-
-## Backend
-
-| Technology | Purpose                       |
-| ---------- | ----------------------------- |
-| FastAPI    | REST API                      |
-| Python     | Backend language              |
-| SQLAlchemy | ORM                           |
-| Alembic    | Database migrations           |
-| PostgreSQL | Primary database              |
-| Redis      | Cache & background processing |
-| Pydantic   | Validation & schemas          |
-| JWT        | Authentication                |
-
-## Infrastructure
-
-| Technology     | Purpose              |
-| -------------- | -------------------- |
-| Docker         | Containerization     |
-| Docker Compose | Local development    |
-| AWS            | Cloud infrastructure |
-| GitHub Actions | CI/CD                |
-| Nginx          | Reverse proxy        |
-| Let's Encrypt  | HTTPS                |
-
-## Development
-
-| Tool     | Purpose                        |
-| -------- | ------------------------------ |
-| Git      | Version control                |
-| GitHub   | Source control & collaboration |
-| Postman  | API testing                    |
-| ESLint   | Code quality                   |
-| Prettier | Code formatting                |
-| Pytest   | Backend testing                |
-| Jest     | Mobile testing                 |
-
----
-
-# 📁 Project Structure
+## Repository layout
 
 ```text
 monevo/
-│
-├── apps/
-│   ├── mobile/              # React Native application
-│   └── api/                 # FastAPI backend
-│
-├── docs/
-│   ├── architecture/        # Architecture documentation
-│   ├── api/                 # API documentation
-│   ├── database/            # Database design
-│   └── decisions/           # Technical decisions
-│
-├── .github/
-│   └── workflows/           # CI/CD pipelines
-│
-├── docker-compose.yml
-├── .gitignore
-└── README.md
+├── frontend/                 Expo app (src/app = routes, src/store, src/services)
+├── backend/                  NestJS API (src/<feature>, prisma/ = schema + migrations)
+├── docs/                     Published legal pages (GitHub Pages)
+├── deploy/                   Production Compose file + entrypoint
+├── docker-compose.yml        Local PostgreSQL only
+└── AGENTS.md                 Operational source of truth
 ```
 
----
+## Getting started
 
-# 🚀 Getting Started
-
-## Prerequisites
-
-Make sure you have the following installed:
-
-* Node.js
-* pnpm
-* Python
-* uv
-* Docker
-* Docker Compose
-* Git
-
----
-
-## 1. Clone the repository
+Requirements: Node 22+, pnpm 11, Docker, and Expo Go or a development build on an Android device.
 
 ```bash
-git clone <repository-url>
-cd monevo
-```
-
----
-
-## 2. Start infrastructure
-
-```bash
-docker compose up -d
-```
-
-This starts the required development services such as:
-
-```text
-PostgreSQL
-Redis
-```
-
----
-
-## 3. Start the backend
-
-```bash
-cd apps/api
-uv sync
-```
-
-Run the development server:
-
-```bash
-uv run uvicorn app.main:app --reload
-```
-
-API:
-
-```text
-http://localhost:8000
-```
-
-API documentation:
-
-```text
-http://localhost:8000/docs
-```
-
----
-
-## 4. Start the mobile application
-
-```bash
-cd apps/mobile
 pnpm install
-pnpm start
+docker compose up -d          # PostgreSQL 17 on 127.0.0.1:5432 (monevo / monevo_dev)
 ```
 
-Then run the application using Expo on:
+Create the environment files:
 
-* Android Emulator
-* Physical Android device
+- `frontend/.env` — copy `frontend/.env.example`, then set `EXPO_PUBLIC_API_URL` plus the Clerk and PostHog keys.
+- `backend/.env` — `DATABASE_URL=postgresql://monevo:monevo_dev@127.0.0.1:5432/monevo`, plus `JWT_SECRET` and `CLERK_SECRET_KEY`.
 
----
-
-# 🧪 Testing
-
-Monevo follows a testing strategy designed for production applications.
-
-### Backend
+Run the API and the app:
 
 ```bash
-uv run pytest
+pnpm --filter backend exec prisma migrate deploy
+pnpm --filter backend start:dev     # http://localhost:3000 — Swagger at /api, health at /health
+
+cd frontend && npx expo start
 ```
 
-### Mobile
+`EXPO_PUBLIC_API_URL` is baked in at bundle time: restart Expo after editing it, and point it at an address the phone can reach (LAN or public IP), not `localhost`.
 
-```bash
-pnpm test
-```
+## Commands
 
-### Type checking
+| Command                             | What it does                 |
+| ----------------------------------- | ---------------------------- |
+| `pnpm test`                         | Unit tests for both packages |
+| `pnpm lint`                         | ESLint for both packages     |
+| `pnpm typecheck`                    | TypeScript, no emit          |
+| `pnpm format` / `pnpm format:check` | Prettier across the repo     |
+| `pnpm build`                        | Compile the API              |
+| `pnpm --filter backend db:seed`     | Seed development data        |
 
-```bash
-pnpm typecheck
-```
+## Quality gates
 
-### Linting
+- **Pre-commit** (Husky, installed by `pnpm install`) — runs the unit tests, then ESLint, Prettier and TypeScript on staged files. A failure blocks the commit.
+- **CI** on pull requests and pushes to `main` — lint, typecheck, tests, build, formatting check and dependency audit.
+- **Commit messages** follow Conventional Commits (`feat(app): add currency picker`) and are checked by commitlint on commit and in CI.
+- One Prettier config at the repository root, so every contributor commits the same style.
 
-```bash
-pnpm lint
-```
-
----
-
-# 🔄 Development Workflow
-
-Monevo follows a feature-oriented development workflow.
+## Request flow
 
 ```text
-Requirement
-     ↓
-Technical Design
-     ↓
-Task / Ticket
-     ↓
-Implementation
-     ↓
-Unit Tests
-     ↓
-Integration Tests
-     ↓
-Code Review
-     ↓
-CI
-     ↓
-Merge
+Expo  →  Axios (EXPO_PUBLIC_API_URL)
+      →  NestJS :3000
+      →  JWT guard on user data routes
+      →  Prisma (pg adapter)
+      →  PostgreSQL
 ```
 
-Every feature should have clearly defined:
+Sign-in endpoints, `/health`, `/currency/rates` and `/legal/*` are public. Google sign-in goes through Clerk, `POST /auth/clerk` exchanges the Clerk session for an API JWT, and the session is cached in `expo-secure-store`.
 
-* Requirements
-* Acceptance Criteria
-* Technical Design
-* Definition of Done
+## Deployment
 
----
+Production is a single EC2 instance running `deploy/docker-compose.yml` (API + PostgreSQL). The container applies migrations and then starts the compiled server. Machines, environment files, database access, deploy steps and known pitfalls are documented in [AGENTS.md](AGENTS.md) — read it before touching production.
 
-# 🌿 Git Workflow
+## Documentation
 
-We use short-lived feature branches.
+- [AGENTS.md](AGENTS.md) — stack, machines, env files, deploy and troubleshooting.
+- `docs/` — privacy policy, terms of service and account deletion pages, generated by `pnpm --filter backend legal:build` and published from `main`.
 
-```text
-main
- │
- ├── feature/auth
- ├── feature/transactions
- ├── feature/budgets
- └── fix/transaction-sync
-```
+## License
 
-Example:
-
-```bash
-git checkout -b feature/auth
-```
-
-Commit messages should follow a consistent convention:
-
-```text
-feat: add transaction creation
-fix: prevent duplicate transactions
-refactor: simplify wallet repository
-test: add budget service tests
-docs: update architecture documentation
-chore: configure CI pipeline
-```
-
----
-
-# 🗺️ Roadmap
-
-## Phase 1 — Foundation
-
-* [ ] Project setup
-* [ ] Mobile architecture
-* [ ] Backend architecture
-* [ ] PostgreSQL setup
-* [ ] Redis setup
-* [ ] Docker environment
-* [ ] Authentication
-* [ ] CI pipeline
-
-## Phase 2 — Core Finance
-
-* [ ] User profile
-* [ ] Categories
-* [ ] Wallets
-* [ ] Income transactions
-* [ ] Expense transactions
-* [ ] Transaction history
-* [ ] Search & filtering
-
-## Phase 3 — Financial Management
-
-* [ ] Monthly budgets
-* [ ] Budget progress
-* [ ] Recurring transactions
-* [ ] Wallet transfers
-* [ ] Financial dashboard
-* [ ] Statistics & charts
-
-## Phase 4 — Production Features
-
-* [ ] Offline-first support
-* [ ] Data synchronization
-* [ ] Push notifications
-* [ ] Error tracking
-* [ ] Analytics
-* [ ] Performance optimization
-* [ ] Security hardening
-
-## Phase 5 — Google Play
-
-* [ ] Production backend deployment
-* [ ] Android release build
-* [ ] App icon
-* [ ] Splash screen
-* [ ] Privacy Policy
-* [ ] Terms of Service
-* [ ] Store screenshots
-* [ ] Store description
-* [ ] Internal testing
-* [ ] Closed testing
-* [ ] Production release
-
----
-
-# 🔐 Security
-
-Financial data is sensitive.
-
-Monevo is designed with security as a first-class concern.
-
-Planned security measures include:
-
-* Secure password hashing
-* JWT-based authentication
-* Secure token storage
-* HTTPS in production
-* Input validation
-* API authorization
-* Database access controls
-* Environment-based secrets
-* Protection against common API vulnerabilities
-* Secure local data persistence
-
-Sensitive credentials and environment variables must never be committed to Git.
-
----
-
-# 📊 Product Principles
-
-Monevo is built around several principles:
-
-### Simple
-
-Managing money should not feel like managing a spreadsheet.
-
-### Fast
-
-Recording an expense should take only a few seconds.
-
-### Useful
-
-Every feature should provide a meaningful benefit to the user.
-
-### Private
-
-Financial information belongs to the user.
-
-### Reliable
-
-User data must remain consistent across devices and network conditions.
-
-### Scalable
-
-The architecture should allow the product to evolve without unnecessary rewrites.
-
----
-
-# 🎯 Long-Term Vision
-
-Monevo starts as a personal expense tracker, but the long-term goal is to evolve into a complete personal finance platform.
-
-Potential future capabilities include:
-
-* Intelligent expense categorization
-* Receipt scanning
-* Financial goals
-* Subscription tracking
-* Recurring payment detection
-* Advanced financial analytics
-* Personalized spending insights
-* Multi-currency support
-* Exportable financial reports
-* Family/shared finance management
-
-The focus remains the same:
-
-> **Make personal finance easier to understand, easier to manage, and easier to improve.**
-
----
-
-# 📱 Platform
-
-**Current target:** Android
-
-**Distribution:** Google Play Store
-
-Future platform support may include:
-
-* iOS
-* Web
-
----
-
-# 📄 License
-
-This project is currently maintained as a personal software project.
-
-License information will be added before the public release.
-
----
-
-# 👨‍💻 Development
-
-Monevo is developed as a production-oriented software engineering project with a focus on:
-
-* Mobile development
-* Backend engineering
-* Software architecture
-* API design
-* Database design
-* Testing
-* CI/CD
-* Cloud infrastructure
-* Performance
-* Security
-* Product development
-
----
-
-<p align="center">
-  Built with ❤️ and clean architecture.
-</p>
+Private project. License terms will be added before public release.
