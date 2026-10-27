@@ -21,14 +21,14 @@
 
 ## Features
 
-| Area             | What you get                                                                |
-| ---------------- | --------------------------------------------------------------------------- |
-| **Wallets**      | Multiple wallets with live balances                                         |
-| **Transactions** | Income and expenses, notes, custom categories, filters, currency conversion |
-| **Budgets**      | Monthly limits per category, overspending warnings                          |
-| **Reminders**    | Bill due dates with scheduled local notifications                           |
-| **Insights**     | Period totals and a category breakdown                                      |
-| **Accounts**     | Google sign-in via Clerk, secure session storage, biometric unlock          |
+| Area             | What you get                                                                          |
+| ---------------- | ------------------------------------------------------------------------------------- |
+| **Wallets**      | Multiple wallets with live balances                                                   |
+| **Transactions** | Income and expenses, notes, custom categories, filters, currency conversion           |
+| **Budgets**      | Monthly limits per category, overspending warnings                                    |
+| **Reminders**    | Bill due dates with scheduled local notifications                                     |
+| **Insights**     | Period totals and a category breakdown                                                |
+| **Accounts**     | Email/password and Google sign-in via Clerk, secure session storage, biometric unlock |
 
 Not built yet: transaction search UI, CSV/Excel export, receipt photos, offline caching and sync.
 
@@ -100,18 +100,19 @@ cd frontend && npx expo start
 ## Request flow
 
 ```text
-Expo  →  Axios (EXPO_PUBLIC_API_URL)
-      →  NestJS :3000
+Expo  →  Axios (EXPO_PUBLIC_API_URL, https://)
+      →  Caddy :443 (Let's Encrypt)
+      →  NestJS :3000 (internal)
       →  JWT guard on user data routes
       →  Prisma (pg adapter)
       →  PostgreSQL
 ```
 
-Sign-in endpoints, `/health`, `/currency/rates` and `/legal/*` are public. Google sign-in goes through Clerk, `POST /auth/clerk` exchanges the Clerk session for an API JWT, and the session is cached in `expo-secure-store`.
+Sign-in endpoints, `/health`, `/currency/rates` and `/legal/*` are public. Google sign-in goes through Clerk, `POST /auth/clerk` exchanges the Clerk session for an API JWT, and the session is cached in `expo-secure-store`. Email/password sign-in uses `POST /auth/login` and `POST /auth/register`.
 
 ## Deployment
 
-Production is a single EC2 instance running `deploy/docker-compose.yml` (API + PostgreSQL). The container applies migrations and then starts the compiled server. Machines, environment files, database access, deploy steps and known pitfalls are documented in [AGENTS.md](AGENTS.md) — read it before touching production.
+Production is a single EC2 instance running `deploy/docker-compose.yml` (Caddy + API + PostgreSQL). Caddy terminates HTTPS with a Let's Encrypt certificate and proxies to the API over the internal Docker network. The API container applies migrations and then starts the compiled server. Machines, environment files, database access, deploy steps and known pitfalls are documented in [AGENTS.md](AGENTS.md) — read it before touching production.
 
 ## Documentation
 

@@ -30,9 +30,9 @@ const SLIDES: OnboardingSlide[] = [
   {
     id: '1',
     badge: 'WALLET MANAGEMENT',
-    title: 'All Your Wallets\nIn One Secure Place',
+    title: 'All Your Accounts\nIn One Place',
     subtitle:
-      'Track cash, bank accounts, and credit cards in real-time with automatic balance calculations.',
+      'Track cash, bank and card balances you enter manually. Balances update automatically as you record transactions.',
     illustration: 'wallets',
   },
   {
@@ -46,9 +46,9 @@ const SLIDES: OnboardingSlide[] = [
   {
     id: '3',
     badge: 'SMART INSIGHTS',
-    title: 'Visualize Your Wealth\nAnd Boost Your Savings',
+    title: 'See Where Your Money Goes\nAnd Plan Your Savings',
     subtitle:
-      'Gain total financial clarity with automated cashflow analytics, category breakdowns, and savings progress.',
+      'Review your cashflow, category breakdowns and savings progress from the records you enter.',
     illustration: 'analytics',
   },
 ];
@@ -67,7 +67,7 @@ function SlideIllustration({
             <Ionicons name="business-outline" size={20} color="#93C5FD" />
             <Text style={styles.mockCardType}>BANK</Text>
           </View>
-          <Text style={styles.mockCardName}>Techcombank</Text>
+          <Text style={styles.mockCardName}>Everyday Bank</Text>
           <Text style={styles.mockCardBalance}>24.500.000 ₫</Text>
         </View>
 
@@ -131,7 +131,7 @@ function SlideIllustration({
               size="sm"
             />
             <View style={{ flex: 1, marginLeft: 10 }}>
-              <Text style={styles.mockTxTitle}>Grab Transport</Text>
+              <Text style={styles.mockTxTitle}>City Transport</Text>
               <Text style={styles.mockTxSub}>Transport · Card</Text>
             </View>
             <Text style={[styles.mockTxAmount, { color: colors.expense }]}>
@@ -305,6 +305,10 @@ export default function OnboardingScreen() {
                   <Text style={styles.loginLinkHighlight}>Sign in</Text>
                 </Text>
               </Pressable>
+
+              <Text style={styles.disclaimerText}>
+                Monevo does not connect to your bank or move money.
+              </Text>
             </View>
           ) : (
             <Button
@@ -590,5 +594,12 @@ const styles = StyleSheet.create({
   loginLinkHighlight: {
     color: colors.primary,
     fontWeight: '700',
+  },
+  disclaimerText: {
+    ...typography.caption,
+    color: colors.textMuted,
+    textAlign: 'center',
+    marginTop: spacing.sm,
+    paddingHorizontal: spacing.base,
   },
 });

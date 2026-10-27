@@ -25,8 +25,8 @@ export const ReminderCard = memo(function ReminderCard({
   const handlePayPress = () => {
     hapticFeedback.light();
     Alert.alert(
-      'Confirm Payment',
-      `Record payment of ${formatCurrency(reminder.amount)} for "${reminder.title}"?\n\nThis will deduct from your account balance and save to transaction history.`,
+      'Record Bill as Paid',
+      `Record ${formatCurrency(reminder.amount)} for "${reminder.title}"?\n\nThis records an expense and reduces the wallet balance you entered. Monevo does not move money.`,
       [
         { text: 'Cancel', style: 'cancel' },
         {

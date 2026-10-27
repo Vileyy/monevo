@@ -33,10 +33,10 @@ export const WalletQuickActions = memo(function WalletQuickActions({
           pressed && styles.actionPressed,
         ]}
         accessibilityRole="button"
-        accessibilityLabel="Add money"
+        accessibilityLabel="Add income"
       >
         <Ionicons name="arrow-down-circle" size={20} color="#FFFFFF" />
-        <Text style={styles.incomeActionText}>Add money</Text>
+        <Text style={styles.incomeActionText}>Add income</Text>
       </Pressable>
 
       <Pressable
@@ -47,10 +47,10 @@ export const WalletQuickActions = memo(function WalletQuickActions({
           pressed && styles.actionPressed,
         ]}
         accessibilityRole="button"
-        accessibilityLabel="Spend money"
+        accessibilityLabel="Add expense"
       >
         <Ionicons name="arrow-up-circle" size={20} color={colors.expense} />
-        <Text style={styles.expenseActionText}>Spend</Text>
+        <Text style={styles.expenseActionText}>Add expense</Text>
       </Pressable>
     </View>
   );
