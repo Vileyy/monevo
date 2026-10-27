@@ -27,17 +27,17 @@ export function apiErrorMessage(error: unknown, fallback: string) {
     if ('code' in error) {
       const code = (error as { code?: string }).code;
       if (code === 'ECONNABORTED' || code === 'ETIMEDOUT') {
-        return 'Connection timed out. Please check if the backend server is running and accessible.';
+        return 'Connection timed out. Please check your connection and try again.';
       }
       if (code === 'ERR_NETWORK' || code === 'ECONNREFUSED') {
-        return 'Cannot connect to server. Please check your network or server URL in .env.';
+        return 'Cannot connect to the server. Please check your connection and try again.';
       }
     }
 
     if ('message' in error) {
       const msg = (error as { message?: string }).message;
       if (msg === 'Network Error') {
-        return 'Cannot connect to server. Please verify backend is running.';
+        return 'Cannot connect to the server. Please check your connection and try again.';
       }
     }
   }

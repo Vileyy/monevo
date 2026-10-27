@@ -163,7 +163,9 @@ export default function RootLayout() {
           {analytics ? (
             <PostHogProvider
               client={analytics}
-              autocapture={{ captureTouches: true }}
+              // Never capture view text here: transaction amounts, notes,
+              // wallet balances and profile details are sensitive.
+              autocapture={{ captureTouches: false }}
             >
               {app}
             </PostHogProvider>

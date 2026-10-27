@@ -200,13 +200,13 @@ export function QuickTransactionModal({
         creatingCategory
           ? 'New Category'
           : isIncome
-            ? 'Add money'
-            : 'Spend money'
+            ? 'Add income'
+            : 'Add expense'
       }
       subtitle={
         creatingCategory
           ? 'Create a custom spending or income category'
-          : 'Saved to your account instantly'
+          : 'Saved to your records instantly'
       }
       scrollViewRef={scrollRef}
     >
@@ -335,7 +335,7 @@ export function QuickTransactionModal({
               </ScrollView>
 
               <Text style={styles.fieldLabel}>
-                {isIncome ? 'Deposit to' : 'Pay from'}
+                {isIncome ? 'Add to' : 'Record from'}
               </Text>
               <ScrollView
                 horizontal
@@ -380,7 +380,7 @@ export function QuickTransactionModal({
                 placeholder={
                   isIncome
                     ? 'e.g. October salary, Freelance project'
-                    : 'e.g. Lunch with team, Grab ride'
+                    : 'e.g. Lunch with team, Taxi ride'
                 }
                 value={note}
                 onChangeText={setNote}
@@ -439,7 +439,7 @@ export function QuickTransactionModal({
                 )}
 
               <Button
-                title={isIncome ? 'Add money' : 'Spend money'}
+                title={isIncome ? 'Add income' : 'Add expense'}
                 onPress={handleSave}
                 isLoading={isSubmitting}
                 disabled={!isReady}

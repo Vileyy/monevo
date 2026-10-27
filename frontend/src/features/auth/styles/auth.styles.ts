@@ -74,6 +74,40 @@ export const authStyles = StyleSheet.create({
     textAlign: 'center',
     marginTop: spacing.sm,
   },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginTop: spacing.lg,
+    marginBottom: spacing.base,
+  },
+  dividerLine: {
+    flex: 1,
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: colors.border,
+  },
+  dividerText: {
+    ...typography.caption,
+    color: colors.textMuted,
+    fontWeight: '600',
+  },
+  formError: {
+    ...typography.caption,
+    color: colors.danger,
+    textAlign: 'center',
+    marginBottom: spacing.sm,
+  },
+  modeSwitch: {
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+    marginTop: spacing.xs,
+  },
+  modeSwitchText: {
+    ...typography.caption,
+    color: colors.primary,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
   legalFooter: {
     alignItems: 'center',
     marginTop: spacing.lg,

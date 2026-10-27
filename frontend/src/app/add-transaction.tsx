@@ -339,7 +339,7 @@ export default function AddTransactionScreen() {
                 <WalletIcon type={selectedWallet?.type ?? 'CASH'} size="sm" />
                 <View style={styles.rowTextCol}>
                   <Text style={styles.rowLabel}>
-                    {type === 'INCOME' ? 'Deposit To' : 'Pay From'}
+                    {type === 'INCOME' ? 'Add To' : 'Record From'}
                   </Text>
                   <Text style={styles.rowValue} numberOfLines={1}>
                     {selectedWallet?.name || 'Select Wallet'}

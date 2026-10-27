@@ -29,7 +29,7 @@ services:
       postgres:
         condition: service_healthy
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     environment:
       PORT: "3000"
       DATABASE_URL: postgresql://${POSTGRES_USER:-monevo}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-monevo}
@@ -41,11 +41,29 @@ services:
       CORS_ORIGIN: ${CORS_ORIGIN:-}
       SWAGGER_ENABLED: ${SWAGGER_ENABLED:-true}
       LEGAL_APP_NAME: ${LEGAL_APP_NAME:-Monevo}
-      LEGAL_CONTACT_EMAIL: ${LEGAL_CONTACT_EMAIL:-support@monevo.app}
-      LEGAL_LAST_UPDATED: ${LEGAL_LAST_UPDATED:-2026-10-22}
+      LEGAL_CONTACT_EMAIL: ${LEGAL_CONTACT_EMAIL:-doanquochieu2104@gmail.com}
+      LEGAL_LAST_UPDATED: ${LEGAL_LAST_UPDATED:-2026-10-25}
       DEMO_EMAIL: ${DEMO_EMAIL:-demo@monevo.app}
       DEMO_PASSWORD: ${DEMO_PASSWORD:-}
       DEMO_NAME: ${DEMO_NAME:-Monevo Demo}
 
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      API_DOMAIN: ${API_DOMAIN:?API_DOMAIN must be set to the public API hostname}
+      ACME_EMAIL: ${ACME_EMAIL:?ACME_EMAIL must be set for Let's Encrypt}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
 volumes:
   postgres_data:
+  caddy_data:
+  caddy_config:

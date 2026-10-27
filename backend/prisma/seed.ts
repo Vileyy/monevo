@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
 import 'dotenv/config';
 import bcrypt from 'bcrypt';
 import { PrismaPg } from '@prisma/adapter-pg';
@@ -67,7 +68,7 @@ async function main() {
       prisma.wallet.create({
         data: {
           userId: user.id,
-          name: 'Techcombank',
+          name: 'Everyday Bank',
           type: 'BANK',
           balance: '24500000.00',
         },
@@ -75,7 +76,7 @@ async function main() {
       prisma.wallet.create({
         data: {
           userId: user.id,
-          name: 'Visa Card',
+          name: 'Credit Card',
           type: 'CREDIT_CARD',
           balance: '0.00',
         },
@@ -130,7 +131,7 @@ async function main() {
           categoryId: transport.id,
           type: 'EXPENSE',
           amount: '45000.00',
-          note: 'Grab to office',
+          note: 'Ride to office',
           date: daysAgo(5),
         },
         {

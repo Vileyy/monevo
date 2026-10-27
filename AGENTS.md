@@ -6,17 +6,17 @@ Operational source of truth for humans and agents. The root README (FastAPI / `a
 
 Personal finance app: Expo (Android-first) + NestJS API + PostgreSQL.
 
-Current product loop: login → wallets → record a transaction → see it again. Not yet: budgets, offline, Play Store.
+Shipped: email/password + Google/Clerk sign-in, wallets, transactions, budgets, bill reminders, insights, HTTPS API. Not yet: CSV export, receipt photos, offline sync, Play Store release.
 
 ## 2. Actual stack
 
-| Layer    | Tech                                                                 |
-| -------- | -------------------------------------------------------------------- |
-| App      | Expo SDK **57**, Expo Router, Zustand, Axios                         |
-| API      | NestJS 11, JWT, class-validator, Swagger `/api`                      |
-| DB       | PostgreSQL 17, Prisma **7** (`prisma-client` + `@prisma/adapter-pg`) |
-| Monorepo | pnpm workspaces: `frontend/`, `backend/`                             |
-| Prod     | One EC2 `t3.micro` (Sydney), Docker Compose: `api` + `postgres`      |
+| Layer    | Tech                                                                      |
+| -------- | ------------------------------------------------------------------------- |
+| App      | Expo SDK **57**, Expo Router, Zustand, Axios                              |
+| API      | NestJS 11, JWT, class-validator, Swagger `/api`                           |
+| DB       | PostgreSQL 17, Prisma **7** (`prisma-client` + `@prisma/adapter-pg`)      |
+| Monorepo | pnpm workspaces: `frontend/`, `backend/`                                  |
+| Prod     | One EC2 `t3.micro` (Sydney), Docker Compose: `caddy` + `api` + `postgres` |
 
 No FastAPI, Redis, RDS, or ALB.
 
@@ -32,12 +32,13 @@ monevo/
 ├── backend/
 │   ├── src/           # Nest modules: auth, users, wallets, categories, transactions
 │   └── prisma/        # schema.prisma + migrations/
-├── deploy/            # prod compose + entrypoint + .env.example
+├── deploy/            # prod compose + Caddy + entrypoint + .env.example
 │   ├── docker-compose.yml
+│   ├── Caddyfile      # HTTPS + reverse proxy to api:3000
 │   ├── docker-entrypoint.sh   # migrate deploy, then node dist/src/main.js
 │   └── .env           # EC2 only — never commit
 ├── Dockerfile         # build context = repo root
-└── docker-compose.yml # DEV local Postgres :5433 — do NOT use on EC2
+└── docker-compose.yml # DEV local Postgres :5432 — do NOT use on EC2
 ```
 
 ## 4. Two machines — read the prompt before typing
@@ -60,26 +61,31 @@ The `.pem` sits next to the `Project/` folder. Do not commit it. Do not copy it 
 ## 5. Request path
 
 ```
-Expo  →  Axios EXPO_PUBLIC_API_URL
-      →  EC2 :3000 (Nest)
-      →  JWT guard (except /auth/register, /auth/login)
+Expo  →  Axios EXPO_PUBLIC_API_URL (https://<API_DOMAIN>)
+      →  Caddy :443 (Let's Encrypt, HTTP→HTTPS redirect)
+      →  api:3000 (Nest, bound to 127.0.0.1 on the host)
+      →  JWT guard (except /auth/register, /auth/login, /health, /currency/rates, /legal/*)
       →  Prisma  →  postgres container (Docker hostname: postgres)
 ```
 
-Login returns `{ user, accessToken }`. Zustand keeps the token in **RAM** — killing the app logs the user out.
+Login returns `{ user, accessToken }`. The token is persisted in SecureStore
+(with biometric unlock); Zustand hydrates it on startup.
 
 ## 6. Env files
 
-| File            | Where | Role                                                                     |
-| --------------- | ----- | ------------------------------------------------------------------------ |
-| `frontend/.env` | Mac   | `EXPO_PUBLIC_API_URL=http://<PUBLIC_IP>:3000` — restart Expo after edits |
-| `deploy/.env`   | EC2   | `POSTGRES_*`, `JWT_SECRET` — Compose reads this                          |
-| Root `.env`     | Mac   | Local Prisma (`prisma+postgres://...`) — **not** for EC2                 |
-| `backend/.env`  | Mac   | Local DB if used                                                         |
+| File            | Where | Role                                                                                  |
+| --------------- | ----- | ------------------------------------------------------------------------------------- |
+| `frontend/.env` | Mac   | `EXPO_PUBLIC_API_URL=https://<API_DOMAIN>` — restart Expo after edits                 |
+| `deploy/.env`   | EC2   | `POSTGRES_*`, `JWT_SECRET`, `API_DOMAIN`, `ACME_EMAIL`, `DEMO_*` — Compose reads this |
+| Root `.env`     | Mac   | Local Prisma (`prisma+postgres://...`) — **not** for EC2                              |
+| `backend/.env`  | Mac   | Local DB if used                                                                      |
 
 Compose **builds** `DATABASE_URL`. Do not copy the root `.env` to the server.
 
-EC2 public IP **changes** after Stop/Start → update `frontend/.env` and restart Expo.
+`API_DOMAIN` must point at the instance (DNS A record) and the security group
+must allow 80/443 for Caddy to obtain/renew the certificate. If the EC2 public
+IP changes, a temporary `sslip.io` domain changes with it; a real domain is
+strongly preferred.
 
 ## 7. Daily commands
 
@@ -92,7 +98,7 @@ npx expo start
 
 Expo must log `env: export EXPO_PUBLIC_API_URL`.
 
-**API local (Mac, when not using AWS):** `docker compose up -d` at repo root (port **5433**), then `pnpm --filter backend start:dev`.
+**API local (Mac, when not using AWS):** `docker compose up -d` at repo root (port **5432**), then `pnpm --filter backend start:dev`.
 
 **API prod (EC2):**
 
@@ -100,10 +106,13 @@ Expo must log `env: export EXPO_PUBLIC_API_URL`.
 cd ~/monevo
 docker compose -f deploy/docker-compose.yml ps
 docker compose -f deploy/docker-compose.yml logs api --tail 80
+docker compose -f deploy/docker-compose.yml logs caddy --tail 80
 ```
 
-Swagger: `http://<PUBLIC_IP>:3000/api`  
-Health check: `GET /health` (`{"status":"ok"}`). Probe with `GET /health`, `POST /auth/login` or Swagger.
+Health check: `GET https://<API_DOMAIN>/health` (`{"status":"ok"}`).
+
+Swagger is disabled in production (`SWAGGER_ENABLED=false`); enable it only
+temporarily and close it again. Probe auth with `POST /auth/login`.
 
 ## 8. Code flow
 
@@ -174,7 +183,12 @@ docker compose -f deploy/docker-compose.yml up -d --build
 
 Entrypoint: `prisma migrate deploy`, then `node dist/src/main.js`. First build ~5–15 minutes.
 
-Security group: SSH 22 = My IP; TCP 3000 = 0.0.0.0/0. No RDS, no ALB.
+Compose now also runs `caddy` on 80/443. It obtains/renews the Let's Encrypt
+certificate for `API_DOMAIN` and proxies to `api:3000`. The API port is bound
+to `127.0.0.1` on the host, so only Caddy can reach it from outside.
+
+Security group: SSH 22 = My IP; HTTP 80 + HTTPS 443 = 0.0.0.0/0. Port 3000 must
+stay closed to the public. No RDS, no ALB.
 
 AWS **trial** account: service stops when credits run out. Stop the instance to save credits; Start may **change the public IP**.
 
@@ -184,14 +198,14 @@ AWS **trial** account: service stops when credits run out. Stop the instance to 
 
 ## 13. Next work (do not skip ahead)
 
-Shipped: notifications for Bill Reminders, budget overspending warning, budgets,
-reminders, insights (cashflow + category pie), Clerk auth.
+Shipped: email/password + Google/Clerk auth, transactions with search/filter/
+sort/pagination, budgets, bill reminders, insights, HTTPS API.
 
-1. Transaction search UI (API already supports filters).
-2. Export transaction data / reports (CSV / Excel).
-3. Receipt photo attachments for transactions.
-4. Offline caching & sync.
-5. Store release (Play Store internal testing).
+1. Export transaction data / reports (CSV / Excel).
+2. Receipt photo attachments for transactions.
+3. Offline caching & sync.
+4. Play Store internal testing / production release.
+5. Replace the temporary API domain with a real domain before public release.
 
 ## 14. Known mistakes — do not repeat
 
@@ -205,6 +219,10 @@ reminders, insights (cashflow + category pie), Clerk auth.
 | 500 on Wallet/Transaction      | Missing tables — migration not applied |
 | SSH hangs                      | `t3.micro` OOM — reboot + swap         |
 | Browser Instance Connect fails | SG SSH is My IP only                   |
+| HTTPS cert timeout / `000`     | SG 80/443 closed or DNS wrong          |
+| API 502 from Caddy             | API container down / not on `api:3000` |
+| `http://IP:3000` unreachable   | Intentional: API binds `127.0.0.1`     |
+| Play Data safety encryption    | Release build must use `https://` URL  |
 
 ## 15. Expo
 

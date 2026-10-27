@@ -103,7 +103,7 @@ function WalletForm({
     <View style={styles.form}>
       <Input
         label="Wallet Name"
-        placeholder="e.g. Daily Cash, Techcombank"
+        placeholder="e.g. Daily Cash, Bank Account"
         value={name}
         onChangeText={setName}
         autoCapitalize="words"

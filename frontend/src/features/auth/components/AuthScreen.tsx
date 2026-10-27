@@ -17,11 +17,13 @@ import * as Linking from 'expo-linking';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '@/theme';
 import { FaceIdIcon } from '@/components/FaceIdIcon';
+import { Button, Input } from '@/components/ui';
 import { useAuthStore } from '@/store/auth.store';
 import { getBiometricSession } from '@/lib/biometrics';
 import { apiClient } from '@/services/api/client';
 import { hapticFeedback } from '@/lib/haptics';
 import { openLegalPage } from '@/lib/legal-links';
+import type { AuthResponse } from '@/types/api';
 import { authStyles } from '@/features/auth/styles/auth.styles';
 import { GoogleButton } from './GoogleButton';
 import {
@@ -30,10 +32,20 @@ import {
   getGoogleFallbackUser,
   resolveGoogleSessionId,
 } from '../utils/auth-helpers';
+import {
+  buildEmailAuthPayload,
+  emailAuthErrorMessage,
+  validateEmailAuthInput,
+} from '../utils/credentials';
+import type { EmailAuthMode } from '../utils/credentials';
 
 WebBrowser.maybeCompleteAuthSession();
 
-export function AuthScreen() {
+export function AuthScreen({
+  initialMode = 'signin',
+}: {
+  initialMode?: EmailAuthMode;
+}) {
   const router = useRouter();
   const loginStore = useAuthStore((state) => state.login);
   const biometricAvailable = useAuthStore((state) => state.biometricAvailable);
@@ -51,6 +63,12 @@ export function AuthScreen() {
 
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isBiometricLoading, setIsBiometricLoading] = useState(false);
+  const [emailMode, setEmailMode] = useState<EmailAuthMode>(initialMode);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [isEmailLoading, setIsEmailLoading] = useState(false);
   const [savedBiometricUser, setSavedBiometricUser] = useState<{
     id: string;
     email: string;
@@ -193,6 +211,58 @@ export function AuthScreen() {
     }
   };
 
+  const handleEmailAuth = async () => {
+    if (isEmailLoading || isGoogleLoading || isBiometricLoading) return;
+
+    const input = { mode: emailMode, email, password, name };
+    const validationError = validateEmailAuthInput(input);
+    if (validationError) {
+      setEmailError(validationError);
+      return;
+    }
+
+    setEmailError(null);
+    setIsEmailLoading(true);
+
+    try {
+      // Email/password sessions live outside Clerk. Clear any stale Clerk
+      // session first so ClerkUserSync cannot overwrite this account later.
+      if (isSignedIn) {
+        try {
+          await signOut();
+        } catch {}
+      }
+
+      const endpoint =
+        emailMode === 'signup' ? '/auth/register' : '/auth/login';
+      const { data } = await apiClient.post<AuthResponse>(
+        endpoint,
+        buildEmailAuthPayload(input),
+      );
+
+      loginStore(
+        {
+          id: data.user.id,
+          email: data.user.email,
+          name: data.user.name ?? undefined,
+        },
+        data.accessToken,
+      );
+      hapticFeedback.success();
+      router.replace('/(tabs)');
+    } catch (err: unknown) {
+      hapticFeedback.error();
+      setEmailError(emailAuthErrorMessage(err, emailMode));
+    } finally {
+      setIsEmailLoading(false);
+    }
+  };
+
+  const toggleEmailMode = () => {
+    setEmailMode((current) => (current === 'signin' ? 'signup' : 'signin'));
+    setEmailError(null);
+  };
+
   const handleOpenLegalPage = async (
     page: 'privacy' | 'terms' | 'account-deletion',
   ) => {
@@ -221,7 +291,7 @@ export function AuthScreen() {
       } else if (result === 'no-session') {
         Alert.alert(
           'No Saved Account',
-          `Sign in with Google once, then you can use ${biometricLabel} next time.`,
+          `Sign in once, then you can use ${biometricLabel} next time.`,
         );
       } else if (result === 'unavailable') {
         Alert.alert(
@@ -304,6 +374,93 @@ export function AuthScreen() {
                 {biometricLabel}
               </Text>
             )}
+
+            <View style={authStyles.dividerRow}>
+              <View style={authStyles.dividerLine} />
+              <Text style={authStyles.dividerText}>or use email</Text>
+              <View style={authStyles.dividerLine} />
+            </View>
+
+            {emailMode === 'signup' && (
+              <Input
+                label="Name (optional)"
+                placeholder="Your name"
+                value={name}
+                onChangeText={setName}
+                autoCapitalize="words"
+                autoComplete="name"
+                textContentType="name"
+                returnKeyType="next"
+                editable={!isEmailLoading}
+              />
+            )}
+
+            <Input
+              label="Email"
+              placeholder="you@example.com"
+              value={email}
+              onChangeText={(value) => {
+                setEmail(value);
+                if (emailError) setEmailError(null);
+              }}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete="email"
+              textContentType="emailAddress"
+              returnKeyType="next"
+              editable={!isEmailLoading}
+            />
+
+            <Input
+              label="Password"
+              placeholder={
+                emailMode === 'signup'
+                  ? 'At least 6 characters'
+                  : 'Your password'
+              }
+              value={password}
+              onChangeText={(value) => {
+                setPassword(value);
+                if (emailError) setEmailError(null);
+              }}
+              isPassword
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete={
+                emailMode === 'signup' ? 'new-password' : 'current-password'
+              }
+              textContentType={
+                emailMode === 'signup' ? 'newPassword' : 'password'
+              }
+              returnKeyType="go"
+              onSubmitEditing={() => void handleEmailAuth()}
+              editable={!isEmailLoading}
+            />
+
+            {emailError && (
+              <Text style={authStyles.formError}>{emailError}</Text>
+            )}
+
+            <Button
+              title={emailMode === 'signup' ? 'Create account' : 'Sign in'}
+              onPress={() => void handleEmailAuth()}
+              isLoading={isEmailLoading}
+              disabled={isGoogleLoading || isBiometricLoading}
+            />
+
+            <Pressable
+              onPress={toggleEmailMode}
+              style={authStyles.modeSwitch}
+              hitSlop={8}
+              accessibilityRole="button"
+            >
+              <Text style={authStyles.modeSwitchText}>
+                {emailMode === 'signup'
+                  ? 'Already have an account? Sign in'
+                  : 'New here? Create an account'}
+              </Text>
+            </Pressable>
           </View>
 
           <View style={authStyles.legalFooter}>

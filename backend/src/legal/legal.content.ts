@@ -986,12 +986,12 @@ export function renderPrivacyPolicy(options: LegalPageOptions): string {
             you signed up for.
           </li>
           <li>
-            <strong>Consent</strong> — for notifications and analytics, which you
-            can withdraw at any time.
+            <strong>Consent</strong> — for notifications, which you can withdraw
+            at any time.
           </li>
           <li>
             <strong>Legitimate interests</strong> — to keep the Service secure,
-            prevent abuse and fix errors.
+            prevent abuse, fix errors and understand which features are used.
           </li>
           <li>
             <strong>Legal obligation</strong> — where we must retain or disclose
@@ -1045,11 +1045,12 @@ export function renderPrivacyPolicy(options: LegalPageOptions): string {
       body: `
         <p>
           Account and financial records are stored in our PostgreSQL database on
-          AWS. Sign-in credentials are handled by Clerk over encrypted HTTPS
-          connections, passwords are stored only as salted hashes, server access
-          is restricted to authorized operators, and authentication tokens on
-          your device are kept in the platform secure store. Our public pages,
-          including this one, are served over HTTPS.
+          AWS. Google sign-in credentials are handled by Clerk, and email and
+          password sign-in is handled by our API; passwords are stored only as
+          salted hashes. Server access is restricted to authorized operators,
+          and authentication tokens on your device are kept in the platform
+          secure store. Our public pages, including this one, are served over
+          HTTPS.
         </p>
         <div class="table-wrap">
           <table>
