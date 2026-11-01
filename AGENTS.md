@@ -224,6 +224,7 @@ sort/pagination, budgets, bill reminders, insights, HTTPS API.
 | `http://IP:3000` unreachable   | Intentional: API binds `127.0.0.1`     |
 | Play Data safety encryption    | Release build must use `https://` URL  |
 
-## 15. Expo
+## 15. Expo & Frontend Design
 
-Read `frontend/AGENTS.md` and Expo SDK 57 docs before changing native/UI code.
+1. Read [frontend/AGENTS.md](file:///frontend/AGENTS.md) and Expo SDK 57 docs before changing native/UI code.
+2. **Mandatory Frontend Design**: For all UI/UX and styling tasks, you **MUST** read and apply the [frontend-design skill](file:///.agents/skills/frontend-design/SKILL.md) to ensure deliberate visual identity, non-generic typography/palettes, and intentional aesthetics.
