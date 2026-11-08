@@ -36,3 +36,17 @@ export function captureEvent(
 ) {
   analytics?.capture(event, properties);
 }
+
+/**
+ * Apply the user's analytics preference. PostHog persists the choice, so the
+ * next launch keeps honouring it until the preference is restored again.
+ * No-op when analytics is not configured.
+ */
+export function applyAnalyticsPreference(enabled: boolean) {
+  if (!analytics) return;
+
+  const action = enabled ? analytics.optIn() : analytics.optOut();
+  action.catch((error: unknown) => {
+    console.warn('Failed to update analytics preference:', error);
+  });
+}

@@ -54,6 +54,8 @@ export default function ProfileScreen() {
     toggleHideBalance,
     reminderNotifications,
     setReminderNotifications,
+    shareAnalytics,
+    setShareAnalytics,
   } = useSettingsStore();
   const [refreshing, setRefreshing] = useState(false);
   const [showCurrencyModal, setShowCurrencyModal] = useState(false);
@@ -82,6 +84,11 @@ export default function ProfileScreen() {
       setReminderNotifications(false);
       void syncReminderNotifications([]);
     }
+  };
+
+  const handleToggleAnalytics = (enabled: boolean) => {
+    hapticFeedback.selection();
+    setShareAnalytics(enabled);
   };
 
   const onRefresh = async () => {
@@ -352,6 +359,17 @@ export default function ProfileScreen() {
         {/* Legal Section */}
         <Text style={styles.sectionHeader}>Privacy & Legal</Text>
         <Card style={styles.sectionCard}>
+          <SettingsRow
+            icon="analytics-outline"
+            iconColor={colors.accent}
+            iconBgColor={colors.incomeBg}
+            title="Share Usage Analytics"
+            subtitle="Anonymous feature usage, never your finances"
+            isSwitch
+            switchValue={shareAnalytics}
+            onSwitchChange={handleToggleAnalytics}
+          />
+          <View style={styles.rowDivider} />
           <SettingsRow
             icon="shield-checkmark-outline"
             iconColor={colors.info}
