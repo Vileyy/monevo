@@ -18,7 +18,12 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useAuthStore } from '@/store/auth.store';
 import { useSettingsStore } from '@/store/settings.store';
 import { useCurrencyStore } from '@/store/currency.store';
-import { analytics, identifyUser, resetAnalytics } from '@/lib/analytics';
+import {
+  analytics,
+  applyAnalyticsPreference,
+  identifyUser,
+  resetAnalytics,
+} from '@/lib/analytics';
 import { tokenCache } from '@/lib/token-cache';
 import { initNotifications } from '@/lib/notifications';
 import { CLERK_LOAD_TIMEOUT_MS, isClerkReady } from '@/lib/startup';
@@ -80,6 +85,8 @@ export default function RootLayout() {
   const user = useAuthStore((state) => state.user);
   const restoreSession = useAuthStore((state) => state.restoreSession);
   const restoreSettings = useSettingsStore((state) => state.restoreSettings);
+  const settingsHydrated = useSettingsStore((state) => state.isHydrated);
+  const shareAnalytics = useSettingsStore((state) => state.shareAnalytics);
   const restoreRates = useCurrencyStore((state) => state.restoreRates);
   const refreshRates = useCurrencyStore((state) => state.refreshRates);
   const segments = useSegments();
@@ -113,6 +120,13 @@ export default function RootLayout() {
       resetAnalytics();
     }
   }, [isAuthenticated, isHydrated, user]);
+
+  // Honour the analytics opt-out from Settings. Runs after the stored
+  // preference is restored and again whenever the user flips the switch.
+  useEffect(() => {
+    if (!settingsHydrated) return;
+    applyAnalyticsPreference(shareAnalytics);
+  }, [settingsHydrated, shareAnalytics]);
 
   useEffect(() => {
     if (!isHydrated) return;
