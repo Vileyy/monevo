@@ -74,6 +74,12 @@ export const authStyles = StyleSheet.create({
     textAlign: 'center',
     marginTop: spacing.sm,
   },
+  signInHint: {
+    ...typography.caption,
+    color: colors.textMuted,
+    textAlign: 'center',
+    marginTop: spacing.base,
+  },
   dividerRow: {
     flexDirection: 'row',
     alignItems: 'center',
