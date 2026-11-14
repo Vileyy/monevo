@@ -30,7 +30,9 @@ export async function initNotifications(): Promise<void> {
         importance: Notifications.AndroidImportance.HIGH,
         vibrationPattern: [0, 250, 250, 250],
         lightColor: '#22C55E',
-        sound: 'default',
+        // Omit `sound`: expo-notifications 57 rejects the legacy 'default'
+        // value on Android because it looks for a bundled sound file. Leaving
+        // it unset still plays the system default sound.
       });
     }
   } catch (error) {

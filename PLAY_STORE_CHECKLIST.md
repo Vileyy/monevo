@@ -9,10 +9,10 @@ and the closed-testing requirement for personal developer accounts.
 
 ## 1. Hard blockers (ops, outside the repo)
 
-- [ ] **API reachable over HTTPS.** Check `GET https://<API_DOMAIN>/health`
-      returns `{"status":"ok"}`. The current `3-24-68-57.sslip.io` host times out
-      and the IP changes whenever the EC2 instance restarts — move to a real
-      domain before release.
+- [x] **API reachable over HTTPS.** `GET https://api.monevoapp.me/health`
+      returns `{"status":"ok"}` with a Let's Encrypt certificate that Caddy
+      renews automatically. `monevoapp.me` was registered through the GitHub
+      Student Pack (free until 2026-11-14, then renew at Namecheap).
 - [ ] **Clerk production instance.** `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` must be
       `pk_live_...` (currently `pk_test_...`).
 - [ ] **EAS environment variables for `production`**: `EXPO_PUBLIC_API_URL`,
@@ -42,13 +42,13 @@ cleartext for Metro.
 
 | Section                    | Answer                                                                                                                                      |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| Privacy policy             | `https://vileyy.github.io/monevo/legal/privacy`                                                                                             |
+| Privacy policy             | `https://api.monevoapp.me/legal/privacy`                                                                                                    |
 | Ads                        | **No** (no ad SDK, `AD_ID` permission blocked)                                                                                              |
 | App access                 | Provide a demo email/password account (no OTP). Create it before review, confirm it still signs in, and list extra steps (e.g. onboarding). |
 | Target audience            | **13+**, not child-directed (Terms require 13+)                                                                                             |
 | Content rating             | Complete questionnaire (no violence, no UGC, finance tracking)                                                                              |
 | Financial features         | No financial products/services offered — tracking only                                                                                      |
-| Data deletion              | `https://vileyy.github.io/monevo/legal/account-deletion` + in-app Profile → Delete Account                                                  |
+| Data deletion              | `https://api.monevoapp.me/legal/account-deletion` + in-app Profile → Delete Account                                                         |
 | Advertising ID             | **No**                                                                                                                                      |
 | News / Government / Health | No                                                                                                                                          |
 

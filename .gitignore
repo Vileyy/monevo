@@ -6,3 +6,5 @@ node_modules
 deploy/.env
 coverage
 dist
+# local secret staging (Clerk live key)
+.clerk-sk.live
