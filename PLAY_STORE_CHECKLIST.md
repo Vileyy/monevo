@@ -9,10 +9,10 @@ and the closed-testing requirement for personal developer accounts.
 
 ## 1. Hard blockers (ops, outside the repo)
 
-- [ ] **API reachable over HTTPS.** Check `GET https://<API_DOMAIN>/health`
-      returns `{"status":"ok"}`. The current `3-24-68-57.sslip.io` host times out
-      and the IP changes whenever the EC2 instance restarts — move to a real
-      domain before release.
+- [x] **API reachable over HTTPS.** `GET https://api.monevoapp.me/health`
+      returns `{"status":"ok"}` with a Let's Encrypt certificate that Caddy
+      renews automatically. `monevoapp.me` was registered through the GitHub
+      Student Pack (free until 2026-11-14, then renew at Namecheap).
 - [ ] **Clerk production instance.** `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` must be
       `pk_live_...` (currently `pk_test_...`).
 - [ ] **EAS environment variables for `production`**: `EXPO_PUBLIC_API_URL`,
