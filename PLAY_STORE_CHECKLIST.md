@@ -42,13 +42,13 @@ cleartext for Metro.
 
 | Section                    | Answer                                                                                                                                      |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| Privacy policy             | `https://vileyy.github.io/monevo/legal/privacy`                                                                                             |
+| Privacy policy             | `https://api.monevoapp.me/legal/privacy`                                                                                                    |
 | Ads                        | **No** (no ad SDK, `AD_ID` permission blocked)                                                                                              |
 | App access                 | Provide a demo email/password account (no OTP). Create it before review, confirm it still signs in, and list extra steps (e.g. onboarding). |
 | Target audience            | **13+**, not child-directed (Terms require 13+)                                                                                             |
 | Content rating             | Complete questionnaire (no violence, no UGC, finance tracking)                                                                              |
 | Financial features         | No financial products/services offered — tracking only                                                                                      |
-| Data deletion              | `https://vileyy.github.io/monevo/legal/account-deletion` + in-app Profile → Delete Account                                                  |
+| Data deletion              | `https://api.monevoapp.me/legal/account-deletion` + in-app Profile → Delete Account                                                         |
 | Advertising ID             | **No**                                                                                                                                      |
 | News / Government / Health | No                                                                                                                                          |
 

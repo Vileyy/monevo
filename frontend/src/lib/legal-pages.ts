@@ -1,11 +1,11 @@
 export type LegalPage = 'privacy' | 'terms' | 'account-deletion';
 
 /**
- * Public legal site, published by GitHub Pages from the repo's /docs folder.
+ * Public legal site, served by the API at `/legal/*`.
  * Kept independent from EXPO_PUBLIC_API_URL so the links never break when the
  * API host or IP changes.
  */
-export const DEFAULT_LEGAL_BASE_URL = 'https://vileyy.github.io/monevo';
+export const DEFAULT_LEGAL_BASE_URL = 'https://api.monevoapp.me';
 
 export const LEGAL_PAGE_PATHS: Record<LegalPage, string> = {
   privacy: '/legal/privacy',
