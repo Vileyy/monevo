@@ -52,23 +52,34 @@ interface ReminderState {
   deleteReminder: (id: string) => Promise<void>;
 }
 
+let remindersRequest: Promise<void> | null = null;
+
 export const useReminderStore = create<ReminderState>((set, get) => ({
   reminders: [],
   isLoading: false,
   error: null,
 
-  fetchReminders: async () => {
-    set({ isLoading: true, error: null });
-    try {
-      const response = await apiClient.get<ReminderItem[]>('/reminders');
-      set({ reminders: response.data, isLoading: false });
-      void syncReminderNotifications(response.data);
-    } catch (err: unknown) {
-      set({
-        isLoading: false,
-        error: err instanceof Error ? err.message : 'Failed to load reminders',
-      });
-    }
+  fetchReminders: () => {
+    if (remindersRequest) return remindersRequest;
+
+    remindersRequest = (async () => {
+      set({ isLoading: true, error: null });
+      try {
+        const response = await apiClient.get<ReminderItem[]>('/reminders');
+        set({ reminders: response.data, isLoading: false });
+        void syncReminderNotifications(response.data);
+      } catch (err: unknown) {
+        set({
+          isLoading: false,
+          error:
+            err instanceof Error ? err.message : 'Failed to load reminders',
+        });
+      } finally {
+        remindersRequest = null;
+      }
+    })();
+
+    return remindersRequest;
   },
 
   createReminder: async (data) => {

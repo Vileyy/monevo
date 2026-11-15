@@ -2,6 +2,7 @@ import {
   CLERK_LOAD_TIMEOUT_MS,
   isClerkReady,
   shouldDismissSplash,
+  shouldWaitForClerk,
 } from '@/lib/startup';
 
 describe('startup readiness', () => {
@@ -72,6 +73,45 @@ describe('startup readiness', () => {
           clerkReady: isClerkReady(false, true),
         }),
       ).toBe(true);
+    });
+  });
+
+  describe('shouldWaitForClerk', () => {
+    it('waits while Clerk is the only way to get a session', () => {
+      expect(
+        shouldWaitForClerk({
+          clerkLoaded: false,
+          apiSessionRestored: false,
+          clerkTimedOut: false,
+        }),
+      ).toBe(true);
+    });
+
+    it('renders a restored API session without waiting for Clerk', () => {
+      expect(
+        shouldWaitForClerk({
+          clerkLoaded: false,
+          apiSessionRestored: true,
+          clerkTimedOut: false,
+        }),
+      ).toBe(false);
+    });
+
+    it('opens as soon as Clerk loads or the timeout fires', () => {
+      expect(
+        shouldWaitForClerk({
+          clerkLoaded: true,
+          apiSessionRestored: false,
+          clerkTimedOut: false,
+        }),
+      ).toBe(false);
+      expect(
+        shouldWaitForClerk({
+          clerkLoaded: false,
+          apiSessionRestored: false,
+          clerkTimedOut: true,
+        }),
+      ).toBe(false);
     });
   });
 

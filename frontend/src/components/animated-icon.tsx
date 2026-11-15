@@ -5,8 +5,10 @@ import { colors, shadows, spacing } from '@/theme';
 import { useAuthStore } from '@/store/auth.store';
 import { shouldDismissSplash } from '@/lib/startup';
 
-const INTRO_DURATION = 1600;
-const ZOOM_DURATION = 480;
+// The launch animation must not outlive the work it hides: once the session is
+// restored and Clerk is ready there is nothing left to wait for.
+const INTRO_DURATION = 700;
+const ZOOM_DURATION = 360;
 
 export function AnimatedSplashOverlay({ clerkReady }: { clerkReady: boolean }) {
   const isHydrated = useAuthStore((state) => state.isHydrated);

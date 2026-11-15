@@ -59,6 +59,8 @@ type TransactionState = {
   deleteTransaction: (id: string) => Promise<void>;
 };
 
+let transactionsRequest: Promise<void> | null = null;
+
 export const useTransactionStore = create<TransactionState>((set, get) => ({
   transactions: [],
   isLoading: false,
@@ -68,23 +70,33 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
   isLoadingMore: false,
   lastPageQuery: null,
 
-  fetchTransactions: async (query) => {
-    if (!useAuthStore.getState().token) return;
+  fetchTransactions: (query) => {
+    const token = useAuthStore.getState().token;
+    if (!token) return Promise.resolve();
+    if (transactionsRequest) return transactionsRequest;
 
-    set({ isLoading: true });
-    try {
-      const response = await apiClient.get<Transaction[]>('/transactions', {
-        params: query,
-      });
-      set({ transactions: response.data, hasFetched: true });
-    } catch (error: any) {
-      if (error?.response?.status !== 401) {
-        console.error('Failed to fetch transactions:', error);
+    transactionsRequest = (async () => {
+      set({ isLoading: true });
+      try {
+        const response = await apiClient.get<Transaction[]>('/transactions', {
+          params: query,
+        });
+        // Ignore a late response from a session that already signed out.
+        if (useAuthStore.getState().token === token) {
+          set({ transactions: response.data, hasFetched: true });
+        }
+      } catch (error: any) {
+        if (error?.response?.status !== 401) {
+          console.error('Failed to fetch transactions:', error);
+        }
+        set({ hasFetched: true });
+      } finally {
+        set({ isLoading: false });
+        transactionsRequest = null;
       }
-      set({ hasFetched: true });
-    } finally {
-      set({ isLoading: false });
-    }
+    })();
+
+    return transactionsRequest;
   },
 
   fetchTransactionsPage: async (query = {}, { append = false } = {}) => {
