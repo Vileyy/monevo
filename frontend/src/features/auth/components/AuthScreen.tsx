@@ -1,7 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -11,7 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { useAuth, useSSO } from '@clerk/clerk-expo';
+import { useAuth, useSSO, useUser } from '@clerk/clerk-expo';
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -19,7 +20,6 @@ import { colors } from '@/theme';
 import { FaceIdIcon } from '@/components/FaceIdIcon';
 import { useAuthStore } from '@/store/auth.store';
 import { getBiometricSession } from '@/lib/biometrics';
-import { apiClient } from '@/services/api/client';
 import { hapticFeedback } from '@/lib/haptics';
 import { openLegalPage } from '@/lib/legal-links';
 import { authStyles } from '@/features/auth/styles/auth.styles';
@@ -30,6 +30,9 @@ import {
   getGoogleFallbackUser,
   resolveGoogleSessionId,
 } from '../utils/auth-helpers';
+import { buildSessionUser, exchangeClerkToken } from '../utils/session';
+
+const logoMark = require('../../../../assets/images/logo-mark.png');
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -46,32 +49,19 @@ export function AuthScreen() {
     (state) => state.loginWithBiometrics,
   );
 
-  const { getToken, signOut, isSignedIn, isLoaded: isAuthLoaded } = useAuth();
+  const { getToken, isSignedIn, isLoaded: isAuthLoaded } = useAuth();
   const { startSSOFlow } = useSSO();
+  const { user: clerkUser, isLoaded: isUserLoaded } = useUser();
 
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isBiometricLoading, setIsBiometricLoading] = useState(false);
+  const [isRestoringSession, setIsRestoringSession] = useState(false);
   const [savedBiometricUser, setSavedBiometricUser] = useState<{
     id: string;
     email: string;
     name?: string;
     avatarUrl?: string;
   } | null>(null);
-
-  // Sign out a stale Clerk session only once, on entry. A reactive check would
-  // also fire right after a fresh sign-in and invalidate the new session.
-  const cleanedStaleSessionRef = useRef(false);
-  useEffect(() => {
-    if (!isAuthLoaded || cleanedStaleSessionRef.current) return;
-    cleanedStaleSessionRef.current = true;
-    if (isSignedIn && !useAuthStore.getState().isAuthenticated) {
-      void (async () => {
-        try {
-          await signOut();
-        } catch {}
-      })();
-    }
-  }, [isAuthLoaded, isSignedIn, signOut]);
 
   useEffect(() => {
     void (async () => {
@@ -83,7 +73,7 @@ export function AuthScreen() {
     })();
   }, [refreshBiometricState]);
 
-  const fetchClerkToken = async (): Promise<string | null> => {
+  const fetchClerkToken = useCallback(async (): Promise<string | null> => {
     for (let attempt = 0; attempt < 5; attempt++) {
       try {
         const t = await getToken();
@@ -92,48 +82,81 @@ export function AuthScreen() {
       await new Promise((resolve) => setTimeout(resolve, 250));
     }
     return null;
-  };
+  }, [getToken]);
 
-  const commitSession = async (
-    clerkToken: string,
-    fallbackUser: {
-      id: string;
-      email: string;
-      name: string;
-      avatarUrl?: string;
+  const commitSession = useCallback(
+    async (
+      clerkToken: string,
+      fallbackUser: {
+        id: string;
+        email: string;
+        name: string;
+        avatarUrl?: string;
+      },
+    ) => {
+      const session = await exchangeClerkToken(clerkToken, fallbackUser.name);
+      loginStore(buildSessionUser(session, fallbackUser), session.accessToken);
+      router.replace('/(tabs)');
     },
-  ) => {
-    try {
-      const res = await apiClient.post<{
-        user: { id: string; email: string; name?: string };
-        accessToken: string;
-      }>('/auth/clerk', { clerkToken, name: fallbackUser.name });
-      if (res.data?.accessToken && res.data?.user) {
-        loginStore(
-          {
-            ...res.data.user,
-            name:
-              res.data.user.name &&
-              res.data.user.name !== 'Monevo Member' &&
-              res.data.user.name !== 'Google User'
-                ? res.data.user.name
-                : fallbackUser.name,
-            avatarUrl: fallbackUser.avatarUrl,
-          },
-          res.data.accessToken,
-        );
-        router.replace('/(tabs)');
-        return;
-      }
-    } catch (err) {
-      console.warn('Failed to exchange clerk token, falling back:', err);
+    [loginStore, router],
+  );
+
+  // The API session can outlive the Clerk one (or be cleared by a network
+  // hiccup). When Clerk still has a session, silently trade it for a new API
+  // token instead of signing the user out and asking them to tap Google
+  // again. Runs once per mount so it can never fight a fresh sign-in.
+  const restoredClerkSessionRef = useRef(false);
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isAuthLoaded || !isUserLoaded || restoredClerkSessionRef.current) {
+      return;
     }
-    loginStore(fallbackUser, clerkToken);
-    router.replace('/(tabs)');
-  };
+    if (isGoogleLoading) return;
+    if (!isSignedIn || useAuthStore.getState().isAuthenticated) return;
+    restoredClerkSessionRef.current = true;
+
+    void (async () => {
+      setIsRestoringSession(true);
+      try {
+        const token = await fetchClerkToken();
+        if (!token) return;
+
+        await commitSession(token, {
+          id: clerkUser?.id ?? '',
+          email: clerkUser?.primaryEmailAddress?.emailAddress ?? '',
+          name:
+            clerkUser?.fullName ||
+            [clerkUser?.firstName, clerkUser?.lastName]
+              .filter(Boolean)
+              .join(' ') ||
+            'Monevo User',
+          avatarUrl: clerkUser?.imageUrl || undefined,
+        });
+      } catch {
+        // Keep the sign-in button available; the user can retry manually.
+      } finally {
+        if (mountedRef.current) setIsRestoringSession(false);
+      }
+    })();
+  }, [
+    isAuthLoaded,
+    isUserLoaded,
+    isGoogleLoading,
+    isSignedIn,
+    clerkUser,
+    fetchClerkToken,
+    commitSession,
+  ]);
 
   const handleGoogleLogin = async () => {
-    if (isGoogleLoading || isBiometricLoading) return;
+    if (isGoogleLoading || isBiometricLoading || isRestoringSession) return;
 
     hapticFeedback.light();
     setIsGoogleLoading(true);
@@ -161,13 +184,31 @@ export function AuthScreen() {
         }
       }
 
-      if (!sessionId) return;
+      const fallback = getGoogleFallbackUser(result);
+      const commit = (token: string) =>
+        commitSession(token, {
+          id: sessionId ?? clerkUser?.id ?? '',
+          email: clerkUser?.primaryEmailAddress?.emailAddress || fallback.email,
+          name: clerkUser?.fullName || fallback.name,
+          avatarUrl: clerkUser?.imageUrl || undefined,
+        });
+
+      if (!sessionId) {
+        // Clerk returns no new session when the account is already active in
+        // the browser. Continue with that session; a null token means the
+        // user dismissed the sheet, so stay quiet.
+        const existingToken = await getToken().catch(() => null);
+        if (!existingToken) return;
+
+        await commit(existingToken);
+        hapticFeedback.success();
+        return;
+      }
 
       if (result.setActive) {
         await result.setActive({ session: sessionId });
       }
 
-      hapticFeedback.success();
       const token = await fetchClerkToken();
       if (!token) {
         Alert.alert(
@@ -177,8 +218,8 @@ export function AuthScreen() {
         return;
       }
 
-      const fallback = getGoogleFallbackUser(result);
-      await commitSession(token, { id: sessionId, ...fallback });
+      await commit(token);
+      hapticFeedback.success();
     } catch (err: unknown) {
       hapticFeedback.error();
       Alert.alert(
@@ -249,7 +290,12 @@ export function AuthScreen() {
         >
           <View style={authStyles.brandSection}>
             <View style={authStyles.logoBadge}>
-              <Ionicons name="wallet" size={34} color={colors.surface} />
+              <Image
+                source={logoMark}
+                style={authStyles.logoImage}
+                resizeMode="contain"
+                accessibilityIgnoresInvertColors
+              />
             </View>
             <Text style={authStyles.appName}>Monevo</Text>
             <Text style={authStyles.appTagline}>Sign in to continue</Text>
@@ -261,7 +307,9 @@ export function AuthScreen() {
                 <GoogleButton
                   onPress={() => void handleGoogleLogin()}
                   isLoading={isGoogleLoading}
-                  disabled={isGoogleLoading || isBiometricLoading}
+                  disabled={
+                    isGoogleLoading || isBiometricLoading || isRestoringSession
+                  }
                 />
               </View>
 

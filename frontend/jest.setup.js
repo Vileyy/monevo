@@ -87,6 +87,7 @@ jest.mock('@clerk/clerk-expo', () => ({
     signOut: jest.fn(),
   }),
   useUser: () => ({
+    isLoaded: true,
     user: {
       id: 'test_user_1',
       emailAddresses: [{ emailAddress: 'test@example.com' }],

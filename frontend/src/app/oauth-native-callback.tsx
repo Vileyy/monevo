@@ -1,13 +1,20 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAuth, useSignIn, useSignUp, useUser } from '@clerk/clerk-expo';
 import * as WebBrowser from 'expo-web-browser';
 import { useAuthStore } from '@/store/auth.store';
-import { apiClient } from '@/services/api/client';
+import { extractClerkErrorMessage } from '@/features/auth/utils/auth-helpers';
 import { colors } from '@/theme';
+import {
+  buildSessionUser,
+  exchangeClerkToken,
+} from '@/features/auth/utils/session';
 
 WebBrowser.maybeCompleteAuthSession();
+
+/** Give up waiting for Clerk and return to the sign-in screen. */
+const CALLBACK_TIMEOUT_MS = 6000;
 
 export default function OAuthNativeCallback() {
   const router = useRouter();
@@ -27,28 +34,70 @@ export default function OAuthNativeCallback() {
     setActive: setSignUpActive,
   } = useSignUp();
   const { user } = useUser();
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const loginStore = useAuthStore((state) => state.login);
 
+  const startedRef = useRef(false);
+
   useEffect(() => {
+    if (startedRef.current) return;
+    startedRef.current = true;
+
     let isMounted = true;
 
+    const fallbackTimer = setTimeout(() => {
+      if (!isMounted) return;
+      router.replace(
+        useAuthStore.getState().isAuthenticated ? '/(tabs)' : '/login',
+      );
+    }, CALLBACK_TIMEOUT_MS);
+
+    async function completeSignIn(clerkToken: string | null) {
+      if (!clerkToken) return false;
+
+      const email = user?.primaryEmailAddress?.emailAddress || '';
+      const name =
+        user?.fullName ||
+        [user?.firstName, user?.lastName].filter(Boolean).join(' ') ||
+        (email ? email.split('@')[0] : 'Google User');
+
+      try {
+        const session = await exchangeClerkToken(clerkToken, name);
+        if (!isMounted) return true;
+
+        loginStore(
+          buildSessionUser(session, {
+            email,
+            name,
+            avatarUrl: user?.imageUrl || undefined,
+          }),
+          session.accessToken,
+        );
+        router.replace('/(tabs)');
+        return true;
+      } catch (error) {
+        console.warn(
+          'Failed to complete sign-in:',
+          extractClerkErrorMessage(error),
+        );
+        return false;
+      }
+    }
+
     async function handleAuthFlow() {
-      if (isAuthenticated) {
+      if (useAuthStore.getState().isAuthenticated) {
         router.replace('/(tabs)');
         return;
       }
 
-      // 1. Process OAuth rotating token nonce if deep-linked back from browser
+      // 1. Finish the OAuth hand-off when the browser returns a rotating nonce.
       if (params.rotating_token_nonce && isSignInLoaded && isSignUpLoaded) {
         try {
           await signIn.reload({
             rotatingTokenNonce: params.rotating_token_nonce,
           });
 
-          let sessionId = '';
           if (signIn.status === 'complete') {
-            sessionId = signIn.createdSessionId || '';
+            const sessionId = signIn.createdSessionId || '';
             if (sessionId && setSignInActive) {
               await setSignInActive({ session: sessionId });
             }
@@ -60,7 +109,7 @@ export default function OAuthNativeCallback() {
               transfer: true,
               username: dynamicUsername,
             });
-            sessionId = res.createdSessionId || '';
+            const sessionId = res.createdSessionId || '';
             if (sessionId && setSignUpActive) {
               await setSignUpActive({ session: sessionId });
             }
@@ -70,72 +119,27 @@ export default function OAuthNativeCallback() {
         }
       }
 
-      // 2. If already signed in in Clerk, commit session to store
-      if (isSignedIn && userId) {
-        try {
-          const token = await getToken();
-          const email = user?.primaryEmailAddress?.emailAddress || '';
-          const name =
-            user?.fullName ||
-            [user?.firstName, user?.lastName].filter(Boolean).join(' ') ||
-            (email ? email.split('@')[0] : 'Google User');
-          const avatarUrl = user?.imageUrl || undefined;
-
-          if (token) {
-            try {
-              const res = await apiClient.post<{
-                user: { id: string; email: string; name?: string };
-                accessToken: string;
-              }>('/auth/clerk', { clerkToken: token, name });
-              if (res.data?.accessToken && isMounted) {
-                loginStore(
-                  {
-                    ...res.data.user,
-                    name:
-                      res.data.user?.name &&
-                      res.data.user.name !== 'Monevo Member' &&
-                      res.data.user.name !== 'Google User'
-                        ? res.data.user.name
-                        : name,
-                    avatarUrl,
-                  },
-                  res.data.accessToken,
-                );
-                router.replace('/(tabs)');
-                return;
-              }
-            } catch {}
-          }
-          if (isMounted) {
-            loginStore({ id: userId, email, name, avatarUrl }, token || userId);
-            router.replace('/(tabs)');
-          }
-        } catch {
-          if (isMounted) {
-            router.replace('/(tabs)');
-          }
+      // 2. Trade the Clerk session for a Monevo token. Never store the Clerk
+      // token itself: the API rejects it and the app would bounce back here.
+      if (!(await completeSignIn(await getToken()))) {
+        // Clerk may need a moment to expose the new session after setActive.
+        for (let attempt = 0; attempt < 4; attempt++) {
+          await new Promise((resolve) => setTimeout(resolve, 300));
+          if (await completeSignIn(await getToken())) return;
         }
-        return;
       }
 
-      // 3. Fallback timeout in case redirect fails or is dismissed
-      const timer = setTimeout(() => {
-        if (isMounted) {
-          if (useAuthStore.getState().isAuthenticated) {
-            router.replace('/(tabs)');
-          } else {
-            router.replace('/login');
-          }
-        }
-      }, 5000);
-
-      return () => clearTimeout(timer);
+      if (!isMounted) return;
+      router.replace(
+        useAuthStore.getState().isAuthenticated ? '/(tabs)' : '/login',
+      );
     }
 
     void handleAuthFlow();
 
     return () => {
       isMounted = false;
+      clearTimeout(fallbackTimer);
     };
   }, [
     params.rotating_token_nonce,
@@ -144,7 +148,6 @@ export default function OAuthNativeCallback() {
     isSignedIn,
     userId,
     user,
-    isAuthenticated,
     getToken,
     loginStore,
     router,
