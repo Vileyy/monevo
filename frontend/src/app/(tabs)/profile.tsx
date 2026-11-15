@@ -26,6 +26,7 @@ import { colors, radius, shadows, spacing, typography } from '@/theme';
 import { Card, Header } from '@/components/ui';
 import { SettingsRow } from '@/features/profile/components/SettingsRow';
 import { CurrencyPickerModal } from '@/features/profile/components/CurrencyPickerModal';
+import { LegalModal } from '@/features/profile/components/LegalModal';
 import { EditProfileModal } from '@/features/profile/components/EditProfileModal';
 import { CategoryModal } from '@/features/categories/components/CategoryModal';
 import {
@@ -34,7 +35,6 @@ import {
 } from '@/lib/notifications';
 import { hapticFeedback } from '@/lib/haptics';
 import { deleteUserAccount } from '@/lib/account';
-import { openLegalPage } from '@/lib/legal-links';
 import { apiErrorMessage } from '@/lib/api-error';
 import { useDisplayCurrency } from '@/hooks/use-display-currency';
 
@@ -61,6 +61,7 @@ export default function ProfileScreen() {
   const [showCurrencyModal, setShowCurrencyModal] = useState(false);
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [showLegalModal, setShowLegalModal] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
   const handleToggleNotifications = async () => {
@@ -168,22 +169,6 @@ export default function ProfileScreen() {
         },
       ],
     );
-  };
-
-  const handleOpenLegalPage = async (
-    page: 'privacy' | 'terms' | 'account-deletion',
-  ) => {
-    hapticFeedback.light();
-    try {
-      await openLegalPage(page);
-    } catch (error) {
-      Alert.alert(
-        'Unavailable',
-        error instanceof Error
-          ? error.message
-          : 'Could not open this page right now.',
-      );
-    }
   };
 
   const displayEmail = useMemo(
@@ -374,23 +359,9 @@ export default function ProfileScreen() {
             icon="shield-checkmark-outline"
             iconColor={colors.info}
             iconBgColor={colors.infoBg}
-            title="Privacy Policy"
-            subtitle="How we collect, use and protect your data"
-            onPress={() => void handleOpenLegalPage('privacy')}
-          />
-          <View style={styles.rowDivider} />
-          <SettingsRow
-            icon="document-text-outline"
-            title="Terms of Service"
-            subtitle="Rules for using Monevo"
-            onPress={() => void handleOpenLegalPage('terms')}
-          />
-          <View style={styles.rowDivider} />
-          <SettingsRow
-            icon="information-circle-outline"
-            title="Account Deletion Info"
-            subtitle="Delete in the app or request deletion online"
-            onPress={() => void handleOpenLegalPage('account-deletion')}
+            title="Legal & Privacy"
+            subtitle="Privacy policy, terms and account deletion"
+            onPress={() => setShowLegalModal(true)}
           />
         </Card>
 
@@ -408,6 +379,10 @@ export default function ProfileScreen() {
         onClose={() => setShowEditProfileModal(false)}
       />
 
+      <LegalModal
+        visible={showLegalModal}
+        onClose={() => setShowLegalModal(false)}
+      />
       <CategoryModal
         visible={showCategoryModal}
         onClose={() => setShowCategoryModal(false)}

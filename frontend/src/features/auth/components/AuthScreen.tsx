@@ -312,8 +312,8 @@ export function AuthScreen() {
           </View>
 
           <View style={authStyles.legalFooter}>
-            <Text style={authStyles.legalText}>
-              By continuing, you agree to our{' '}
+            <Text style={authStyles.legalText} numberOfLines={1}>
+              You agree to our{' '}
               <Text
                 style={authStyles.legalLink}
                 onPress={() => void handleOpenLegalPage('terms')}
