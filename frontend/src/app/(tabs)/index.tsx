@@ -38,12 +38,14 @@ export default function HomeScreen() {
   const {
     wallets,
     isLoading: isWalletsLoading,
+    hasFetched: hasFetchedWallets,
     fetchWallets,
   } = useWalletStore();
 
   const {
     transactions,
     isLoading: isTransactionsLoading,
+    hasFetched: hasFetchedTransactions,
     fetchTransactions,
   } = useTransactionStore();
 
@@ -118,7 +120,7 @@ export default function HomeScreen() {
             </Pressable>
           </View>
 
-          {isWalletsLoading && wallets.length === 0 ? (
+          {(isWalletsLoading || !hasFetchedWallets) && wallets.length === 0 ? (
             <View style={styles.walletSkeleton}>
               <WalletSkeletonCard />
             </View>
@@ -155,7 +157,8 @@ export default function HomeScreen() {
           </View>
 
           <View style={styles.transactionsContainer}>
-            {isTransactionsLoading && transactions.length === 0 ? (
+            {(isTransactionsLoading || !hasFetchedTransactions) &&
+            transactions.length === 0 ? (
               <TransactionSkeletonList count={3} />
             ) : recentTransactions.length === 0 ? (
               <EmptyState

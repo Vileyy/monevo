@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useAuthStore } from '@/store/auth.store';
+import { shouldClearSession } from './session-guard';
 
 export const apiClient = axios.create({
   baseURL: process.env.EXPO_PUBLIC_API_URL,
@@ -27,12 +28,17 @@ let isHandling401 = false;
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401 && !isHandling401) {
-      isHandling401 = true;
-      useAuthStore.getState().logout();
-      setTimeout(() => {
-        isHandling401 = false;
-      }, 3000);
+    if (error.response?.status === 401) {
+      const usedToken = useAuthStore.getState().token;
+      const requestAuth = error.config?.headers?.Authorization;
+
+      if (shouldClearSession(requestAuth, usedToken) && !isHandling401) {
+        isHandling401 = true;
+        useAuthStore.getState().logout();
+        setTimeout(() => {
+          isHandling401 = false;
+        }, 3000);
+      }
     }
     return Promise.reject(error);
   },

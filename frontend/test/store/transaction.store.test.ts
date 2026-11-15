@@ -1,4 +1,5 @@
 import { apiClient } from '@/services/api/client';
+import { useAuthStore } from '@/store/auth.store';
 import {
   TRANSACTION_PAGE_SIZE,
   useTransactionStore,
@@ -15,7 +16,7 @@ jest.mock('@/services/api/client', () => ({
 
 jest.mock('@/store/auth.store', () => ({
   useAuthStore: {
-    getState: () => ({ token: 'test-token' }),
+    getState: jest.fn(() => ({ token: 'test-token' })),
   },
 }));
 
@@ -109,6 +110,47 @@ describe('transaction.store', () => {
       const state = useTransactionStore.getState();
       expect(state.transactions.map((t) => t.id)).toEqual(['t1', 't2']);
       expect(state.pageMeta?.hasMore).toBe(false);
+    });
+  });
+
+  describe('fetchTransactions', () => {
+    afterEach(() => {
+      (useAuthStore.getState as jest.Mock).mockReturnValue({
+        token: 'test-token',
+      });
+    });
+
+    it('shares one request between the startup prefetch and Home', async () => {
+      let resolve!: (value: unknown) => void;
+      (apiClient.get as jest.Mock).mockImplementation(
+        () =>
+          new Promise((done) => {
+            resolve = done;
+          }),
+      );
+
+      const first = useTransactionStore.getState().fetchTransactions();
+      const second = useTransactionStore.getState().fetchTransactions();
+      expect(apiClient.get).toHaveBeenCalledTimes(1);
+
+      resolve({ data: [{ id: 't1', amount: 100 }] });
+      await Promise.all([first, second]);
+
+      expect(useTransactionStore.getState().transactions).toHaveLength(1);
+      expect(useTransactionStore.getState().hasFetched).toBe(true);
+    });
+
+    it('ignores a response that arrives after the session changed', async () => {
+      (useAuthStore.getState as jest.Mock)
+        .mockReturnValueOnce({ token: 'old-session' })
+        .mockReturnValue({ token: 'new-session' });
+      (apiClient.get as jest.Mock).mockResolvedValue({
+        data: [{ id: 'old-user-tx', amount: 100 }],
+      });
+
+      await useTransactionStore.getState().fetchTransactions();
+
+      expect(useTransactionStore.getState().transactions).toEqual([]);
     });
   });
 

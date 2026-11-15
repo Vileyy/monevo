@@ -18,6 +18,9 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useAuthStore } from '@/store/auth.store';
 import { useSettingsStore } from '@/store/settings.store';
 import { useCurrencyStore } from '@/store/currency.store';
+import { useWalletStore } from '@/store/wallet.store';
+import { useTransactionStore } from '@/store/transaction.store';
+import { useReminderStore } from '@/store/reminder.store';
 import {
   analytics,
   applyAnalyticsPreference,
@@ -26,7 +29,7 @@ import {
 } from '@/lib/analytics';
 import { tokenCache } from '@/lib/token-cache';
 import { initNotifications } from '@/lib/notifications';
-import { CLERK_LOAD_TIMEOUT_MS, isClerkReady } from '@/lib/startup';
+import { CLERK_LOAD_TIMEOUT_MS, shouldWaitForClerk } from '@/lib/startup';
 import { buildClerkProfileUpdates } from '@/features/auth/utils/clerk-profile';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -60,16 +63,21 @@ function ClerkUserSync() {
 
 function StartupGate({ children }: { children: React.ReactNode }) {
   const { isLoaded } = useAuth();
+  const hasApiSession = useAuthStore((state) => state.isAuthenticated);
   const [hasTimedOut, setHasTimedOut] = useState(false);
 
   useEffect(() => {
-    if (isLoaded) return;
+    if (isLoaded || hasApiSession) return;
 
     const timer = setTimeout(() => setHasTimedOut(true), CLERK_LOAD_TIMEOUT_MS);
     return () => clearTimeout(timer);
-  }, [isLoaded]);
+  }, [isLoaded, hasApiSession]);
 
-  const clerkReady = isClerkReady(isLoaded, hasTimedOut);
+  const clerkReady = !shouldWaitForClerk({
+    clerkLoaded: isLoaded,
+    apiSessionRestored: hasApiSession,
+    clerkTimedOut: hasTimedOut,
+  });
 
   return (
     <>
@@ -98,6 +106,23 @@ export default function RootLayout() {
       void Promise.all([restoreSession(), restoreSettings()]);
     } catch {}
   }, [restoreSession, restoreSettings]);
+
+  const fetchWallets = useWalletStore((state) => state.fetchWallets);
+  const fetchTransactions = useTransactionStore(
+    (state) => state.fetchTransactions,
+  );
+  const fetchReminders = useReminderStore((state) => state.fetchReminders);
+
+  // Warm the first screens while the splash is still fading out, so Home draws
+  // real data instead of holding its skeleton for another round trip.
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    void Promise.allSettled([
+      fetchWallets(),
+      fetchTransactions(),
+      fetchReminders(),
+    ]);
+  }, [isAuthenticated, fetchWallets, fetchTransactions, fetchReminders]);
 
   // Restore the cache first so a slow network never regresses known rates.
   useEffect(() => {

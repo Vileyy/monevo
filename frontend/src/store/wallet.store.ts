@@ -26,26 +26,40 @@ type WalletState = {
   deleteWallet: (id: string) => Promise<void>;
 };
 
+// Screens share one store: when the startup prefetch and the Home screen ask
+// at the same time, both should await the same request.
+let walletsRequest: Promise<void> | null = null;
+
 export const useWalletStore = create<WalletState>((set, get) => ({
   wallets: [],
   isLoading: false,
   hasFetched: false,
 
-  fetchWallets: async () => {
-    if (!useAuthStore.getState().token) return;
+  fetchWallets: () => {
+    const token = useAuthStore.getState().token;
+    if (!token) return Promise.resolve();
+    if (walletsRequest) return walletsRequest;
 
-    set({ isLoading: true });
-    try {
-      const response = await apiClient.get<Wallet[]>('/wallets');
-      set({ wallets: response.data, hasFetched: true });
-    } catch (error: any) {
-      if (error?.response?.status !== 401) {
-        console.error('Failed to fetch wallets:', error);
+    walletsRequest = (async () => {
+      set({ isLoading: true });
+      try {
+        const response = await apiClient.get<Wallet[]>('/wallets');
+        // Ignore a late response from a session that already signed out.
+        if (useAuthStore.getState().token === token) {
+          set({ wallets: response.data, hasFetched: true });
+        }
+      } catch (error: any) {
+        if (error?.response?.status !== 401) {
+          console.error('Failed to fetch wallets:', error);
+        }
+        set({ hasFetched: true });
+      } finally {
+        set({ isLoading: false });
+        walletsRequest = null;
       }
-      set({ hasFetched: true });
-    } finally {
-      set({ isLoading: false });
-    }
+    })();
+
+    return walletsRequest;
   },
 
   createWallet: async (name, type, balance = 0) => {
