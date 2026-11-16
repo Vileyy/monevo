@@ -29,6 +29,8 @@ import { CurrencyPickerModal } from '@/features/profile/components/CurrencyPicke
 import { LegalModal } from '@/features/profile/components/LegalModal';
 import { EditProfileModal } from '@/features/profile/components/EditProfileModal';
 import { CategoryModal } from '@/features/categories/components/CategoryModal';
+import { BankSyncModal } from '@/features/bank-sync';
+import { useBankSyncStore } from '@/store/bank-sync.store';
 import {
   requestNotificationPermission,
   syncReminderNotifications,
@@ -62,7 +64,10 @@ export default function ProfileScreen() {
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showLegalModal, setShowLegalModal] = useState(false);
+  const [showBankSyncModal, setShowBankSyncModal] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+
+  const bankSyncEnabled = useBankSyncStore((state) => state.isEnabled);
 
   const handleToggleNotifications = async () => {
     hapticFeedback.selection();
@@ -316,6 +321,16 @@ export default function ProfileScreen() {
             subtitle="Add custom income and expense categories"
             onPress={() => setShowCategoryModal(true)}
           />
+          <View style={styles.rowDivider} />
+          <SettingsRow
+            icon="notifications-circle-outline"
+            iconColor={colors.primary}
+            iconBgColor={colors.primaryMuted}
+            title="Bank Notification Sync"
+            subtitle="Auto-capture transfers & balance changes"
+            value={bankSyncEnabled ? 'Active' : 'Off'}
+            onPress={() => setShowBankSyncModal(true)}
+          />
         </Card>
 
         {/* Session Section */}
@@ -386,6 +401,10 @@ export default function ProfileScreen() {
       <CategoryModal
         visible={showCategoryModal}
         onClose={() => setShowCategoryModal(false)}
+      />
+      <BankSyncModal
+        visible={showBankSyncModal}
+        onClose={() => setShowBankSyncModal(false)}
       />
     </SafeAreaView>
   );

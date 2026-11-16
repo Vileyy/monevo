@@ -21,6 +21,8 @@ import { useCurrencyStore } from '@/store/currency.store';
 import { useWalletStore } from '@/store/wallet.store';
 import { useTransactionStore } from '@/store/transaction.store';
 import { useReminderStore } from '@/store/reminder.store';
+import { useBankSyncStore } from '@/store/bank-sync.store';
+import { setupBankSyncNotificationHandler } from '@/features/bank-sync/services/notificationListener';
 import {
   analytics,
   applyAnalyticsPreference,
@@ -93,6 +95,9 @@ export default function RootLayout() {
   const user = useAuthStore((state) => state.user);
   const restoreSession = useAuthStore((state) => state.restoreSession);
   const restoreSettings = useSettingsStore((state) => state.restoreSettings);
+  const restoreBankSyncSettings = useBankSyncStore(
+    (state) => state.restoreBankSyncSettings,
+  );
   const settingsHydrated = useSettingsStore((state) => state.isHydrated);
   const shareAnalytics = useSettingsStore((state) => state.shareAnalytics);
   const restoreRates = useCurrencyStore((state) => state.restoreRates);
@@ -103,9 +108,20 @@ export default function RootLayout() {
   useEffect(() => {
     try {
       void initNotifications();
-      void Promise.all([restoreSession(), restoreSettings()]);
+      void Promise.all([
+        restoreSession(),
+        restoreSettings(),
+        restoreBankSyncSettings(),
+      ]);
     } catch {}
-  }, [restoreSession, restoreSettings]);
+  }, [restoreSession, restoreSettings, restoreBankSyncSettings]);
+
+  useEffect(() => {
+    const unsubscribe = setupBankSyncNotificationHandler(() => {
+      router.push('/(tabs)');
+    });
+    return unsubscribe;
+  }, [router]);
 
   const fetchWallets = useWalletStore((state) => state.fetchWallets);
   const fetchTransactions = useTransactionStore(
