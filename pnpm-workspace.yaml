@@ -24,6 +24,8 @@ overrides:
   handlebars: '4.7.10'
   follow-redirects: '>=1.16.2'
   node-forge: '>=1.4.1'
+  # ReDoS in Schema.TemplateLiteral; @prisma/config pins the vulnerable 3.20.0.
+  effect: '^3.22.1'
 audit:
   ignore:
     # image-size@2.0.3 is not on npm yet; latest is 2.0.2 (dev-only via Metro)
