@@ -1,12 +1,45 @@
 import { ExecutionContext } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtAuthGuard } from '../../src/auth/guards/jwt-auth.guard';
+import {
+  JwtAuthGuard,
+  hasClerkKeyId,
+} from '../../src/auth/guards/jwt-auth.guard';
 import { UsersService } from '../../src/users/users.service';
 import * as clerkBackend from '@clerk/backend';
 
 jest.mock('@clerk/backend', () => ({
   verifyToken: jest.fn(),
 }));
+
+/** Builds a JWT-shaped string with the given header, e.g. a Clerk `kid`. */
+function makeToken(header: Record<string, unknown>): string {
+  const encode = (value: unknown) =>
+    Buffer.from(JSON.stringify(value)).toString('base64url');
+  return `${encode(header)}.${encode({ sub: 'user-1' })}.signature`;
+}
+
+const CLERK_TOKEN = makeToken({
+  alg: 'RS256',
+  kid: 'ins_abc123',
+  typ: 'JWT',
+});
+const LOCAL_TOKEN = makeToken({ alg: 'HS256', typ: 'JWT' });
+
+describe('hasClerkKeyId', () => {
+  it('detects Clerk tokens by their kid header', () => {
+    expect(hasClerkKeyId(CLERK_TOKEN)).toBe(true);
+  });
+
+  it('rejects local HS256 tokens without a kid', () => {
+    expect(hasClerkKeyId(LOCAL_TOKEN)).toBe(false);
+  });
+
+  it('rejects opaque and malformed tokens', () => {
+    expect(hasClerkKeyId('not-a-jwt')).toBe(false);
+    expect(hasClerkKeyId('')).toBe(false);
+    expect(hasClerkKeyId('!!!.payload.signature')).toBe(false);
+  });
+});
 
 describe('JwtAuthGuard', () => {
   let guard: JwtAuthGuard;
@@ -51,17 +84,23 @@ describe('JwtAuthGuard', () => {
     } as unknown as ExecutionContext;
   };
 
-  it('should authenticate with valid Clerk token', async () => {
+  const spyOnPassport = () =>
+    jest
+      .spyOn(Object.getPrototypeOf(Object.getPrototypeOf(guard)), 'canActivate')
+      .mockResolvedValue(true);
+
+  it('authenticates a Clerk token', async () => {
     (clerkBackend.verifyToken as jest.Mock).mockResolvedValue({
       sub: 'clerk_user_123',
       email: 'clerk@user.com',
     });
 
-    const context = createMockContext('Bearer clerk_jwt_token');
-    const result = await guard.canActivate(context);
+    const result = await guard.canActivate(
+      createMockContext(`Bearer ${CLERK_TOKEN}`),
+    );
 
     expect(result).toBe(true);
-    expect(clerkBackend.verifyToken).toHaveBeenCalledWith('clerk_jwt_token', {
+    expect(clerkBackend.verifyToken).toHaveBeenCalledWith(CLERK_TOKEN, {
       secretKey: 'test_clerk_secret',
     });
     expect(mockUsersService.findOrCreateByClerk).toHaveBeenCalledWith(
@@ -70,17 +109,27 @@ describe('JwtAuthGuard', () => {
     );
   });
 
-  it('should fall back to passport AuthGuard when Clerk token verification fails', async () => {
+  it('never calls Clerk for a local token', async () => {
+    const superCanActivateSpy = spyOnPassport();
+
+    const result = await guard.canActivate(
+      createMockContext(`Bearer ${LOCAL_TOKEN}`),
+    );
+
+    expect(result).toBe(true);
+    expect(clerkBackend.verifyToken).not.toHaveBeenCalled();
+    expect(superCanActivateSpy).toHaveBeenCalled();
+  });
+
+  it('falls back to passport when Clerk verification fails', async () => {
     (clerkBackend.verifyToken as jest.Mock).mockRejectedValue(
       new Error('Invalid token'),
     );
+    const superCanActivateSpy = spyOnPassport();
 
-    const superCanActivateSpy = jest
-      .spyOn(Object.getPrototypeOf(Object.getPrototypeOf(guard)), 'canActivate')
-      .mockResolvedValue(true);
-
-    const context = createMockContext('Bearer invalid_token');
-    const result = await guard.canActivate(context);
+    const result = await guard.canActivate(
+      createMockContext(`Bearer ${CLERK_TOKEN}`),
+    );
 
     expect(result).toBe(true);
     expect(superCanActivateSpy).toHaveBeenCalled();
