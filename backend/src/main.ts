@@ -6,6 +6,7 @@ import helmet from 'helmet';
 import * as Sentry from '@sentry/nestjs';
 import { AppModule } from './app.module';
 import { DecimalSerializerInterceptor } from './common/interceptors/decimal-serializer.interceptor';
+import { TimingInterceptor } from './common/interceptors/timing.interceptor';
 
 if (process.env.SENTRY_DSN) {
   Sentry.init({
@@ -52,7 +53,10 @@ async function bootstrap() {
     );
   }
 
-  app.useGlobalInterceptors(new DecimalSerializerInterceptor());
+  app.useGlobalInterceptors(
+    new TimingInterceptor(),
+    new DecimalSerializerInterceptor(),
+  );
 
   app.useGlobalPipes(
     new ValidationPipe({
