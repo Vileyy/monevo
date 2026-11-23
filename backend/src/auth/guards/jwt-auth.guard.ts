@@ -11,6 +11,28 @@ interface ClerkTokenPayload {
   [key: string]: unknown;
 }
 
+/**
+ * Clerk session tokens are RS256 and always carry a `kid` in their header.
+ * Monevo's own JWTs are HS256 with no `kid`.
+ *
+ * This check matters for latency: without it every email/password request made
+ * a network call to Clerk to fetch JWKS, failed, and only then fell back to the
+ * local strategy — ~60ms added to every authenticated request.
+ */
+export function hasClerkKeyId(token: string): boolean {
+  const [encodedHeader] = token.split('.');
+  if (!encodedHeader) return false;
+
+  try {
+    const header = JSON.parse(
+      Buffer.from(encodedHeader, 'base64url').toString('utf8'),
+    ) as { kid?: unknown };
+    return typeof header.kid === 'string' && header.kid.length > 0;
+  } catch {
+    return false;
+  }
+}
+
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
   constructor(
@@ -33,7 +55,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         this.configService?.get<string>('CLERK_SECRET_KEY') ||
         process.env.CLERK_SECRET_KEY;
 
-      if (secretKey) {
+      if (secretKey && hasClerkKeyId(token)) {
         try {
           const verifyClerkToken = verifyToken as (
             token: string,

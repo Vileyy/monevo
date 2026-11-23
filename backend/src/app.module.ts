@@ -29,8 +29,8 @@ import { CurrencyModule } from './currency/currency.module';
     }),
     ThrottlerModule.forRoot([
       {
-        ttl: 60_000,
-        limit: 100,
+        ttl: Number(process.env.THROTTLE_TTL_MS ?? 60_000),
+        limit: Number(process.env.THROTTLE_LIMIT ?? 100),
       },
     ]),
     PrismaModule,
