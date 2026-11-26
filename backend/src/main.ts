@@ -5,14 +5,24 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import * as Sentry from '@sentry/nestjs';
 import { AppModule } from './app.module';
+import { isSwaggerEnabled } from './config/swagger';
 import { DecimalSerializerInterceptor } from './common/interceptors/decimal-serializer.interceptor';
 import { TimingInterceptor } from './common/interceptors/timing.interceptor';
+import { scrubSentryEvent } from './observability/sentry-scrubber';
 
 if (process.env.SENTRY_DSN) {
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
     environment:
       process.env.SENTRY_ENVIRONMENT ?? process.env.NODE_ENV ?? 'development',
+    dataCollection: {
+      userInfo: false,
+      cookies: false,
+      httpBodies: [],
+      urlQueryParams: false,
+      httpHeaders: { request: true, response: false },
+    },
+    beforeSend: scrubSentryEvent,
   });
 }
 
@@ -65,7 +75,7 @@ async function bootstrap() {
     }),
   );
 
-  if (process.env.SWAGGER_ENABLED !== 'false') {
+  if (isSwaggerEnabled()) {
     const swaggerConfig = new DocumentBuilder()
       .setTitle('Monevo API')
       .setDescription('Personal finance API for the Monevo mobile app')

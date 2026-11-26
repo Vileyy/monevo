@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClerkClient } from '@clerk/backend';
 jest.mock('@clerk/backend', () => ({
@@ -228,6 +228,31 @@ describe('UsersService', () => {
           name: 'Monevo Member',
         },
       });
+    });
+
+    it('refuses to attach a Clerk id to an existing email account', async () => {
+      prisma.user.findUnique.mockResolvedValueOnce(null).mockResolvedValueOnce({
+        id: 'legacy-user',
+        email: 'victim@example.com',
+        password: 'hashed',
+        clerkId: null,
+      });
+
+      await expect(
+        service.findOrCreateByClerk('user_abc', 'victim@example.com'),
+      ).rejects.toThrow(ConflictException);
+
+      expect(prisma.user.update).not.toHaveBeenCalled();
+      expect(prisma.user.create).not.toHaveBeenCalled();
+    });
+
+    it('maps a unique-constraint race to a conflict', async () => {
+      prisma.user.findUnique.mockResolvedValue(null);
+      prisma.user.create.mockRejectedValue({ code: 'P2002' });
+
+      await expect(
+        service.findOrCreateByClerk('user_abc', 'raced@example.com'),
+      ).rejects.toThrow(ConflictException);
     });
   });
 

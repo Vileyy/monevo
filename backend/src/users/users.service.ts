@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClerkClient } from '@clerk/backend';
 import { PrismaService } from '../prisma/prisma.service';
@@ -7,6 +12,17 @@ import { UpdateUserDto } from './dto/update-user.dto';
 function isClerkPlaceholderEmail(email: string | null | undefined): boolean {
   return Boolean(email?.endsWith('@clerk.user'));
 }
+
+function isUniqueConstraintError(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    (error as { code?: unknown }).code === 'P2002'
+  );
+}
+
+const ACCOUNT_EXISTS_MESSAGE =
+  'An account with this email already exists. Sign in with the method you used to create it.';
 
 @Injectable()
 export class UsersService {
@@ -67,25 +83,32 @@ export class UsersService {
     }
 
     if (!user && email) {
-      user = await this.prisma.user.findUnique({
+      // Never attach a Clerk identity to an existing row just because the
+      // emails match. Without a verified-email check that would let an
+      // attacker pre-register a victim's address and keep password access.
+      const existing = await this.prisma.user.findUnique({
         where: { email },
       });
-      if (user) {
-        user = await this.prisma.user.update({
-          where: { id: user.id },
-          data: { clerkId },
-        });
+      if (existing) {
+        throw new ConflictException(ACCOUNT_EXISTS_MESSAGE);
       }
     }
 
     if (!user) {
-      user = await this.prisma.user.create({
-        data: {
-          clerkId,
-          email: email || `${clerkId}@clerk.user`,
-          name: name || 'Monevo Member',
-        },
-      });
+      try {
+        user = await this.prisma.user.create({
+          data: {
+            clerkId,
+            email: email || `${clerkId}@clerk.user`,
+            name: name || 'Monevo Member',
+          },
+        });
+      } catch (error: unknown) {
+        if (isUniqueConstraintError(error)) {
+          throw new ConflictException(ACCOUNT_EXISTS_MESSAGE);
+        }
+        throw error;
+      }
     }
 
     const { password, ...result } = user;
