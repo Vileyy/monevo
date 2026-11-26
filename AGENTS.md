@@ -6,7 +6,7 @@ Operational source of truth for humans and agents. The root README (FastAPI / `a
 
 Personal finance app: Expo (Android-first) + NestJS API + PostgreSQL.
 
-Shipped: email/password + Google/Clerk sign-in, wallets, transactions, budgets, bill reminders, insights, HTTPS API. Not yet: CSV export, receipt photos, offline sync, Play Store release.
+Shipped: Google/Clerk sign-in (legacy email/password endpoints are disabled in production), wallets, transactions, budgets, bill reminders, insights, HTTPS API. Not yet: CSV export, receipt photos, offline sync, Play Store release.
 
 ## 2. Actual stack
 
@@ -64,21 +64,26 @@ The `.pem` sits next to the `Project/` folder. Do not commit it. Do not copy it 
 Expo  →  Axios EXPO_PUBLIC_API_URL (https://<API_DOMAIN>)
       →  Caddy :443 (Let's Encrypt, HTTP→HTTPS redirect)
       →  api:3000 (Nest, bound to 127.0.0.1 on the host)
-      →  JWT guard (except /auth/register, /auth/login, /health, /currency/rates, /legal/*)
+      →  JWT guard (public: /auth/register, /auth/login, /auth/clerk, /health, /currency/rates, /legal/*)
       →  Prisma  →  postgres container (Docker hostname: postgres)
 ```
+
+The app signs in with Google through Clerk only. `/auth/register` and
+`/auth/login` are legacy: they return 404 in production unless
+`PASSWORD_AUTH_ENABLED=true`, and they never attach an existing password
+account to a Clerk identity by email. Existing Clerk accounts do not need them.
 
 Login returns `{ user, accessToken }`. The token is persisted in SecureStore
 (with biometric unlock); Zustand hydrates it on startup.
 
 ## 6. Env files
 
-| File            | Where | Role                                                                                  |
-| --------------- | ----- | ------------------------------------------------------------------------------------- |
-| `frontend/.env` | Mac   | `EXPO_PUBLIC_API_URL=https://<API_DOMAIN>` — restart Expo after edits                 |
-| `deploy/.env`   | EC2   | `POSTGRES_*`, `JWT_SECRET`, `API_DOMAIN`, `ACME_EMAIL`, `DEMO_*` — Compose reads this |
-| Root `.env`     | Mac   | Local Prisma (`prisma+postgres://...`) — **not** for EC2                              |
-| `backend/.env`  | Mac   | Local DB if used                                                                      |
+| File            | Where | Role                                                                                                                              |
+| --------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `frontend/.env` | Mac   | `EXPO_PUBLIC_API_URL=https://<API_DOMAIN>` — restart Expo after edits                                                             |
+| `deploy/.env`   | EC2   | `POSTGRES_*`, `JWT_SECRET`, `API_DOMAIN`, `ACME_EMAIL`, `SWAGGER_ENABLED`, `PASSWORD_AUTH_ENABLED`, `DEMO_*` — Compose reads this |
+| Root `.env`     | Mac   | Local Prisma (`prisma+postgres://...`) — **not** for EC2                                                                          |
+| `backend/.env`  | Mac   | Local DB if used                                                                                                                  |
 
 Compose **builds** `DATABASE_URL`. Do not copy the root `.env` to the server.
 
@@ -209,20 +214,22 @@ sort/pagination, budgets, bill reminders, insights, HTTPS API.
 
 ## 14. Known mistakes — do not repeat
 
-| Symptom                        | Cause                                  |
-| ------------------------------ | -------------------------------------- |
-| `cd ~/monevo` fails on Mac     | Wrong machine                          |
-| Docker sock error on Mac       | Docker commands belong on EC2          |
-| `scp` cannot find `/Users/...` | You are already inside SSH             |
-| `logs api--tail`               | Missing space: `logs api --tail 80`    |
-| `Cannot find module dist/main` | Use `dist/src/main.js`                 |
-| 500 on Wallet/Transaction      | Missing tables — migration not applied |
-| SSH hangs                      | `t3.micro` OOM — reboot + swap         |
-| Browser Instance Connect fails | SG SSH is My IP only                   |
-| HTTPS cert timeout / `000`     | SG 80/443 closed or DNS wrong          |
-| API 502 from Caddy             | API container down / not on `api:3000` |
-| `http://IP:3000` unreachable   | Intentional: API binds `127.0.0.1`     |
-| Play Data safety encryption    | Release build must use `https://` URL  |
+| Symptom                        | Cause                                          |
+| ------------------------------ | ---------------------------------------------- |
+| `cd ~/monevo` fails on Mac     | Wrong machine                                  |
+| Docker sock error on Mac       | Docker commands belong on EC2                  |
+| `scp` cannot find `/Users/...` | You are already inside SSH                     |
+| `logs api--tail`               | Missing space: `logs api --tail 80`            |
+| `Cannot find module dist/main` | Use `dist/src/main.js`                         |
+| 500 on Wallet/Transaction      | Missing tables — migration not applied         |
+| SSH hangs                      | `t3.micro` OOM — reboot + swap                 |
+| Browser Instance Connect fails | SG SSH is My IP only                           |
+| HTTPS cert timeout / `000`     | SG 80/443 closed or DNS wrong                  |
+| API 502 from Caddy             | API container down / not on `api:3000`         |
+| `http://IP:3000` unreachable   | Intentional: API binds `127.0.0.1`             |
+| `/auth/login` 404 in prod      | Legacy password auth is off — use Clerk/Google |
+| `/api` Swagger 404 in prod     | Intentionally disabled by default              |
+| Play Data safety encryption    | Release build must use `https://` URL          |
 
 ## 15. Expo & Frontend Design
 

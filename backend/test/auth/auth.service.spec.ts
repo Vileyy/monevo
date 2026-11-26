@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/unbound-method */
 import { Test, TestingModule } from '@nestjs/testing';
 jest.mock(
   '../../generated/prisma/client',
@@ -11,7 +11,11 @@ import { AuthService } from '../../src/auth/auth.service';
 import { UsersService } from '../../src/users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { ConflictException, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import bcrypt from 'bcrypt';
 
 describe('AuthService', () => {
@@ -135,6 +139,39 @@ describe('AuthService', () => {
       await expect(service.login(loginDto)).rejects.toThrow(
         UnauthorizedException,
       );
+    });
+  });
+
+  describe('when password auth is disabled in production', () => {
+    const originalNodeEnv = process.env.NODE_ENV;
+
+    afterEach(() => {
+      process.env.NODE_ENV = originalNodeEnv;
+    });
+
+    it('hides the register endpoint', async () => {
+      process.env.NODE_ENV = 'production';
+
+      await expect(
+        service.register({
+          email: 'test@example.com',
+          password: 'password123',
+          name: 'Test',
+        }),
+      ).rejects.toThrow(NotFoundException);
+      expect(usersService.findByEmail).not.toHaveBeenCalled();
+    });
+
+    it('hides the login endpoint', async () => {
+      process.env.NODE_ENV = 'production';
+
+      await expect(
+        service.login({
+          email: 'test@example.com',
+          password: 'password123',
+        }),
+      ).rejects.toThrow(NotFoundException);
+      expect(usersService.findByEmail).not.toHaveBeenCalled();
     });
   });
 });
