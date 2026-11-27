@@ -10,7 +10,7 @@ import {
 } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import * as WebBrowser from 'expo-web-browser';
-import { ClerkProvider, useAuth, useUser } from '@clerk/clerk-expo';
+import { ClerkProvider, useAuth, useUser } from '@clerk/expo';
 import { PostHogProvider } from 'posthog-react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
@@ -22,7 +22,10 @@ import { useWalletStore } from '@/store/wallet.store';
 import { useTransactionStore } from '@/store/transaction.store';
 import { useReminderStore } from '@/store/reminder.store';
 import { useBankSyncStore } from '@/store/bank-sync.store';
-import { setupBankSyncNotificationHandler } from '@/features/bank-sync/services/notificationListener';
+import {
+  setupBankSyncNotificationHandler,
+  setupNativeBankNotificationListener,
+} from '@/features/bank-sync/services/notificationListener';
 import {
   analytics,
   applyAnalyticsPreference,
@@ -38,7 +41,7 @@ WebBrowser.maybeCompleteAuthSession();
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
-const clerkPublishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
+const clerkPublishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ?? '';
 
 if (!clerkPublishableKey) {
   throw new Error(
@@ -122,6 +125,14 @@ export default function RootLayout() {
     });
     return unsubscribe;
   }, [router]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const unsubscribe = setupNativeBankNotificationListener((payload) => {
+      void useBankSyncStore.getState().processNotification(payload);
+    });
+    return unsubscribe;
+  }, [isAuthenticated]);
 
   const fetchWallets = useWalletStore((state) => state.fetchWallets);
   const fetchTransactions = useTransactionStore(

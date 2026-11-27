@@ -59,16 +59,16 @@ export const WalletQuickActions = memo(function WalletQuickActions({
 const styles = StyleSheet.create({
   actionBar: {
     flexDirection: 'row',
-    gap: spacing.md,
+    gap: spacing.sm + 2,
     marginHorizontal: spacing.base,
-    marginTop: spacing.md,
-    marginBottom: spacing.md,
+    marginTop: spacing.sm,
+    marginBottom: spacing.sm,
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
+    paddingVertical: 12,
     borderRadius: radius.lg,
   },
   actionPressed: {

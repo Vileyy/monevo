@@ -1,20 +1,5 @@
-import React, {
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import {
-  FlatList,
-  Pressable,
-  StyleSheet,
-  Text,
-  useWindowDimensions,
-  View,
-} from 'react-native';
-import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, radius, shadows, spacing, typography } from '@/theme';
@@ -25,14 +10,8 @@ import { useDisplayCurrency } from '@/hooks/use-display-currency';
 import { hapticFeedback } from '@/lib/haptics';
 import { useSettingsStore } from '@/store/settings.store';
 import { Wallet } from '@/store/wallet.store';
-import {
-  clampSlideIndex,
-  MonthlyFlows,
-  slideIndexForOffset,
-  WalletFlow,
-  walletIdForIndex,
-  walletIndexForId,
-} from '../utils/wallet-carousel';
+import { MonthlyFlows, WalletFlow } from '../utils/wallet-carousel';
+import { WalletSelectorModal } from './WalletSelectorModal';
 
 export interface WalletCarouselProps {
   wallets: Wallet[];
@@ -53,59 +32,97 @@ interface WalletSlide {
 
 const ALL_WALLETS_GRADIENT: [string, string] = ['#0F172A', '#115E59'];
 const EMPTY_FLOW: WalletFlow = { income: 0, expense: 0 };
-const CARD_HEIGHT = 196;
 
-function buildSlides(
+function toWalletSlide(
+  wallet: Wallet,
+  monthlyFlows: MonthlyFlows,
+): WalletSlide {
+  const meta = getWalletMeta(wallet.type);
+  return {
+    key: wallet.id,
+    title: wallet.name,
+    subtitle: meta.label,
+    balance: wallet.balance,
+    flow: monthlyFlows.byWallet[wallet.id] ?? EMPTY_FLOW,
+    icon: meta.icon,
+    gradient: [colors.surfaceDark, meta.gradient[0]] as [string, string],
+  };
+}
+
+function resolveActiveSlide(
   wallets: Wallet[],
   monthlyFlows: MonthlyFlows,
-): WalletSlide[] {
+  activeWalletId: string | null,
+): WalletSlide {
+  if (wallets.length === 1) {
+    return toWalletSlide(wallets[0], monthlyFlows);
+  }
+
+  if (wallets.length > 1 && activeWalletId) {
+    const selected = wallets.find((w) => w.id === activeWalletId);
+    if (selected) {
+      return toWalletSlide(selected, monthlyFlows);
+    }
+  }
+
   const totalBalance = wallets.reduce((sum, wallet) => sum + wallet.balance, 0);
 
-  return [
-    {
-      key: 'all',
-      title: 'Total Balance',
-      subtitle: `${wallets.length} ${wallets.length === 1 ? 'wallet' : 'wallets'}`,
-      balance: totalBalance,
-      flow: monthlyFlows.all,
-      icon: 'wallet',
-      gradient: ALL_WALLETS_GRADIENT,
-    },
-    ...wallets.map((wallet) => {
-      const meta = getWalletMeta(wallet.type);
-      return {
-        key: wallet.id,
-        title: wallet.name,
-        subtitle: meta.label,
-        balance: wallet.balance,
-        flow: monthlyFlows.byWallet[wallet.id] ?? EMPTY_FLOW,
-        icon: meta.icon,
-        gradient: [colors.surfaceDark, meta.gradient[0]] as [string, string],
-      };
-    }),
-  ];
+  return {
+    key: 'all',
+    title: 'Total Balance',
+    subtitle:
+      wallets.length === 0 ? 'No wallets yet' : `${wallets.length} wallets`,
+    balance: totalBalance,
+    flow: monthlyFlows.all,
+    icon: 'wallet',
+    gradient: ALL_WALLETS_GRADIENT,
+  };
 }
 
 interface CardFaceProps {
   slide: WalletSlide;
   hideBalance: boolean;
+  canSwitch: boolean;
+  onOpenSwitcher: () => void;
   onToggleHide: () => void;
 }
 
 const CardFace = memo(function CardFace({
   slide,
   hideBalance,
+  canSwitch,
+  onOpenSwitcher,
   onToggleHide,
 }: CardFaceProps) {
   useDisplayCurrency();
-  const totalFlow = slide.flow.income + slide.flow.expense;
-  const incomePercent =
-    totalFlow > 0
-      ? Math.max(
-          4,
-          Math.min(96, Math.round((slide.flow.income / totalFlow) * 100)),
-        )
-      : 0;
+
+  const headerContent = (
+    <>
+      <View style={styles.iconBadge}>
+        <Ionicons name={slide.icon} size={17} color="#FFFFFF" />
+      </View>
+
+      <View style={styles.titleBlock}>
+        <View style={styles.titleRow}>
+          <Text style={styles.cardTitle} numberOfLines={1}>
+            {slide.title}
+          </Text>
+          {canSwitch && (
+            <View style={styles.chevronBadge}>
+              <Ionicons
+                name="chevron-down"
+                size={12}
+                color="rgba(255, 255, 255, 0.9)"
+              />
+            </View>
+          )}
+        </View>
+        <Text style={styles.cardSubtitle} numberOfLines={1}>
+          {slide.subtitle}
+        </Text>
+      </View>
+    </>
+  );
 
   return (
     <LinearGradient
@@ -116,23 +133,26 @@ const CardFace = memo(function CardFace({
       accessibilityLabel={`${slide.title}, ${slide.subtitle}, balance ${
         hideBalance ? 'hidden' : formatCurrency(slide.balance)
       }`}
-      accessibilityHint="Swipe left or right to browse your balances"
     >
       <View pointerEvents="none" style={styles.cardGlow} />
 
       <View style={styles.cardTopRow}>
-        <View style={styles.iconBadge}>
-          <Ionicons name={slide.icon} size={17} color="#FFFFFF" />
-        </View>
-
-        <View style={styles.titleBlock}>
-          <Text style={styles.cardTitle} numberOfLines={1}>
-            {slide.title}
-          </Text>
-          <Text style={styles.cardSubtitle} numberOfLines={1}>
-            {slide.subtitle}
-          </Text>
-        </View>
+        {canSwitch ? (
+          <Pressable
+            onPress={onOpenSwitcher}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={`Switch wallet, currently ${slide.title}`}
+            style={({ pressed }) => [
+              styles.headerTrigger,
+              pressed && styles.headerTriggerPressed,
+            ]}
+          >
+            {headerContent}
+          </Pressable>
+        ) : (
+          <View style={styles.headerTrigger}>{headerContent}</View>
+        )}
 
         <Pressable
           onPress={onToggleHide}
@@ -147,7 +167,7 @@ const CardFace = memo(function CardFace({
           <Ionicons
             name={hideBalance ? 'eye-off-outline' : 'eye-outline'}
             size={16}
-            color="rgba(255, 255, 255, 0.75)"
+            color="rgba(255, 255, 255, 0.8)"
           />
         </Pressable>
       </View>
@@ -156,7 +176,7 @@ const CardFace = memo(function CardFace({
         {hideBalance ? '••••••••' : formatCurrency(slide.balance)}
       </Text>
 
-      <View style={styles.flowRow}>
+      <View style={styles.flowStrip}>
         <View style={styles.flowItem}>
           <View style={styles.flowLabelRow}>
             <View style={[styles.flowDot, { backgroundColor: '#34D399' }]} />
@@ -185,12 +205,6 @@ const CardFace = memo(function CardFace({
           </Text>
         </View>
       </View>
-
-      <View style={styles.flowBarTrack}>
-        {totalFlow > 0 && !hideBalance && (
-          <View style={[styles.flowBarFill, { width: `${incomePercent}%` }]} />
-        )}
-      </View>
     </LinearGradient>
   );
 });
@@ -201,80 +215,36 @@ export function WalletCarousel({
   activeWalletId,
   onSelectWallet,
 }: WalletCarouselProps) {
-  const { width } = useWindowDimensions();
   const hideBalance = useSettingsStore((state) => state.hideBalance);
   const toggleHideBalance = useSettingsStore(
     (state) => state.toggleHideBalance,
   );
-  const slides = useMemo(
-    () => buildSlides(wallets, monthlyFlows),
-    [wallets, monthlyFlows],
-  );
+  const [switcherVisible, setSwitcherVisible] = useState(false);
 
-  const [activeIndex, setActiveIndex] = useState(() =>
-    walletIndexForId(wallets, activeWalletId),
-  );
-  const activeIndexRef = useRef(activeIndex);
-  const lastActiveRef = useRef(activeWalletId);
-  const listRef = useRef<FlatList<WalletSlide>>(null);
-  const previousWidthRef = useRef(width);
-
-  const scrollToIndex = useCallback(
-    (index: number, animated: boolean) => {
-      listRef.current?.scrollToOffset({ offset: index * width, animated });
-    },
-    [width],
+  const canSwitch = wallets.length > 1;
+  const activeSlide = useMemo(
+    () => resolveActiveSlide(wallets, monthlyFlows, activeWalletId),
+    [wallets, monthlyFlows, activeWalletId],
   );
 
   useEffect(() => {
-    if (lastActiveRef.current === activeWalletId) return;
-    lastActiveRef.current = activeWalletId;
-    const index = walletIndexForId(wallets, activeWalletId);
-    activeIndexRef.current = index;
-    setActiveIndex(index);
-    scrollToIndex(index, true);
-  }, [activeWalletId, scrollToIndex, wallets]);
+    if (!activeWalletId) return;
+    if (wallets.length <= 1 || !wallets.some((w) => w.id === activeWalletId)) {
+      onSelectWallet(null);
+    }
+  }, [activeWalletId, onSelectWallet, wallets]);
 
-  useEffect(() => {
-    if (activeIndexRef.current <= slides.length - 1) return;
-    const index = clampSlideIndex(activeIndexRef.current, slides.length);
-    activeIndexRef.current = index;
-    setActiveIndex(index);
-    scrollToIndex(index, false);
-  }, [scrollToIndex, slides.length]);
+  const handleOpenSwitcher = useCallback(() => {
+    hapticFeedback.light();
+    setSwitcherVisible(true);
+  }, []);
 
-  useEffect(() => {
-    if (previousWidthRef.current === width) return;
-    previousWidthRef.current = width;
-    scrollToIndex(activeIndexRef.current, false);
-  }, [scrollToIndex, width]);
-
-  const commitIndex = useCallback(
-    (nextIndex: number, scroll: boolean) => {
-      const index = clampSlideIndex(nextIndex, slides.length);
-      if (index === activeIndexRef.current) return;
-
-      const walletId = walletIdForIndex(wallets, index);
-      activeIndexRef.current = index;
-      lastActiveRef.current = walletId;
-      setActiveIndex(index);
+  const handleSelectWallet = useCallback(
+    (walletId: string | null) => {
       hapticFeedback.selection();
       onSelectWallet(walletId);
-      if (scroll) scrollToIndex(index, true);
     },
-    [onSelectWallet, scrollToIndex, slides.length, wallets],
-  );
-
-  const handleScrollEnd = useCallback(
-    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const index = slideIndexForOffset(
-        event.nativeEvent.contentOffset.x,
-        width,
-        slides.length,
-      );
-      commitIndex(index, false);
-    },
-    [commitIndex, slides.length, width],
+    [onSelectWallet],
   );
 
   const handleToggleHide = useCallback(() => {
@@ -283,96 +253,77 @@ export function WalletCarousel({
   }, [toggleHideBalance]);
 
   return (
-    <View>
-      <FlatList
-        ref={listRef}
-        data={slides}
-        keyExtractor={(slide) => slide.key}
-        horizontal
-        pagingEnabled
-        decelerationRate="fast"
-        showsHorizontalScrollIndicator={false}
-        getItemLayout={(_, index) => ({
-          length: width,
-          offset: width * index,
-          index,
-        })}
-        initialScrollIndex={activeIndex}
-        onMomentumScrollEnd={handleScrollEnd}
-        extraData={`${activeIndex}:${hideBalance}`}
-        style={styles.list}
-        renderItem={({ item, index }) => (
-          <View
-            style={[styles.page, { width }]}
-            aria-hidden={index !== activeIndex}
-          >
-            <View style={styles.cardShell}>
-              <CardFace
-                slide={item}
-                hideBalance={hideBalance}
-                onToggleHide={handleToggleHide}
-              />
-            </View>
-          </View>
-        )}
-      />
-
-      <View style={styles.dotsRow}>
-        {slides.map((slide, index) => (
-          <Pressable
-            key={slide.key}
-            onPress={() => commitIndex(index, true)}
-            hitSlop={8}
-            accessibilityRole="button"
-            accessibilityLabel={`Show ${slide.title}`}
-            accessibilityState={{ selected: index === activeIndex }}
-            style={[styles.dot, index === activeIndex && styles.dotActive]}
-          />
-        ))}
+    <View style={styles.container}>
+      <View style={styles.cardShell}>
+        <CardFace
+          slide={activeSlide}
+          hideBalance={hideBalance}
+          canSwitch={canSwitch}
+          onOpenSwitcher={handleOpenSwitcher}
+          onToggleHide={handleToggleHide}
+        />
       </View>
+
+      {canSwitch && (
+        <WalletSelectorModal
+          visible={switcherVisible}
+          onClose={() => setSwitcherVisible(false)}
+          wallets={wallets}
+          selectedWalletId={activeWalletId}
+          onSelectWallet={handleSelectWallet}
+          allowAllAccounts
+        />
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  list: {
-    height: CARD_HEIGHT + spacing.md,
-  },
-  page: {
-    height: CARD_HEIGHT + spacing.md,
+  container: {
     paddingHorizontal: spacing.base,
+    paddingBottom: spacing.xs,
   },
   cardShell: {
-    height: CARD_HEIGHT,
     borderRadius: radius.xxl,
     ...shadows.lg,
   },
   card: {
-    flex: 1,
     borderRadius: radius.xxl,
-    padding: spacing.lg,
+    padding: spacing.base,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
     overflow: 'hidden',
   },
   cardGlow: {
     position: 'absolute',
-    top: -64,
-    right: -48,
-    width: 180,
-    height: 180,
-    borderRadius: 90,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    top: -72,
+    right: -56,
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
   },
   cardTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  headerTrigger: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: spacing.sm,
+  },
+  headerTriggerPressed: {
+    opacity: 0.72,
   },
   iconBadge: {
     width: 34,
     height: 34,
-    borderRadius: radius.md,
+    borderRadius: radius.full,
     backgroundColor: 'rgba(255, 255, 255, 0.14)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
+    borderColor: 'rgba(255, 255, 255, 0.14)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.sm + 2,
@@ -380,39 +331,58 @@ const styles = StyleSheet.create({
   titleBlock: {
     flex: 1,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  chevronBadge: {
+    width: 18,
+    height: 18,
+    borderRadius: radius.full,
+    backgroundColor: 'rgba(255, 255, 255, 0.16)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   cardTitle: {
     ...typography.headline,
     color: '#FFFFFF',
     fontWeight: '700',
+    flexShrink: 1,
   },
   cardSubtitle: {
     ...typography.caption,
-    color: 'rgba(255, 255, 255, 0.6)',
+    color: 'rgba(255, 255, 255, 0.65)',
     marginTop: 1,
   },
   eyeBtn: {
-    padding: 4,
-    marginLeft: spacing.xs,
+    width: 32,
+    height: 32,
+    borderRadius: radius.full,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   eyeBtnPressed: {
-    opacity: 0.6,
+    opacity: 0.65,
   },
   balanceValue: {
     fontSize: 30,
     lineHeight: 36,
     fontWeight: '800',
     color: '#FFFFFF',
-    letterSpacing: -0.4,
-    marginTop: spacing.sm,
+    letterSpacing: -0.5,
+    marginTop: spacing.md,
+    marginBottom: spacing.md,
     ...typography.tabular,
   },
-  flowRow: {
+  flowStrip: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 'auto',
-    paddingTop: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.12)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: radius.lg,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm + 2,
   },
   flowItem: {
     flex: 1,
@@ -429,9 +399,8 @@ const styles = StyleSheet.create({
   },
   flowLabel: {
     ...typography.caption,
-    color: 'rgba(255, 255, 255, 0.6)',
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
+    color: 'rgba(255, 255, 255, 0.68)',
+    letterSpacing: 0.2,
   },
   flowValue: {
     ...typography.bodyBold,
@@ -440,37 +409,8 @@ const styles = StyleSheet.create({
   },
   flowDivider: {
     width: 1,
-    height: 28,
+    height: 26,
     backgroundColor: 'rgba(255, 255, 255, 0.12)',
     marginHorizontal: spacing.md,
-  },
-  flowBarTrack: {
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
-    marginTop: spacing.md,
-    overflow: 'hidden',
-  },
-  flowBarFill: {
-    height: '100%',
-    borderRadius: 2,
-    backgroundColor: '#34D399',
-  },
-  dotsRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: spacing.md,
-  },
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: colors.border,
-  },
-  dotActive: {
-    width: 18,
-    backgroundColor: colors.primary,
   },
 });

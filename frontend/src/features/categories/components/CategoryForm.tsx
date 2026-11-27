@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { colors, radius, spacing, typography } from '@/theme';
-import { Button, Input, SegmentedControl } from '@/components/ui';
+import {
+  Button,
+  CategoryGlyph,
+  Input,
+  SegmentedControl,
+} from '@/components/ui';
 import { apiErrorMessage } from '@/lib/api-error';
 import { hapticFeedback } from '@/lib/haptics';
 import { CATEGORY_ICON_OPTIONS, IconName } from '@/lib/categories';
@@ -95,7 +99,7 @@ export function CategoryForm({
                 accessibilityRole="button"
                 accessibilityState={{ selected: isSelected }}
               >
-                <Ionicons name={item.icon} size={22} color={item.color} />
+                <CategoryGlyph icon={item.icon} size={22} color={item.color} />
               </Pressable>
             );
           })}

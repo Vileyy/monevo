@@ -16,14 +16,15 @@ export interface FlowTransaction {
 }
 
 /**
- * The carousel's first slide is the aggregated view, so a wallet's index is
- * offset by one (and `null` selection always maps back to index 0).
+ * When there are multiple wallets, the carousel's first slide is the aggregated
+ * view, so a wallet's index is offset by one (and `null` maps to index 0).
+ * With 0 or 1 wallet there is only a single slide at index 0.
  */
 export function walletIndexForId(
   wallets: readonly { id: string }[],
   walletId: string | null,
 ): number {
-  if (!walletId) return 0;
+  if (wallets.length <= 1 || !walletId) return 0;
   const index = wallets.findIndex((wallet) => wallet.id === walletId);
   return index === -1 ? 0 : index + 1;
 }
@@ -32,7 +33,7 @@ export function walletIdForIndex(
   wallets: readonly { id: string }[],
   index: number,
 ): string | null {
-  if (index <= 0) return null;
+  if (wallets.length <= 1 || index <= 0) return null;
   return wallets[index - 1]?.id ?? null;
 }
 

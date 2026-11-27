@@ -138,6 +138,79 @@ describe('useBankSyncStore', () => {
       expect(useBankSyncStore.getState().pendingTransactions).toHaveLength(0);
     });
 
+    it('auto-creates a BANK wallet when only non-BANK wallets exist', async () => {
+      const createWalletMock = jest.fn().mockResolvedValue({
+        id: 'w_mb_auto',
+        name: 'MB Bank',
+        type: 'BANK',
+        balance: 0,
+        createdAt: '',
+        updatedAt: '',
+      });
+      const createTransactionMock = jest
+        .fn()
+        .mockResolvedValue({ id: 't_auto' });
+
+      useWalletStore.setState({
+        wallets: [
+          {
+            id: 'w_cash',
+            name: 'Cash',
+            type: 'CASH',
+            balance: 500000,
+            createdAt: '',
+            updatedAt: '',
+          },
+        ],
+        createWallet: createWalletMock,
+      } as any);
+      useTransactionStore.setState({
+        createTransaction: createTransactionMock,
+      } as any);
+
+      const result = await useBankSyncStore.getState().processNotification({
+        title: 'MB Bank',
+        text: 'TK 0381029381 GD: -120,000VND vao 27/11/26 19:00. Noi dung: Chuyen khoan',
+        packageName: 'com.mbmobile',
+      });
+
+      expect(result).not.toBeNull();
+      expect(createWalletMock).toHaveBeenCalledWith('MB Bank', 'BANK', 0);
+      expect(createTransactionMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          walletId: 'w_mb_auto',
+          amount: 120000,
+          type: 'EXPENSE',
+        }),
+      );
+    });
+
+    it('deduplicates identical notifications within the dedup window', async () => {
+      const createTransactionMock = jest
+        .fn()
+        .mockResolvedValue({ id: 't_dedup' });
+      useTransactionStore.setState({
+        createTransaction: createTransactionMock,
+      } as any);
+
+      const payload = {
+        title: 'MB Bank',
+        text: 'TK 0381029381 GD: -45,000VND vao 27/11/26 19:01. Noi dung: Highlands Coffee',
+        packageName: 'com.mbmobile',
+      };
+
+      const first = await useBankSyncStore
+        .getState()
+        .processNotification(payload);
+      const second = await useBankSyncStore
+        .getState()
+        .processNotification(payload);
+
+      expect(first).not.toBeNull();
+      expect(second).toBeNull();
+      expect(createTransactionMock).toHaveBeenCalledTimes(1);
+    });
+
     it('falls back to pending queue when autoSave is toggled off', async () => {
       useBankSyncStore.getState().setAutoSave(false);
 

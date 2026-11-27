@@ -36,6 +36,9 @@ export async function initNotifications(): Promise<void> {
       });
     }
   } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    // Expo Go (SDK 53+) omits Android's NotificationsChannelsProvider; ignore silently.
+    if (message.includes('NotificationsChannelsProvider')) return;
     console.warn('Failed to initialize notifications:', error);
   }
 }

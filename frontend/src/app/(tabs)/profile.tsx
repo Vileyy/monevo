@@ -14,7 +14,7 @@ import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '@/store/auth.store';
-import { useClerk } from '@clerk/clerk-expo';
+import { useClerk } from '@clerk/expo';
 import { useWalletStore } from '@/store/wallet.store';
 import { useTransactionStore } from '@/store/transaction.store';
 import { useReminderStore } from '@/store/reminder.store';

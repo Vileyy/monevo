@@ -213,17 +213,17 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   scrollContent: {
-    paddingTop: spacing.base,
+    paddingTop: spacing.sm,
   },
   section: {
-    marginTop: spacing.md,
+    marginTop: spacing.sm,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: spacing.base,
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm + 2,
   },
   sectionTitle: {
     ...typography.title3,
@@ -232,8 +232,6 @@ const styles = StyleSheet.create({
   todayText: {
     ...typography.caption,
     color: colors.textMuted,
-    letterSpacing: 0.6,
-    textTransform: 'uppercase',
     paddingHorizontal: spacing.base,
     marginBottom: spacing.xxs,
   },

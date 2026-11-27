@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Alert,
+  AppState,
+  Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Switch,
@@ -9,11 +12,14 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Modal } from '@/components/ui/Modal';
-import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { useBankSyncStore } from '@/store/bank-sync.store';
-import { openNotificationListenerSettings } from '../services/notificationListener';
+import {
+  isNotificationListenerEnabled,
+  openNotificationListenerSettings,
+} from '../services/notificationListener';
 import { SUPPORTED_BANKS } from '../utils/bankParsers';
+import { BankIcon } from './BankIcon';
 import { colors, radius, spacing, typography } from '@/theme';
 import { hapticFeedback } from '@/lib/haptics';
 
@@ -24,6 +30,29 @@ interface Props {
 
 export function BankSyncModal({ visible, onClose }: Props) {
   const { isEnabled, autoSave, setEnabled, setAutoSave } = useBankSyncStore();
+  const [hasPermission, setHasPermission] = useState(false);
+
+  useEffect(() => {
+    if (!visible || Platform.OS !== 'android') return;
+    let cancelled = false;
+
+    const checkPermission = () => {
+      void isNotificationListenerEnabled().then((granted) => {
+        if (!cancelled) setHasPermission(granted);
+      });
+    };
+
+    checkPermission();
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        checkPermission();
+      }
+    });
+    return () => {
+      cancelled = true;
+      sub.remove();
+    };
+  }, [visible]);
 
   const handleToggleEnable = (value: boolean) => {
     hapticFeedback.selection();
@@ -121,53 +150,66 @@ export function BankSyncModal({ visible, onClose }: Props) {
           </View>
         </Card>
 
-        {/* Android Permission Guidance Card */}
-        <Card style={styles.card}>
-          <View style={styles.permissionHeader}>
-            <Ionicons
-              name="shield-checkmark"
-              size={20}
-              color={colors.info}
-              style={{ marginRight: spacing.xs }}
-            />
-            <Text style={styles.permissionTitle}>
-              Cấp quyền truy cập trên Android
-            </Text>
-          </View>
-          <Text style={styles.permissionDesc}>
-            Android yêu cầu cho phép quyền đọc thông báo để Monevo phát hiện
-            biến động số dư từ app ngân hàng của bạn. Dữ liệu được xử lý 100%
-            tại máy, tuyệt đối bảo mật.
-          </Text>
-          <Button
-            title="Mở cài đặt quyền thông báo"
-            variant="outline"
-            size="sm"
-            style={styles.permissionBtn}
+        {/* Android Permission Row */}
+        <Card style={styles.permissionCard}>
+          <Pressable
             onPress={handleOpenAndroidSettings}
-          />
+            style={({ pressed }) => [
+              styles.permissionRow,
+              pressed && styles.permissionRowPressed,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="Mở cài đặt quyền thông báo Android"
+          >
+            <View style={[styles.iconBg, { backgroundColor: colors.infoBg }]}>
+              <Ionicons name="shield-checkmark" size={18} color={colors.info} />
+            </View>
+            <View style={styles.textCol}>
+              <Text style={styles.rowTitle}>Quyền đọc thông báo Android</Text>
+              <Text style={styles.rowSubtitle}>
+                Xử lý 100% tại máy, tuyệt đối bảo mật
+              </Text>
+            </View>
+            <View
+              style={[
+                styles.permissionAction,
+                hasPermission && styles.permissionActionGranted,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.permissionActionText,
+                  hasPermission && styles.permissionActionTextGranted,
+                ]}
+              >
+                {hasPermission ? 'Đã bật' : 'Cài đặt'}
+              </Text>
+              <Ionicons
+                name={hasPermission ? 'checkmark-circle' : 'chevron-forward'}
+                size={14}
+                color={hasPermission ? colors.income : colors.primary}
+              />
+            </View>
+          </Pressable>
         </Card>
 
-        {/* Supported Banks Badges */}
-        <Text style={styles.sectionHeader}>Ứng dụng ngân hàng được hỗ trợ</Text>
-        <Card style={styles.card}>
-          <Text style={styles.supportedDesc}>
-            Monevo tự động nhận diện thông báo từ các ngân hàng và tự động gán
-            vào ví tương ứng trong sổ chi tiêu của bạn:
-          </Text>
-          <View style={styles.bankChipsContainer}>
-            {supportedBankList.map((bank) => (
-              <View key={bank.code} style={styles.bankChip}>
-                <View
-                  style={[styles.bankDot, { backgroundColor: bank.brandColor }]}
-                />
-                <Text style={styles.bankChipText}>{bank.name}</Text>
-              </View>
-            ))}
-          </View>
-        </Card>
+        {/* Supported Banks Grid */}
+        <Text style={styles.sectionHeader}>
+          Ngân hàng & Ví hỗ trợ ({supportedBankList.length})
+        </Text>
+        <View style={styles.bankGrid}>
+          {supportedBankList.map((bank) => (
+            <View
+              key={bank.code}
+              style={styles.bankTile}
+              accessibilityLabel={bank.name}
+            >
+              <BankIcon code={bank.code} width={116} height={26} />
+            </View>
+          ))}
+        </View>
 
-        <View style={{ height: spacing.xxl }} />
+        <View style={{ height: spacing.lg }} />
       </ScrollView>
     </Modal>
   );
@@ -175,18 +217,21 @@ export function BankSyncModal({ visible, onClose }: Props) {
 
 const styles = StyleSheet.create({
   scrollContent: {
-    paddingBottom: spacing.xl,
+    paddingBottom: spacing.base,
   },
   card: {
     padding: spacing.md,
-    marginBottom: spacing.base,
+    marginBottom: spacing.md,
+  },
+  permissionCard: {
+    padding: spacing.sm + 2,
+    marginBottom: spacing.md,
   },
   sectionHeader: {
     ...typography.caption,
     color: colors.textSecondary,
     fontWeight: '600',
-    textTransform: 'uppercase',
-    marginBottom: spacing.xs,
+    marginBottom: spacing.xs + 2,
     marginLeft: spacing.xs,
   },
   row: {
@@ -201,8 +246,8 @@ const styles = StyleSheet.create({
     marginRight: spacing.sm,
   },
   iconBg: {
-    width: 36,
-    height: 36,
+    width: 34,
+    height: 34,
     borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
@@ -212,7 +257,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   rowTitle: {
-    ...typography.body,
+    ...typography.subhead,
     fontWeight: '600',
     color: colors.text,
   },
@@ -224,57 +269,52 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     backgroundColor: colors.borderLight,
-    marginVertical: spacing.md,
+    marginVertical: spacing.sm + 2,
   },
-  permissionHeader: {
+  permissionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing.xs,
+    paddingVertical: 2,
   },
-  permissionTitle: {
-    ...typography.subhead,
-    fontWeight: '600',
-    color: colors.text,
+  permissionRowPressed: {
+    opacity: 0.72,
   },
-  permissionDesc: {
-    ...typography.footnote,
-    color: colors.textSecondary,
-    lineHeight: 18,
-    marginBottom: spacing.md,
+  permissionAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    backgroundColor: colors.primaryMuted,
+    paddingHorizontal: spacing.sm + 2,
+    paddingVertical: spacing.xs + 2,
+    borderRadius: radius.full,
+    marginLeft: spacing.sm,
   },
-  permissionBtn: {
-    alignSelf: 'flex-start',
+  permissionActionText: {
+    ...typography.caption,
+    fontWeight: '700',
+    color: colors.primary,
   },
-  supportedDesc: {
-    ...typography.footnote,
-    color: colors.textSecondary,
-    marginBottom: spacing.sm,
-    lineHeight: 18,
+  permissionActionGranted: {
+    backgroundColor: colors.incomeBg,
   },
-  bankChipsContainer: {
+  permissionActionTextGranted: {
+    color: colors.income,
+  },
+  bankGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: spacing.xs,
+    justifyContent: 'space-between',
+    rowGap: spacing.sm,
   },
-  bankChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surfaceSecondary,
-    borderRadius: radius.full,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 5,
+  bankTile: {
+    width: '48.5%',
+    height: 48,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: colors.border,
-  },
-  bankDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
-  },
-  bankChipText: {
-    ...typography.caption,
-    color: colors.text,
-    fontWeight: '500',
+    borderColor: colors.borderLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.sm,
   },
 });
