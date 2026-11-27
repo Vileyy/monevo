@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View, ViewStyle } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { CategoryGlyph } from '@/components/ui/CategoryGlyph';
 import { IconName } from '@/lib/categories';
 
 export type IconBadgeSize = 'xs' | 'sm' | 'md' | 'lg';
@@ -47,7 +47,7 @@ export function IconBadge({
         style,
       ]}
     >
-      <Ionicons name={icon} size={spec.icon} color={color} />
+      <CategoryGlyph icon={icon} size={spec.icon} color={color} />
     </View>
   );
 }

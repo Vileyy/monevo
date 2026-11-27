@@ -5,6 +5,7 @@ export * from './CurrencyInput';
 export * from './Badge';
 export * from './SegmentedControl';
 export * from './IconBadge';
+export * from './CategoryGlyph';
 export * from './CategoryIcon';
 export * from './WalletIcon';
 export * from './Modal';
