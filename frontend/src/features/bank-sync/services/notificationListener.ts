@@ -1,5 +1,34 @@
-import { Linking, Platform } from 'react-native';
+import {
+  AppState,
+  Linking,
+  NativeEventEmitter,
+  NativeModules,
+  Platform,
+} from 'react-native';
 import * as Notifications from 'expo-notifications';
+import type { RawNotificationPayload } from '../types';
+
+interface NativeBankNotificationModule {
+  isPermissionGranted(): Promise<boolean>;
+  consumeQueuedNotifications(): Promise<RawNotificationPayload[]>;
+  addListener(eventName: string): void;
+  removeListeners(count: number): void;
+}
+
+const nativeBankModule =
+  Platform.OS === 'android'
+    ? (NativeModules.BankNotificationModule as
+        NativeBankNotificationModule | undefined)
+    : undefined;
+
+export async function isNotificationListenerEnabled(): Promise<boolean> {
+  if (!nativeBankModule?.isPermissionGranted) return false;
+  try {
+    return await nativeBankModule.isPermissionGranted();
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Open Android system settings directly to the Notification Access screen
@@ -33,6 +62,48 @@ export async function openNotificationListenerSettings(): Promise<boolean> {
       return false;
     }
   }
+}
+
+/**
+ * Subscribe to real-time bank notifications from the Android
+ * NotificationListenerService and drain any queued while the app was closed.
+ */
+export function setupNativeBankNotificationListener(
+  onNotification: (payload: RawNotificationPayload) => void,
+): () => void {
+  if (!nativeBankModule) return () => {};
+
+  const drainQueue = () => {
+    void nativeBankModule
+      .consumeQueuedNotifications()
+      .then((items) => {
+        for (const item of items) {
+          onNotification(item);
+        }
+      })
+      .catch(() => {});
+  };
+
+  drainQueue();
+
+  const emitter = new NativeEventEmitter(nativeBankModule);
+  const eventSub = emitter.addListener(
+    'onBankNotification',
+    (payload: RawNotificationPayload) => {
+      onNotification(payload);
+    },
+  );
+
+  const appStateSub = AppState.addEventListener('change', (state) => {
+    if (state === 'active') {
+      drainQueue();
+    }
+  });
+
+  return () => {
+    eventSub.remove();
+    appStateSub.remove();
+  };
 }
 
 /**

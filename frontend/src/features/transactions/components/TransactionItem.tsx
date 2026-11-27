@@ -68,22 +68,22 @@ export const TransactionItem = memo(function TransactionItem({
         <Text style={styles.title} numberOfLines={1}>
           {categoryName}
         </Text>
-        <View style={styles.metaRow}>
-          {transaction.wallet?.name && (
-            <Text style={styles.walletTag} numberOfLines={1}>
-              {transaction.wallet.name}
-            </Text>
-          )}
-          {transaction.note ? (
-            <Text style={styles.note} numberOfLines={1}>
-              · {transaction.note}
-            </Text>
-          ) : (
-            <Text style={styles.note} numberOfLines={1}>
-              · {formattedDate}
-            </Text>
-          )}
-        </View>
+        {(transaction.wallet?.name || transaction.note) && (
+          <View style={styles.metaRow}>
+            {transaction.wallet?.name && (
+              <Text style={styles.walletTag} numberOfLines={1}>
+                {transaction.wallet.name}
+              </Text>
+            )}
+            {transaction.note && (
+              <Text style={styles.note} numberOfLines={1}>
+                {transaction.wallet?.name
+                  ? `· ${transaction.note}`
+                  : transaction.note}
+              </Text>
+            )}
+          </View>
+        )}
       </View>
 
       <View style={styles.amountCol}>

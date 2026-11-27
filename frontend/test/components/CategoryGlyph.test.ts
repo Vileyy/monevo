@@ -14,62 +14,65 @@ jest.mock('@expo/vector-icons', () => ({
   Ionicons: jest.fn((props) => ({ type: 'Ionicons', props })),
 }));
 
-const makeIcon = (name: string) =>
-  jest.fn((props) => ({ type: `Phosphor:${name}`, props }));
-
 jest.mock('phosphor-react-native/src/icons/AirplaneTilt', () => ({
-  AirplaneTilt: makeIcon('AirplaneTilt'),
+  AirplaneTilt: jest.fn((props) => ({ type: 'Phosphor:AirplaneTilt', props })),
 }));
 jest.mock('phosphor-react-native/src/icons/Bank', () => ({
-  Bank: makeIcon('Bank'),
+  Bank: jest.fn((props) => ({ type: 'Phosphor:Bank', props })),
 }));
 jest.mock('phosphor-react-native/src/icons/Car', () => ({
-  Car: makeIcon('Car'),
+  Car: jest.fn((props) => ({ type: 'Phosphor:Car', props })),
 }));
 jest.mock('phosphor-react-native/src/icons/Coffee', () => ({
-  Coffee: makeIcon('Coffee'),
+  Coffee: jest.fn((props) => ({ type: 'Phosphor:Coffee', props })),
 }));
 jest.mock('phosphor-react-native/src/icons/CreditCard', () => ({
-  CreditCard: makeIcon('CreditCard'),
+  CreditCard: jest.fn((props) => ({ type: 'Phosphor:CreditCard', props })),
 }));
 jest.mock('phosphor-react-native/src/icons/FilmStrip', () => ({
-  FilmStrip: makeIcon('FilmStrip'),
+  FilmStrip: jest.fn((props) => ({ type: 'Phosphor:FilmStrip', props })),
 }));
 jest.mock('phosphor-react-native/src/icons/FirstAidKit', () => ({
-  FirstAidKit: makeIcon('FirstAidKit'),
+  FirstAidKit: jest.fn((props) => ({ type: 'Phosphor:FirstAidKit', props })),
 }));
 jest.mock('phosphor-react-native/src/icons/ForkKnife', () => ({
-  ForkKnife: makeIcon('ForkKnife'),
+  ForkKnife: jest.fn((props) => ({ type: 'Phosphor:ForkKnife', props })),
 }));
 jest.mock('phosphor-react-native/src/icons/GameController', () => ({
-  GameController: makeIcon('GameController'),
+  GameController: jest.fn((props) => ({
+    type: 'Phosphor:GameController',
+    props,
+  })),
 }));
 jest.mock('phosphor-react-native/src/icons/Gift', () => ({
-  Gift: makeIcon('Gift'),
+  Gift: jest.fn((props) => ({ type: 'Phosphor:Gift', props })),
 }));
 jest.mock('phosphor-react-native/src/icons/GraduationCap', () => ({
-  GraduationCap: makeIcon('GraduationCap'),
+  GraduationCap: jest.fn((props) => ({
+    type: 'Phosphor:GraduationCap',
+    props,
+  })),
 }));
 jest.mock('phosphor-react-native/src/icons/Heartbeat', () => ({
-  Heartbeat: makeIcon('Heartbeat'),
+  Heartbeat: jest.fn((props) => ({ type: 'Phosphor:Heartbeat', props })),
 }));
 jest.mock('phosphor-react-native/src/icons/House', () => ({
-  House: makeIcon('House'),
+  House: jest.fn((props) => ({ type: 'Phosphor:House', props })),
 }));
 jest.mock('phosphor-react-native/src/icons/Money', () => ({
-  Money: makeIcon('Money'),
+  Money: jest.fn((props) => ({ type: 'Phosphor:Money', props })),
 }));
 jest.mock('phosphor-react-native/src/icons/Receipt', () => ({
-  Receipt: makeIcon('Receipt'),
+  Receipt: jest.fn((props) => ({ type: 'Phosphor:Receipt', props })),
 }));
 jest.mock('phosphor-react-native/src/icons/ShoppingCart', () => ({
-  ShoppingCart: makeIcon('ShoppingCart'),
+  ShoppingCart: jest.fn((props) => ({ type: 'Phosphor:ShoppingCart', props })),
 }));
 jest.mock('phosphor-react-native/src/icons/TrendUp', () => ({
-  TrendUp: makeIcon('TrendUp'),
+  TrendUp: jest.fn((props) => ({ type: 'Phosphor:TrendUp', props })),
 }));
 jest.mock('phosphor-react-native/src/icons/Wallet', () => ({
-  Wallet: makeIcon('Wallet'),
+  Wallet: jest.fn((props) => ({ type: 'Phosphor:Wallet', props })),
 }));
 
 describe('CategoryGlyph', () => {

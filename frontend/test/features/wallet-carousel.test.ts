@@ -20,6 +20,14 @@ describe('Wallet carousel helpers', () => {
     expect(walletIdForIndex(wallets, 2)).toBe('w2');
   });
 
+  it('maps a single wallet to index 0 without an aggregate slide', () => {
+    const single = [{ id: 'w1' }];
+    expect(walletIndexForId(single, null)).toBe(0);
+    expect(walletIndexForId(single, 'w1')).toBe(0);
+    expect(walletIdForIndex(single, 0)).toBeNull();
+    expect(walletIdForIndex(single, 1)).toBeNull();
+  });
+
   it('falls back to the aggregate slide for stale ids and out-of-range indexes', () => {
     expect(walletIndexForId(wallets, 'missing')).toBe(0);
     expect(walletIdForIndex(wallets, 9)).toBeNull();

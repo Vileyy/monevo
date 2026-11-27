@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useAuth, useSignIn, useSignUp, useUser } from '@clerk/clerk-expo';
+import { useAuth, useUser } from '@clerk/expo';
+import { useSignIn, useSignUp } from '@clerk/expo/legacy';
 import * as WebBrowser from 'expo-web-browser';
 import { useAuthStore } from '@/store/auth.store';
 import { extractClerkErrorMessage } from '@/features/auth/utils/auth-helpers';

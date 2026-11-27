@@ -56,7 +56,7 @@ jest.mock('react-native', () => ({
   },
 }));
 
-jest.mock('@clerk/clerk-expo', () => ({
+jest.mock('@clerk/expo', () => ({
   ClerkProvider: ({ children }) => children,
   ClerkLoaded: ({ children }) => children,
   useSignIn: () => ({

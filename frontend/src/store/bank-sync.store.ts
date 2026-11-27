@@ -104,12 +104,7 @@ async function resolveOrCreateWalletForBank(
     return bankTypeWallet.id;
   }
 
-  // 3. Fallback to first available wallet
-  if (wallets.length > 0) {
-    return wallets[0].id;
-  }
-
-  // 4. If no wallets exist, automatically create a wallet for this bank
+  // 3. Auto-create a dedicated BANK wallet so bank transfers never deduct from Cash/Credit
   try {
     const newWallet = await useWalletStore
       .getState()
@@ -117,8 +112,14 @@ async function resolveOrCreateWalletForBank(
     return newWallet.id;
   } catch (err) {
     console.warn('Failed to auto-create wallet for bank notification:', err);
-    return null;
   }
+
+  // 4. Last-resort fallback to first available wallet
+  if (wallets.length > 0) {
+    return wallets[0].id;
+  }
+
+  return null;
 }
 
 /**
@@ -166,6 +167,25 @@ async function resolveCategoryForTransaction(
   } catch {
     return categories[0]?.id || null;
   }
+}
+
+const recentSignatures = new Map<string, number>();
+const DEDUP_WINDOW_MS = 30_000;
+
+function isDuplicateNotification(
+  bankCode: string,
+  amount: number,
+  type: string,
+  rawText: string,
+): boolean {
+  const now = Date.now();
+  const key = `${bankCode}|${type}|${amount}|${rawText.trim()}`;
+  const prev = recentSignatures.get(key);
+  if (prev !== undefined && now - prev < DEDUP_WINDOW_MS) {
+    return true;
+  }
+  recentSignatures.set(key, now);
+  return false;
 }
 
 export const useBankSyncStore = create<BankSyncState>((set, get) => ({
@@ -261,6 +281,17 @@ export const useBankSyncStore = create<BankSyncState>((set, get) => ({
       payload.packageName,
     );
     if (!parsed) return null;
+
+    if (
+      isDuplicateNotification(
+        parsed.bankCode,
+        parsed.amount,
+        parsed.type,
+        parsed.rawText,
+      )
+    ) {
+      return null;
+    }
 
     // Check if user explicitly mapped this bank; otherwise auto-resolve
     let targetWalletId = bankWalletMappings[parsed.bankCode] || null;
